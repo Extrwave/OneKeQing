@@ -333,7 +333,7 @@
 	color: #fff;
 }
 
-.avatar-info > .fetter-info {
+.avatar-info .fetter-info {
 	margin-left: 4px;
 	font-weight: 400;
 	font-size: 20px;
@@ -355,7 +355,7 @@
 	margin: 15px 20px 15px 0;
 }
 
-/* 圣遗物套装效果 */
+/* 圣遗物评分数据 */
 .detail-bottom > .artifact-list > .extra-info {
 	position: relative;
 	margin-right: 18px;
@@ -364,11 +364,11 @@
 	height: 332px;
 }
 
-.artifact-effect {
+.artifact-score {
 	display: flex;
 	flex-direction: column;
 	align-items: flex-start;
-	justify-content: space-around;
+	/*justify-content: space-around;*/
 	padding: 18px;
 	width: 100%;
 	height: 127px;
@@ -376,21 +376,23 @@
 	box-sizing: border-box;
 }
 
-.artifact-effect > p {
+.artifact-score > p {
 	position: relative;
 	font-weight: 400;
-	font-size: 18px;
+	font-size: 20px;
 	line-height: 24px;
 	color: #fff;
 	z-index: 100;
 }
 
-.artifact-effect > p > span:last-child {
-	margin-left: 12px;
+.artifact-score > p > span:last-child {
+	font-size: 40px;
+	margin-top: 20px;
+	display: block;
 	color: #90EE90;
 }
 
-.artifact-effect .artifact-effect-empty {
+.artifact-score .artifact-effect-empty {
 	width: 100%;
 	text-align: center;
 	opacity: 0.5;

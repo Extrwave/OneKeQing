@@ -1,47 +1,60 @@
-const template = `<div class="room-base">
-	<SectionTitle showSubTitle>
-		<template #default>第{{ ["一", "二", "三"][roomData.index - 1] }}间</template>
-		<template #sub>
-			<img v-for="item of roomData.maxStar" :key="item" :class="{'star-crush': item > roomData.star}" src="https://adachi-bot.oss-cn-beijing.aliyuncs.com/Version2/abyss/star.png" alt="ERROR" />
-		</template>
-	</SectionTitle>
-	<span class="time">{{ stamp2date }}</span>
-	<div class="room-info">
-		<div v-for="(harf, harfIndex) of roomData.battles" ::key="harfIndex" class="room-info-half">
-			<h3>{{["上半", "下半"][harfIndex]}}</h3>
-			<div class="character-list">
-				<template v-for="(char, index) in harf.avatars" :key="index">
-					<CharacterItem class="character-item" :char="char" type="level"/>
-					<img src="https://adachi-bot.oss-cn-beijing.aliyuncs.com/Version2/abyss/diamond.png" alt="ERROR"/>
-				</template>
+const template = `<div class="room">
+	<header class="room-header">
+		<span class="room-title">第{{ ["一", "二", "三"][data.index - 1] }}间</span>
+		<span class="room-date">{{ stamp2date }}</span>
+	</header>
+	<article class="room-content">
+		<template v-if="!isEmpty">
+			<ul class="chara-list">
+				<li v-for="(b, bKey) of data.battles">
+					<div v-for="(c, cKey) of b.avatars" :key="cKey" class="chara-box">
+						<span>{{ c.level }}</span>
+						<img :src="getSideIcon(c.id)" alt="ERROR">
+					</div>
+				</li>
+			</ul>
+			<div class="star-box">
+				<img v-for="(s, sKey) of data.maxStar" :key="sKey" :class="{'star-crush': s > data.star}" src="https://adachi-bot.oss-cn-beijing.aliyuncs.com/Version2/abyss/star.png" alt="ERROR" />
 			</div>
-		</div>
-	</div>
+		</template>
+		<p v-else class="empty-massage">暂无挑战数据</p>
+	</article>
 </div>`;
-
-import SectionTitle from "./section-title.js";
-import CharacterItem from "./character-item.js";
 
 const { defineComponent, computed } = Vue;
 
 export default defineComponent( {
-	name: "AbyssRoom",
-	template,
-	components: {
-		SectionTitle,
-		CharacterItem
-	},
+	name: "Room",
 	props: {
-		roomData: Object
+		data: {
+			type: Object,
+			default: () => ( {
+				index: 0,
+				battles: []
+			} )
+		}
 	},
+	template,
 	setup( props ) {
+		const data = props.data;
+		
+		/* 是否为空数据 */
+		const isEmpty = computed( () => !data?.battles || !data?.battles.length );
+		
+		/* 获取当前时间 */
 		const stamp2date = computed( () => {
-			const date = new Date( parseInt( props.roomData.battles[0].timestamp ) * 1000 );
+			if ( isEmpty.value ) return "";
+			const date = new Date( parseInt( props.data.battles[0].timestamp ) * 1000 );
 			return date.toLocaleDateString().replace( /\//g, "-" ) + " " + date.toTimeString().split( " " )[0];
 		} );
 		
+		/* 获取角色小头 */
+		const getSideIcon = code => `https://adachi-bot.oss-cn-beijing.aliyuncs.com/Version2/sides/${ code }.png`;
+		
 		return {
-			stamp2date
-		}
+			isEmpty,
+			stamp2date,
+			getSideIcon
+		};
 	}
-} );
+} )

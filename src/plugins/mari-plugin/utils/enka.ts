@@ -6,6 +6,7 @@
  */
 import * as ApiType from "#mari-plugin/types";
 import { artifactId, attrIcon, characterId } from "#mari-plugin/init";
+import { getAttrScore } from "#mari-plugin/module/attr-score";
 
 /**
  * @interface
@@ -234,12 +235,9 @@ export class EnKa {
 	}
 	
 	/* 获取圣遗物信息 */
-	private getArtifact( data: Array<ApiType.EnKaEquip> ): { list: Array<ApiType.Artifact | {}>, effects: Array<ApiType.Effect> } {
+	private getArtifact( data: Array<ApiType.EnKaEquip> ): { list: Array<ApiType.Artifact | {}> } {
 		/* 圣遗物属性对象 */
 		const ret: Array<ApiType.Artifact | {}> = new Array( 5 ).fill( {} );
-		
-		/* 统计圣遗物套装 */
-		const tmpSetBucket: Record<string, any> = {};
 		
 		/* 过滤武器对象 */
 		const reliquaryData = <ApiType.EnKaReliquaryEquip[]>data.filter( d => d.flat.itemType !== "ITEM_WEAPON" );
@@ -266,32 +264,13 @@ export class EnKa {
 				rank: flat?.rankLevel || 1,
 				level: Math.min( 20, ( reliquary?.level || 1 ) - 1 ),
 				mainAttr: this.getArtInfo( flat.reliquaryMainstat ),
-				subAttr: sub ? sub.map( s => this.getArtInfo( s ) ) : []
+				subAttr: sub ? sub.map( s => this.getArtInfo( s ) ) : [],
+				score: getAttrScore( sub ? sub.map( s => this.getArtInfo( s ) ) : [] )
 			}
-			/* 存放圣遗物套装信息 */
-			const t = tmpSetBucket[artShirtName];
-			tmpSetBucket[artShirtName] = {
-				count: t?.count ? t.count + 1 : 1,
-				effect: t?.effect ?? artInfo.effect
-			}
+			console.log( ret );
 		}
 		
-		/* 套装属性对象 */
-		const effects: ApiType.Effect[] = [];
-		for ( const key of Object.keys( tmpSetBucket ) ) {
-			const { count, effect } = tmpSetBucket[key];
-			for ( const num in effect ) {
-				if ( count >= num ) {
-					effects.push( {
-						name: key,
-						count: parseInt( num ),
-						effect: effect[num]
-					} )
-				}
-			}
-		}
-		
-		return { list: ret, effects };
+		return { list: ret };
 	}
 	
 	/* 获取天赋信息 */

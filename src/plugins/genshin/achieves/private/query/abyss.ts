@@ -10,7 +10,6 @@ import { renderer } from "#genshin/init";
 /* 回复深渊单图消息 */
 async function singleAchieves( abyss: Abyss, uid: string, userID: string, {
 	redis,
-	logger,
 	sendMessage,
 	messageData
 }: InputParameter ) {
@@ -33,7 +32,7 @@ async function singleAchieves( abyss: Abyss, uid: string, userID: string, {
 	
 	
 	const res: RenderResult = await renderer.asLocalImage(
-		"/abyss-single.html", { userId: userID }
+		"/abyss.html", { userId: userID }
 	);
 	if ( res.code === "local" ) {
 		await sendMessage( { file_image: res.data } );

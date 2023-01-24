@@ -79,15 +79,15 @@ const template = `<div class="chara-detail" :class="{ none: data.element === 'no
 						</p>
 					</div>
 				</div>
-				<div class="artifact-effect card">
+				<div class="artifact-score card">
 					<i class="icon-flower bg-icon"></i>
-					<template v-if="data.artifact.effects?.length">
-						<p v-for="(e, eKey) of data.artifact.effects">
-							<span>{{ e.count }}件套：</span>
-							<span>{{ e.name }}</span>
+					<template  v-if="data.artifact.list.length > 0">
+						<p>
+							<span>圣遗物双暴评分</span>
+							<span>{{ totalScore }}</span>
 						</p>
 					</template>
-					<p v-else class="artifact-effect-empty">暂无圣遗物套装数据</p>
+					<p v-else class="data.artifact.list.length <= 0">暂无圣遗物评分数据</p>
 				</div>
 			</div>
 			<artifact v-for="(a, aKey) of artifacts" :position="aKey" :key="aKey" :data="a" />
@@ -199,6 +199,13 @@ export default defineComponent( {
 			return `https://mari-plugin.oss-cn-beijing.aliyuncs.com/image/character/${ data.id }/talent_${ skillKey }.png`
 		}
 		
+		/* 计算圣遗物总得评分 */
+		let score = 0;
+		data.artifact.list.forEach( value => {
+			score += value.score;
+		} );
+		const totalScore = score.toFixed( 2 );
+		
 		return {
 			data,
 			artifacts,
@@ -209,7 +216,8 @@ export default defineComponent( {
 			skills,
 			weaponIcon,
 			getTalentIcon,
-			getSkillIcon
+			getSkillIcon,
+			totalScore
 		}
 	}
 } );

@@ -77,7 +77,7 @@ export interface Avatar {
 	weapon: Weapon;
 	artifact: {
 		list: ( Artifact | {} )[];
-		effects: Effect[];
+		//后续添加其他属性
 	};
 	talent: number;
 	skill: Skill;
@@ -93,6 +93,7 @@ export interface Avatar {
  * @level 等级
  * @mainAttr 主属性信息
  * @subAttr 副属性信息组
+ * @score 圣遗物评分
  */
 export interface Artifact {
 	shirtId: string;
@@ -102,6 +103,7 @@ export interface Artifact {
 	level: number;
 	mainAttr: ArtAttr;
 	subAttr: ArtAttr[];
+	score: number;
 }
 
 /**

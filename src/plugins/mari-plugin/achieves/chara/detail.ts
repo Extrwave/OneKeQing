@@ -9,6 +9,7 @@ import { getUID, isAt } from "#mari-plugin/utils/message";
 import { getPrivateAccount } from "@plugins/genshin/utils/private";
 import { Private } from "@plugins/genshin/module/private/main";
 import { getMemberAvatar } from "@modules/utils/account";
+import { getAttrScore } from "#mari-plugin/module/attr-score";
 
 export async function main( { sendMessage, messageData, redis, logger }: InputParameter ): Promise<void> {
 	const msg: string = messageData.msg.content;
@@ -100,14 +101,14 @@ export async function main( { sendMessage, messageData, redis, logger }: InputPa
 	
 	/* 获取所选角色属性 */
 	const element = typeData.character[realName] === "!any!" ? "none" : typeData.character[realName];
-	
 	const avatar = isStranger ? "" : await getMemberAvatar( target );
+	
 	await redis.setString( `mari-plugin.chara-detail-${ uid }`, JSON.stringify( {
 		uid,
 		avatar,
 		username: detail.nickname,
 		element,
-		...currentChara
+		...currentChara,
 	} ) );
 	const res: RenderResult = await renderer.asLocalImage(
 		"/chara-detail.html", { uid: uid } );

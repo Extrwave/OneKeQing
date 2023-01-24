@@ -1,62 +1,49 @@
-const template = `<div v-if="showData" class="overview">
-	<ul class="info">
-		<li>最深抵达： {{ data.maxFloor }}</li>
-		<li>挑战次数： {{ data.totalBattleTimes }}</li>
-		<li>
-			<img class="star-img" src="https://adachi-bot.oss-cn-beijing.aliyuncs.com/Version2/abyss/star.png" alt="ERROR"/>
-			<span class="star-num">{{ data.totalStar }}</span>
+const template = `
+	<SectionTitle>战斗数据</SectionTitle>
+	<ul class="overview">
+		<li v-for="(d ,dKey) of formatData" :key="dKey">
+			<div class="battle-char-box" :class="d.className">
+				<img :src="d.avatarIcon" alt="ERROR">
+			</div>
+			<p>{{ d.label }}</p>
+			<p>{{ d.value }}</p>
 		</li>
-	</ul>
-	<div class="reveal">
-		<SectionTitle>出战次数</SectionTitle>
-		<div class="character-list">
-			<CharacterItem v-for="(char, index) in reveals" :key="index" class="character-item" :char="char" type="reveal"/>
-		</div>
-	</div>
-	<div class="battle-data">
-		<SectionTitle>战斗数据</SectionTitle>
-		<ul class="data-list">
-			<li v-for="key of Object.keys(dataList)" :key="key">
-				<span>{{key}}: {{dataList[key].value}}</span>
-				<img :src="dataList[key].avatarIcon" alt="ERROR" />
-			</li>
-		</ul>
-	</div>
-</div>
-<div v-else class="no-data">
-	<p>暂无挑战数据</p>
-</div>
-`;
+	</ul>`;
 
-import { abyssDataParser } from "../../public/js/abyss-data-parser.js"
 import SectionTitle from "./section-title.js";
-import CharacterItem from "./character-item.js";
 
 const { defineComponent } = Vue;
 
 export default defineComponent( {
-	name: "AbyssOverview",
-	template,
+	name: "Overview",
 	components: {
-		SectionTitle,
-		CharacterItem
+		SectionTitle
 	},
 	props: {
-		data: Object
+		data: {
+			type: Array,
+			default: () => []
+		}
 	},
-	setup( { data } ) {
-		const parsed = abyssDataParser( data );
+	template,
+	setup( props ) {
+		const data = props.data;
 		
-		const reveals = parsed.reveals.map( ( el ) => {
-			return {
-				...el,
-				icon: el.avatarIcon
-			};
-		} );
+		const formatData = [];
+		
+		for ( const dKey in data ) {
+			const d = data[dKey];
+			if ( !d ) continue;
+			formatData.push( {
+				...d,
+				label: dKey,
+				avatarIcon: `https://adachi-bot.oss-cn-beijing.aliyuncs.com/Version2/thumb/character/${ d.name }.png`,
+				className: `rarity-${ d.rarity }`
+			} );
+		}
 		
 		return {
-			...parsed,
-			reveals
-		}
+			formatData
+		};
 	}
-} );
+} )

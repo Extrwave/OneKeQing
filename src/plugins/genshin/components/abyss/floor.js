@@ -1,30 +1,43 @@
 const template = `<div class="floor">
-	<p class="floor-number">{{ floor }}</p>
-	<main>
-		<template v-for="r in 3" :key="r">
-			<AbyssRoom v-if="data.data.levels[r - 1]" class="room-item" :roomData="data.data.levels[r - 1]" :floor="floor"/>
-		</template>
-	</main>
+	<header class="floor-title">第{{ data.index }}层</header>
+	<section class="floor-room-list">
+		<Room v-for="(l, lKey) of levels" :key="lKey" :data="l"></Room>
+	</section>
 </div>`;
 
-import AbyssRoom from "./room.js";
+import Room from "./room.js"
 
-const { defineComponent } = Vue;
+const { defineComponent, computed } = Vue;
 
 export default defineComponent( {
-	name: "AbyssFloor",
-	template,
+	name: "Floor",
 	components: {
-		AbyssRoom
+		Room
 	},
 	props: {
-		data: Object
+		data: {
+			type: Object,
+			default: () => ( {
+				index: 0,
+				levels: []
+			} )
+		}
 	},
-	setup( { data } ) {
-		const floor = parseInt( data.floor );
+	template,
+	setup( props ) {
+		const data = props.data;
 		
+		/* 获取三间数据，无数据使用默认数据填充 */
+		const levels = new Array( 3 ).fill( '' ).map( ( fake, lKey ) => {
+			const index = lKey + 1;
+			const level = data.levels?.find( f => f.index === index );
+			return level || {
+				index,
+				battles: []
+			}
+		} )
 		return {
-			floor
+			levels
 		}
 	}
-} );
+} )
