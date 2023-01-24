@@ -58,7 +58,7 @@ export async function charaDetailPromise( uid: number, self: boolean, sendMessag
 		}
 		
 		if ( !data?.playerInfo ) {
-			throw ErrorMsg.FORM_MESSAGE + "未能成功获取到数据，请重试";
+			throw ErrorMsg.FORM_MESSAGE + "未能成功获取到数据，请重试\n" + data;
 		}
 		
 		await bot.redis.setString( dbKeyTimeout, new Date().getTime() );

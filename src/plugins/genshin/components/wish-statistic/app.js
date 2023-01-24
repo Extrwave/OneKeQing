@@ -21,7 +21,7 @@ const template =
             <StatisticItem v-for="el in weapon" :data="el"/>
         </div>
     </div>
-    <p class="author">@Copyright 一碗牛杂</p>
+    <p class="author">频道BOT:&nbsp;&nbsp;一碗牛杂</p>
 </div>`;
 
 import { getFullDate, parseURL, request } from "../../public/js/src.js";

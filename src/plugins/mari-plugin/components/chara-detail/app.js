@@ -11,12 +11,12 @@ const template = `<div class="chara-detail" :class="{ none: data.element === 'no
 			</div>
 		</div>
 		<div class="avatar-info">
-			<p>
+			<div>
 				<span class="avatar-name">{{ data.name }}</span>
-				<p class="level-info">Lv{{ data.level }}</p>
-				<p class="talent-info">{{ data.talent }}命</p>
-			</p>
-			<p class="fetter-info">好感度等级：{{ data.fetter }}</p>
+				<span class="level-info">Lv{{ data.level }}</span>
+				<span class="talent-info">{{ data.talent }}命</span>
+				<div class="fetter-info">好感度等级：{{ data.fetter }}</div>
+			</div>
 		</div>
 		<div class="base-info card">
 			<div v-for="(a, aKey) of overview" :key="aKey" class="list-item">
@@ -93,7 +93,7 @@ const template = `<div class="chara-detail" :class="{ none: data.element === 'no
 			<artifact v-for="(a, aKey) of artifacts" :position="aKey" :key="aKey" :data="a" />
 		</div>
 	</div>
-	<div class="author">@Copyright 一碗牛杂</div>
+	<p class="author">频道BOT:&nbsp;&nbsp;一碗牛杂</p>
 </div>`;
 
 import { request, parseURL } from "../../public/js/src.js";

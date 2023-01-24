@@ -26,7 +26,7 @@ const template = `<div class="help">
 		</section>
 	</main>
 	<footer>
-		<p class="sign">@Copyright 一碗牛杂</p>
+		<p class="sign">频道BOT:&nbsp;&nbsp;一碗牛杂</p>
 	</footer>
 </div>`
 

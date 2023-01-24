@@ -28,7 +28,7 @@ export async function getCharaDetail( origin: string, uid: number ): Promise<EnK
 	
 	const result: Response = await fetch( charaDetailApi, {
 		headers: {
-			"User-Agent": `mari-plugin/1.0`
+			"User-Agent": `Adachi-GBOT`
 		}
 	} );
 	return await result.json();

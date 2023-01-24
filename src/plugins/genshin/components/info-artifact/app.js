@@ -20,7 +20,7 @@ const template = `<div class="info-artifact">
 			<p class="access">获取途径: {{ access }}</p>
 		</div>
 	</main>
-	<footer class="author">@Copyright 一碗牛杂</footer>
+	<footer class="author">频道BOT:&nbsp;&nbsp;一碗牛杂</footer>
 </div>`;
 
 import { parseURL, request } from "../../public/js/src.js";

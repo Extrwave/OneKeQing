@@ -26,7 +26,7 @@ const template = `<div class="daily-event" :class="{ hidden: !showEvent }">
 				<p v-else class="event-empty">暂无举办中的活动</p>
 			</div>
 		</div>
-		<p v-else class="author">@Copyright 一碗牛杂</p>
+		<p v-else class="author">频道BOT:&nbsp;&nbsp;一碗牛杂</p>
 	</div>
 </div>`
 

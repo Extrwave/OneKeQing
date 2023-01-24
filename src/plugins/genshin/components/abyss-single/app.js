@@ -32,7 +32,7 @@ const template = `<div class="abyss-single">
 		</div>
 	</main>
 	<footer>
-		<p class="author">@Copyright 一碗牛杂</p>
+		<p class="author">频道BOT:&nbsp;&nbsp;一碗牛杂</p>
 	</footer>
 </div>`;
 

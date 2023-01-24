@@ -17,7 +17,7 @@ const template = `<div class="info-base">
 			<slot></slot>
 		</div>
 	</main>
-	<footer class="author">@Copyright 一碗牛杂</footer>
+	<footer class="author">频道BOT:&nbsp;&nbsp;一碗牛杂</footer>
 </div>`;
 
 import { infoDataParser } from "../../public/js/info-data-parser.js";

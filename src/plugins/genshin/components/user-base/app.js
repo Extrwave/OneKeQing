@@ -63,7 +63,7 @@ const template = `
 		<p v-if="!showAvatars" class="empty-avatar-tip">tips：请前往米游社公开展示「角色详情数据」来展示所持有角色</p>
 	</main>
 	<footer>
-		<p class="sign">@Copyright 一碗牛杂</p>
+		<p class="sign">频道BOT:&nbsp;&nbsp;一碗牛杂</p>
 	</footer>
 </div>`;
 

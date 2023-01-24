@@ -9,7 +9,7 @@ const template = `<div class="note">
 		</p>
 		<NoteExpedition v-for="e in data.expeditions" :data="e"/>
 	</div>
-	<p class="author">@Copyright 一碗牛杂</p>
+	<p class="author">频道BOT:&nbsp;&nbsp;一碗牛杂</p>
 </div>`;
 
 import { parseURL, request } from "../../public/js/src.js";

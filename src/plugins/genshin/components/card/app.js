@@ -55,7 +55,7 @@ const template = `<div class="card-base">
 					:type="urlParams.style"
 				/>
 			</div>
-			<p class="sign">@Copyright 一碗牛杂</p>
+			<p class="sign">频道BOT:&nbsp;&nbsp;一碗牛杂</p>
 		</section>
 	</main>
 </div>`;

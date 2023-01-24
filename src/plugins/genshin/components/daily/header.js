@@ -5,7 +5,7 @@ const template = `<header class="header">
 			<p>{{ title }}</p>
 			<p v-if="subState">（用户 {{ user }} 的订阅数据）</p>
 		</div>
-		<span v-if="showEvent" class="author">@Copyright 一碗牛杂</span>
+		<span v-if="showEvent" class="author">频道BOT:&nbsp;&nbsp;一碗牛杂</span>
 	</div>
 </header>
 `
