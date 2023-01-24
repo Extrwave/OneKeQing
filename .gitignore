@@ -1,0 +1,10 @@
+/config/
+/data/
+/database/
+/node_modules/
+/.idea/
+/.vscode/
+/.history/
+/logs/
+/src/plugins/genshin/data/
+/src/data/
