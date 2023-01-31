@@ -86,12 +86,8 @@ export async function init( { logger, file, renderer: botRender, refresh }: BOT 
 	);
 	createServer( port, bot.logger );
 	return {
-		pluginName: "genshin_draw_analysis",
-		cfgList: [ draw_analysis_history, draw_analysis, export_gacha_log, import_gacha_log, del_gacha_log ],
-		repo: {
-			owner: "Extrwave",
-			repoName: "Adachi-Plugin",
-			ref: "genshin_draw_analysis"
-		}
+		pluginEName: "genshin_draw_analysis",
+		pluginCName: "抽卡分析",
+		cfgList: [ draw_analysis_history, draw_analysis, export_gacha_log, import_gacha_log, del_gacha_log ]
 	};
 }

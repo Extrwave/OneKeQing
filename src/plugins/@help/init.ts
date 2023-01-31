@@ -51,7 +51,8 @@ export async function init( bot: BOT ): Promise<PluginSetting> {
 	}
 	
 	return {
-		pluginName: "@help",
+		pluginEName: "@help",
+		pluginCName: "帮助",
 		cfgList: [ help, sponsor, push ]
 	};
 }

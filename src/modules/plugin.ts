@@ -15,27 +15,19 @@ export type PluginSubSetting = {
 }
 
 export interface PluginSetting {
-	pluginName: string;
+	pluginEName: string;
 	cfgList: cmd.ConfigType[];
 	redisKeys?: Object;
-	repo?: string | {
-		owner: string;// 仓库拥有者名称
-		repoName: string;// 仓库名称
-		ref?: string;// 分支名称
-	}; // 设置为非必须兼容低版本插件
+	pluginCName?: string;
 }
 
 export const PluginReSubs: Record<string, PluginSubSetting> = {};
 
 export const PluginRawConfigs: Record<string, cmd.ConfigType[]> = {};
 
-export const PluginUpgradeServices: Record<string, string> = {};
-
 export const PluginRedisKeys: Record<string, Object> = {};
 
-// 不支持热更新的插件集合，这些插件不会被提示不支持热更新。
-const not_support_upgrade_plugins: string[] = [ "@help", "@management" ];
-
+export const PluginCNames: Record<string, string> = {};
 
 export default class Plugin {
 	public static async load( bot: BOT ): Promise<BasicConfig[]> {
@@ -47,27 +39,17 @@ export default class Plugin {
 			const path: string = bot.file.getFilePath( `${ plugin }/init`, "plugin" );
 			const { init, subInfo } = require( path );
 			try {
-				const { pluginName, cfgList, repo, redisKeys }: PluginSetting = await init( bot );
+				const { pluginEName, cfgList, redisKeys, pluginCName }: PluginSetting = await init( bot );
 				if ( subInfo ) {
 					const { reSub, subs }: PluginSubSetting = await subInfo( bot );
-					PluginReSubs[pluginName] = { reSub, subs };
+					PluginReSubs[pluginEName] = { reSub, subs };
 				}
-				const commands = Plugin.parse( bot, cfgList, pluginName );
-				PluginRawConfigs[pluginName] = cfgList;
-				if ( !not_support_upgrade_plugins.includes( pluginName ) ) {
-					if ( repo ) {
-						if ( typeof repo === "string" ) {
-							PluginUpgradeServices[pluginName] = repo ? `https://api.github.com/repos/${ repo }/commits` : "";
-						} else {
-							PluginUpgradeServices[pluginName] = repo.ref ? `https://api.github.com/repos/${ repo.owner }/${ repo.repoName }/commits/${ repo.ref }` : `https://api.github.com/repos/${ repo.owner }/${ repo.repoName }/commits`;
-						}
-					} else {
-						PluginUpgradeServices[pluginName] = "";
-					}
-				}
-				redisKeys ? PluginRedisKeys[pluginName] = redisKeys : "";
+				const commands = Plugin.parse( bot, cfgList, pluginEName );
+				PluginRawConfigs[pluginEName] = cfgList;
+				PluginRedisKeys[pluginEName] = redisKeys ? redisKeys : "";
+				PluginCNames[pluginEName] = pluginCName ? pluginCName : pluginEName;
 				registerCmd.push( ...commands );
-				bot.logger.debug( `[ ${ pluginName } ]插件加载完成` );
+				bot.logger.debug( `[ ${ pluginEName } ]插件加载完成` );
 			} catch ( error ) {
 				bot.logger.error( `插件加载异常: ${ <string>error }` );
 			}

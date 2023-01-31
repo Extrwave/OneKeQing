@@ -29,11 +29,7 @@ const panelUpdate: OrderConfig = {
 };
 
 export default <PluginSetting>{
-	pluginName: "mari-plugin",
-	cfgList: [ panelUpdate, panelDetail ],
-	repo: {
-		owner: "Extrwave",
-		repoName: "Adachi-Plugin",
-		ref: "mari-plugin"
-	}
+	pluginEName: "mari-plugin",
+	pluginCName: "面板",
+	cfgList: [ panelUpdate, panelDetail ]
 };

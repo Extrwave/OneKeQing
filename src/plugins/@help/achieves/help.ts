@@ -8,6 +8,7 @@ import { renderer } from "../init";
 import { MessageScope } from "@modules/utils/message";
 import { AuthLevel } from "@modules/management/auth";
 import { __RedisKey } from "@modules/redis";
+import { PluginCNames } from "@modules/plugin";
 
 
 interface HelpCommand {
@@ -65,7 +66,7 @@ async function cardStyle( i: InputParameter, commands: BasicConfig[], version: s
 			body: cmd.getFollow(),
 			cmdKey: cmd.cmdKey,
 			detail: cmd.detail,
-			pluginName: cmd.pluginName
+			pluginName: PluginCNames[cmd.pluginName]
 		};
 	} );
 	

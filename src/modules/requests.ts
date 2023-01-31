@@ -1,3 +1,4 @@
+import bot from "ROOT";
 import request, { Response } from "request";
 
 export interface IParams {
@@ -15,7 +16,7 @@ export default async function requests( options: any ): Promise<any> {
 		} );
 	} )
 		.catch( ( reason: any ) => {
-			console.log( reason );
+			bot.logger.error( reason );
 		} );
 }
 
@@ -30,7 +31,7 @@ export async function requestResponse( options: any ): Promise<Response> {
 		} );
 	} )
 		.catch( ( reason: any ) => {
-			console.log( reason );
+			bot.logger.error( reason );
 		} );
 }
 

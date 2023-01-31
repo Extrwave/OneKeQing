@@ -362,7 +362,8 @@ const privateCommit: OrderConfig = {
 };
 
 export default <PluginSetting>{
-	pluginName: "genshin",
+	pluginEName: "genshin",
+	pluginCName: "原神主体",
 	cfgList: [
 		bind, today, guide, information, alias, domain,
 		getArtifact, impArtifact, wish, choosePool,
@@ -373,10 +374,5 @@ export default <PluginSetting>{
 		privateToggleNote, privateNoteEvent, privateNowNote,
 		privateAbyssQuery, privateLedger, privateCharQuery,
 		privateSign, privateCommit, alias, daily
-	],
-	repo: {
-		owner: "Extrwave",
-		repoName: "Adachi-Plugin",
-		ref: "genshin"
-	}
+	]
 };

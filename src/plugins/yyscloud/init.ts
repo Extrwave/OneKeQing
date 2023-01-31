@@ -86,12 +86,8 @@ async function exitGuildClean( userId: string ) {
 export async function init(): Promise<PluginSetting> {
 	await autoSign();
 	return {
-		pluginName: "yyscloud",
-		cfgList: [ signEnable, signConfirm, signDisable, signRemedy ],
-		repo: {
-			owner: "Extrwave",
-			repoName: "Adachi-Plugin",
-			ref: "yyscloud"
-		}
+		pluginEName: "yyscloud",
+		pluginCName: "云原神",
+		cfgList: [ signEnable, signConfirm, signDisable, signRemedy ]
 	};
 }

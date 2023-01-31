@@ -22,12 +22,8 @@ const cos: OrderConfig = {
 // 不可 default 导出，函数名固定
 export async function init(): Promise<PluginSetting> {
 	return {
-		pluginName: "coser-image",
-		cfgList: [ cos ],
-		repo: {
-			owner: "Extrwave",
-			repoName: "Adachi-Plugin",
-			ref: "coser-image"
-		}
+		pluginEName: "coser-image",
+		pluginCName: "来点COS",
+		cfgList: [ cos ]
 	};
 }
