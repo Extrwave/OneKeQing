@@ -74,7 +74,7 @@ const announce: OrderConfig = {
 const callMaster: OrderConfig = {
 	type: "order",
 	cmdKey: "adachi-leave-message-call",
-	desc: [ "给我留言", "" ],
+	desc: [ "反馈", "" ],
 	headers: [ "call" ],
 	regexps: [ "(.+\\s?)*" ],
 	main: "call",
@@ -84,12 +84,12 @@ const callMaster: OrderConfig = {
 const replyUser: OrderConfig = {
 	type: "order",
 	cmdKey: "adachi-leave-message-reply",
-	desc: [ "回复留言", "" ],
+	desc: [ "回应", "" ],
 	headers: [ "reply" ],
 	regexps: [ "(.+\\s?)*" ],
 	main: "call",
 	auth: AuthLevel.Master,
-	detail: "BOT开发者回复用户消息 ~ "
+	detail: "BOT开发者回应用户消息 ~ "
 }
 
 const setUseChannel: SwitchConfig = {
@@ -122,7 +122,7 @@ const cancelUseChannel: OrderConfig = {
 const upgrade: OrderConfig = {
 	type: "order",
 	cmdKey: "adachi-hot-update",
-	desc: [ "更新bot", "(-f)" ],
+	desc: [ "更新", "(-f)" ],
 	headers: [ "update" ],
 	regexps: [ "(-f)?" ],
 	auth: AuthLevel.Master,
@@ -136,7 +136,7 @@ const upgrade: OrderConfig = {
 const restart: OrderConfig = {
 	type: "order",
 	cmdKey: "adachi-restart",
-	desc: [ "重启BOT", "" ],
+	desc: [ "重启", "" ],
 	headers: [ "restart" ],
 	regexps: [],
 	auth: AuthLevel.Master,

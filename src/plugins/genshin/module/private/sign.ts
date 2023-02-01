@@ -5,7 +5,7 @@ import { Award, SignInInfo } from "#genshin/types";
 import { scheduleJob, Job } from "node-schedule";
 import { sendMessage } from "#genshin/utils/private";
 import { randomInt } from "#genshin/utils/random";
-import { ErrorMsg, signInInfoPromise, signInResultPromise, SinInAwardPromise } from "#genshin/utils/promise";
+import { signInInfoPromise, signInResultPromise, SinInAwardPromise } from "#genshin/utils/promise";
 import { EmbedMsg } from "@modules/utils/embed";
 
 scheduleJob( "0 5 0 * * *", async () => {

@@ -27,7 +27,7 @@ const sponsor: OrderConfig = {
 const push: OrderConfig = {
 	type: "order",
 	cmdKey: "adachi-push-user",
-	desc: [ "推送一条消息", "" ],
+	desc: [ "回复我", "" ],
 	headers: [ "push" ],
 	regexps: [],
 	main: "achieves/push",

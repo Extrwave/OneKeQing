@@ -313,7 +313,7 @@ const privateCharQuery: OrderConfig = {
 const privateToggleSign: OrderConfig = {
 	type: "order",
 	cmdKey: "silvery-star-private-toggle-sign",
-	desc: [ "签到开关", "[序号]" ],
+	desc: [ "开关签到", "[序号]" ],
 	headers: [ "signin" ],
 	regexps: [ "(\\d+)?" ],
 	main: "achieves/private/sign-in/main",
@@ -333,7 +333,7 @@ const privateSign: OrderConfig = {
 const privateToggleNote: OrderConfig = {
 	type: "order",
 	cmdKey: "silvery-star-private-toggle-note",
-	desc: [ "树脂提醒开关", "(序号)" ],
+	desc: [ "开关树脂提醒", "(序号)" ],
 	headers: [ "tnote" ],
 	regexps: [ "(\\d+)?" ],
 	main: "achieves/private/note/toggle",
@@ -357,6 +357,7 @@ const privateCommit: OrderConfig = {
 	desc: [ "贡献Cookie", "" ],
 	headers: [ "commit" ],
 	regexps: [],
+	ignoreCase: true,
 	main: "achieves/private/commit",
 	detail: "贡献授权到BOT的公共查询Cookie列表，不会泄露任何信息"
 };

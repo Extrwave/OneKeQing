@@ -9,7 +9,7 @@ import { OrderConfig } from "@modules/command";
 const cos: OrderConfig = {
 	type: "order",
 	cmdKey: "extr-wave-coser-image",
-	desc: [ "来点图片", "(ani | more)" ],
+	desc: [ "来图", "(ani | more)" ],
 	headers: [ "cos" ],
 	regexps: [ "(more|ani)?" ],
 	main: "achieves/image",

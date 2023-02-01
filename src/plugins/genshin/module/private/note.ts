@@ -99,7 +99,7 @@ export class NoteService implements Service {
 	
 	private scheduleJobOn(): void {
 		this.refreshPushEvent().catch( this.feedbackCatch );
-		this.globalEvent = scheduleJob( "0 */55 * * * *", () => {
+		this.globalEvent = scheduleJob( "0 5 */3 * * *", () => {
 			this.refreshPushEvent().catch( this.feedbackCatch );
 		} );
 	}
@@ -329,6 +329,4 @@ export class NoteService implements Service {
 			this.events.push( { type: "expedition", job } );
 		}
 	}
-	
-	
 }
