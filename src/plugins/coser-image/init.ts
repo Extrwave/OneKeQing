@@ -5,6 +5,7 @@ CreateTime: 2022/6/28
 
 import { PluginSetting } from "@modules/plugin";
 import { OrderConfig } from "@modules/command";
+import { AuthLevel } from "@modules/management/auth";
 
 const cos: OrderConfig = {
 	type: "order",
@@ -19,11 +20,41 @@ const cos: OrderConfig = {
 		"ani 返回一张动漫图片\n"
 }
 
+const upClothes: OrderConfig = {
+	type: "order",
+	cmdKey: "extr-wave-coser-up-clothes",
+	desc: [ "添加衣装", "" ],
+	headers: [ "upClothes" ],
+	regexps: [],
+	auth: AuthLevel.Manager,
+	main: "achieves/wardrobe"
+}
+
+const delClothes: OrderConfig = {
+	type: "order",
+	cmdKey: "extr-wave-coser-del-clothes",
+	desc: [ "删除衣装", "" ],
+	headers: [ "delClothes" ],
+	regexps: [],
+	auth: AuthLevel.Manager,
+	main: "achieves/wardrobe"
+}
+
+const getClothes: OrderConfig = {
+	type: "order",
+	cmdKey: "extr-wave-coser-get-clothes",
+	desc: [ "换一身", "" ],
+	headers: [ "chaClothes" ],
+	regexps: [],
+	display: false,
+	main: "achieves/wardrobe"
+}
+
 // 不可 default 导出，函数名固定
 export async function init(): Promise<PluginSetting> {
 	return {
 		pluginEName: "coser-image",
 		pluginCName: "来点COS",
-		cfgList: [ cos ]
+		cfgList: [ cos, upClothes, delClothes, getClothes ]
 	};
 }

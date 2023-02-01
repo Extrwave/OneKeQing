@@ -80,6 +80,8 @@ interface DatabaseMethod {
 	delSetMember( key: string, ...value: any[] ): Promise<void>;
 	
 	existSetMember( key: string, value: any ): Promise<boolean>;
+	
+	getRandomSetMember( key: string, count: number ): Promise<string[]>;
 }
 
 export default class Redis implements DatabaseMethod {
@@ -309,4 +311,17 @@ export default class Redis implements DatabaseMethod {
 			} );
 		} );
 	}
+	
+	public async getRandomSetMember( key: string, count: number = 1 ): Promise<string[]> {
+		return new Promise( ( resolve, reject ) => {
+			this.client.SRANDMEMBER( key, count, ( error: Error | null, data: string[] ) => {
+				if ( error !== null ) {
+					reject( error );
+				} else {
+					resolve( data || [] );
+				}
+			} )
+		} );
+	}
+	
 }
