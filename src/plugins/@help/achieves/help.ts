@@ -10,6 +10,7 @@ import { __RedisKey } from "@modules/redis";
 import { PluginCNames } from "@modules/plugin";
 import requests from "@modules/requests";
 import { randomInt } from "#genshin/utils/random";
+import { getRandomBackground } from "@modules/utils/drive";
 
 
 interface HelpCommand {
@@ -76,7 +77,7 @@ async function cardStyle( i: InputParameter, commands: BasicConfig[], version: s
 		cmdData[cmd.pluginName] = cmdData[cmd.pluginName] ? [ ...cmdData[cmd.pluginName], cmd ] : [ cmd ];
 	}
 	
-	const topBg = await getTopBg();
+	const topBg = await getRandomBackground( 1 );
 	
 	await i.redis.setString( __RedisKey.HELP_DATA, JSON.stringify( {
 		version: version,
@@ -112,31 +113,6 @@ async function getHelpMessage(
 		default:
 			i.logger.error( "helpMessageStyle设置错误" )
 	}
-}
-
-/* 获取随机背景图 */
-export function getTopBg() {
-	const baseUrl = "https://drive.ethreal.cn";
-	const baseAddr = baseUrl + "/d";
-	const basePath = "/OneKeQing/HelpTopBG";
-	
-	return new Promise( ( resolve, reject ) => {
-		requests( {
-			method: "POST",
-			url: baseUrl + "/api/fs/list",
-			json: true,
-			body: {
-				path: basePath,
-				per_page: 200
-			}
-		} ).then( result => {
-			const ran = randomInt( 0, result.data.content.length );
-			const fileAddr = basePath + "/" + result.data.content[ran].name;
-			resolve( baseAddr + fileAddr );
-		} ).catch( reason => {
-			resolve( baseAddr + basePath + "/1.png" );
-		} )
-	} )
 }
 
 export async function main( i: InputParameter ): Promise<void> {

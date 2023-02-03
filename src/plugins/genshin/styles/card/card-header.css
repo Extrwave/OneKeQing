@@ -3,7 +3,7 @@
 	display: flex;
 	justify-content: space-between;
 	align-items: flex-end;
-	padding: 80px 80px 50px;
+	padding: 80px 80px 100px;
 	border-radius: 24px 24px 0 0;
 	background: url("https://cdn.ethreal.cn/genshin/scenery/3.png") center no-repeat;
 	background-size: cover;

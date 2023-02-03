@@ -107,7 +107,7 @@ export async function detailInfoPromise(
 		homes: JSON.stringify( data.homes ),
 		allHomes: JSON.stringify( allHomes )
 	} );
-	bot.redis.setTimeout( `silvery-star.card-data-${ uid }`, 3600 );
+	await bot.redis.setTimeout( `silvery-star.card-data-${ uid }`, 3600 );
 	bot.logger.info( `[UID ${ uid }] 查询成功，数据已缓存` );
 	
 	const charIDs: number[] = data.avatars.map( el => el.id );

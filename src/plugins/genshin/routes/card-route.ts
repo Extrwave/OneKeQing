@@ -1,6 +1,7 @@
 import express from "express";
 import bot from "ROOT";
 import { getMemberAvatar } from "@modules/utils/account";
+import { getRandomBackground } from "@modules/utils/drive";
 
 async function loadMysData( userID: string ): Promise<any> {
 	const uid: string = await bot.redis.getString( `silvery-star.user-querying-id-${ userID }` );
@@ -11,6 +12,7 @@ async function loadMysData( userID: string ): Promise<any> {
 	data.avatars = JSON.parse( data.avatars );
 	data.allHomes = data.allHomes ? JSON.parse( data.allHomes ) : [];
 	data.userAvatar = await getMemberAvatar( userID );
+	data.bg = await getRandomBackground( 2 );
 	return data;
 }
 
