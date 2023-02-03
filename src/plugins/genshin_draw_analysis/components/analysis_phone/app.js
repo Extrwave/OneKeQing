@@ -1,9 +1,9 @@
 const template = `<div class="main">
-	<div class="title">祈愿分析|UID{{uid}}</div>
+	<div class="title">祈愿分析|UID {{uid}}</div>
 	<div class="box">
             <BoxItem v-for="(val, key, index) in info" :data="val" :key="key"/>
     </div>
-	<div class="footer">Modify by Adachi-GBOT & lishengqunchn © lishengqun.com</div>
+	<div class="footer">频道BOT:&nbsp;&nbsp;一碗牛杂 & lishengqunchn</div>
 </div>`;
 
 const { defineComponent } = Vue;
