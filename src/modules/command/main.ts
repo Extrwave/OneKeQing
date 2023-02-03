@@ -85,16 +85,8 @@ export abstract class BasicConfig {
 	}
 	
 	protected static addLineFeedChar(
-		front: string, follow: string,
-		helpStyle: string
+		front: string, follow: string
 	): string {
-		const length: number = ( front + follow ).replace(
-			/[\u0391-\uFFE5]/g, "aa"
-		).length;
-		
-		if ( helpStyle === "xml" && length > 30 ) {
-			return front + "\n" + follow;
-		}
 		return front + " " + follow;
 	}
 	
@@ -120,7 +112,7 @@ export abstract class BasicConfig {
 
 export default class Command {
 	public privates: CommandList;
-	public groups: CommandList;
+	public guilds: CommandList;
 	public pUnionReg: Record<AuthLevel, RegExp>;
 	public gUnionReg: Record<AuthLevel, RegExp>;
 	public raws: ConfigType[] = [];
@@ -128,7 +120,7 @@ export default class Command {
 	
 	constructor( file: FileManagement ) {
 		this.privates = Command.initAuthObject();
-		this.groups = Command.initAuthObject();
+		this.guilds = Command.initAuthObject();
 		this.pUnionReg = Command.initAuthObject();
 		this.gUnionReg = Command.initAuthObject();
 		
@@ -146,7 +138,7 @@ export default class Command {
 	public async refresh(): Promise<string> {
 		try {
 			this.privates = Command.initAuthObject();
-			this.groups = Command.initAuthObject();
+			this.guilds = Command.initAuthObject();
 			this.pUnionReg = Command.initAuthObject();
 			this.gUnionReg = Command.initAuthObject();
 			
@@ -172,7 +164,7 @@ export default class Command {
 			this.raws.push( cmd.raw );
 			for ( let auth = cmd.auth; auth <= AuthLevel.Master; auth++ ) {
 				if ( cmd.scope & MessageScope.Guild ) {
-					this.groups[auth].push( cmd );
+					this.guilds[auth].push( cmd );
 				}
 				if ( cmd.scope & MessageScope.Private ) {
 					this.privates[auth].push( cmd );
@@ -182,7 +174,7 @@ export default class Command {
 		
 		for ( let auth = AuthLevel.Banned; auth <= AuthLevel.Master; auth++ ) {
 			this.pUnionReg[auth] = convertAllRegToUnion( <CommandType[]>this.privates[auth] );
-			this.gUnionReg[auth] = convertAllRegToUnion( <CommandType[]>this.groups[auth] );
+			this.gUnionReg[auth] = convertAllRegToUnion( <CommandType[]>this.guilds[auth] );
 		}
 		
 		function convertAllRegToUnion( cmdSet: CommandType[] ): RegExp {
@@ -233,10 +225,10 @@ export default class Command {
 		if ( scope === MessageScope.Private ) {
 			return this.privates[auth];
 		} else if ( scope === MessageScope.Guild ) {
-			return this.groups[auth];
+			return this.guilds[auth];
 		} else {
 			const configMap = new Map<string, BasicConfig>();
-			this.groups[auth].forEach( value => {
+			this.guilds[auth].forEach( value => {
 				configMap.set( value.cmdKey, value );
 			} )
 			this.privates[auth].forEach( value => {

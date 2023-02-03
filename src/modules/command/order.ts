@@ -100,7 +100,7 @@ export class Order extends BasicConfig {
 					/* 重组正则，判断是否参数不符合要求 */
 					content = content.replace( fogReg, "" );
 					for ( let params of this.regParam ) {
-						params = [pair.header, ...params];
+						params = [ pair.header, ...params ];
 						const paramReg = new RegExp( `^${ params.join( "\\s*?" ) }$` );
 						const matchParam = paramReg.test( pair.header + content );
 						if ( matchParam ) {
@@ -131,8 +131,7 @@ export class Order extends BasicConfig {
 	public getDesc(): string {
 		const follow = this.getFollow();
 		return Order.addLineFeedChar(
-			this.desc[0], follow,
-			bot.config.helpMessageStyle
+			this.desc[0], follow
 		);
 	}
 	

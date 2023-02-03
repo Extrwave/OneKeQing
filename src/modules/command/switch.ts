@@ -1,6 +1,5 @@
 import { BasicConfig, CommandInfo, Unmatch } from "./main";
 import BotConfig from "../config";
-import bot from "ROOT";
 import { escapeRegExp, trimStart } from "lodash";
 
 export interface SwitchMatchResult {
@@ -173,8 +172,7 @@ export class Switch extends BasicConfig {
 		const follow = this.getFollow();
 		
 		return Switch.addLineFeedChar(
-			this.desc[0], follow,
-			bot.config.helpMessageStyle
+			this.desc[0], follow
 		);
 	}
 }

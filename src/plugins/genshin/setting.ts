@@ -113,7 +113,7 @@ const alias: SwitchConfig = {
 	main: "achieves/alias",
 	auth: AuthLevel.Manager,
 	onKey: "add",
-	offKey: "rem",
+	offKey: "del",
 	detail: "本指令用于修改角色或武器名的别名\n" +
 		"如当你为「枫原万叶」设置别名「天帝」后\n" +
 		"使用角色信息、信息查询等功能时\n" +
@@ -129,7 +129,7 @@ const daily: SwitchConfig = {
 	regexp: [ "#{OPT}", "[\\w\\u4e00-\\u9fa5]+" ],
 	main: "achieves/daily",
 	onKey: "add",
-	offKey: "rem",
+	offKey: "del",
 	detail: "为自己添加/删除角色天赋/武器的突破材料以及当前进行中的活动订阅\n" +
 		"每天的 6:00~7:00 随机时间进行推送\n"
 };

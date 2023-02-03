@@ -22,7 +22,6 @@ export async function main(
 		messageData
 	}: InputParameter ): Promise<void> {
 	const match = <SwitchMatchResult>matchResult;
-	const isOn: boolean = match.isOn();
 	const guildId = messageData.msg.guild_id;
 	const operator = messageData.msg.author.id;
 	/* 获取@对象识别 */
@@ -39,7 +38,7 @@ export async function main(
 		return;
 	}
 	
-	if ( isOn ) {
+	if ( match.isOn() ) {
 		await auth.set( operator, target, guildId, AuthLevel.Manager );
 		await sendMessage( `用户 [ <@!${ target }> ] 已被设置为${ operator === config.master ? "全局" : "频道" }管理员` );
 	} else {

@@ -1,6 +1,6 @@
-import { Logger } from "log4js";
-import express from "express";
 import bot from "ROOT";
+import express from "express";
+import { Logger } from "log4js";
 import { __RedisKey } from "@modules/redis";
 
 const HelpRoute = express.Router().get( "/", async ( req, res ) => {
