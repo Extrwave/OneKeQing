@@ -6,9 +6,10 @@ import { getArkListMessage } from "@modules/utils/arks";
 import { RenderResult } from "@modules/renderer";
 import { renderer } from "../init";
 import { MessageScope } from "@modules/utils/message";
-import { AuthLevel } from "@modules/management/auth";
 import { __RedisKey } from "@modules/redis";
 import { PluginCNames } from "@modules/plugin";
+import requests from "@modules/requests";
+import { randomInt } from "#genshin/utils/random";
 
 
 interface HelpCommand {
@@ -75,9 +76,12 @@ async function cardStyle( i: InputParameter, commands: BasicConfig[], version: s
 		cmdData[cmd.pluginName] = cmdData[cmd.pluginName] ? [ ...cmdData[cmd.pluginName], cmd ] : [ cmd ];
 	}
 	
+	const topBg = await getTopBg();
+	
 	await i.redis.setString( __RedisKey.HELP_DATA, JSON.stringify( {
 		version: version,
-		commands: cmdData
+		commands: cmdData,
+		bg: topBg
 	} ) );
 	
 	const res: RenderResult = await renderer.asLocalImage(
@@ -110,6 +114,31 @@ async function getHelpMessage(
 	}
 }
 
+/* 获取随机背景图 */
+export function getTopBg() {
+	const baseUrl = "https://drive.ethreal.cn";
+	const baseAddr = baseUrl + "/d";
+	const basePath = "/OneKeQing/HelpTopBG";
+	
+	return new Promise( ( resolve, reject ) => {
+		requests( {
+			method: "POST",
+			url: baseUrl + "/api/fs/list",
+			json: true,
+			body: {
+				path: basePath,
+				per_page: 200
+			}
+		} ).then( result => {
+			const ran = randomInt( 0, result.data.content.length );
+			const fileAddr = basePath + "/" + result.data.content[ran].name;
+			resolve( baseAddr + fileAddr );
+		} ).catch( reason => {
+			resolve( baseAddr + basePath + "/1.png" );
+		} )
+	} )
+}
+
 export async function main( i: InputParameter ): Promise<void> {
 	
 	const version = getVersion( i.file );
@@ -120,10 +149,15 @@ export async function main( i: InputParameter ): Promise<void> {
 		return;
 	}
 	
+	const userId = i.messageData.msg.author.id;
+	const guilId = i.messageData.msg.src_guild_id ? i.messageData.msg.src_guild_id : i.messageData.msg.guild_id;
+	const auth = await i.auth.get( userId, guilId );
+	const scope = i.messageData.msg.direct_message ? MessageScope.Private : MessageScope.Guild;
+	
 	/* 使用图片帮助,默认获取全部指令 */
 	if ( i.config.helpMessageStyle === "card" ) {
 		const allCommands: BasicConfig[] = i.command
-			.get( AuthLevel.Master, MessageScope.Both )
+			.get( auth, scope )
 			.filter( el => el.display );
 		const res = await cardStyle( i, allCommands, version );
 		if ( res.code === "local" ) {

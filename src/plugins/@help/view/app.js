@@ -1,14 +1,15 @@
 const template = `<div class="help">
 	<header>
-		<img src="https://adachi-bot.oss-cn-beijing.aliyuncs.com/Version2/help/top-bg.png" alt="top-bg">
+		<div :style="topImageStyle" class="top-bg"/>
 		<div class="left-header">
 			<p>一碗牛杂</p>
 			<p>{{ model === "keys" ? "指令key值表" : "使用文档" }}</p>
+			<p v-if="data.detailCmd" class="desc">使用 {{ data.detailCmd }} + 指令序号 查看更多信息</p>
+			<p class="desc">[ ] 表示必填<br/>( ) 表示选填<br/>| 表示选择</p>
 		</div>
 		<div class="right-header">
 			<p class="version">官方频道：&nbsp; 枫叶丹</p>
-			<p v-if="data.detailCmd" class="desc">使用 {{ data.detailCmd }} + 指令序号 查看更多信息</p>
-			<p class="desc">[ ] 表示必填<br>( ) 表示选填<br>| 表示选择</p>
+			<img src="https://cdn.ethreal.cn/img/1675409783562-1675409784.png" alt="枫叶丹官频">
 		</div>
 	</header>
 	<main>
@@ -50,10 +51,22 @@ export default defineComponent( {
 		
 		const getListTitle = pluginName => pluginNameMap[pluginName] || `${ pluginName } 插件指令`;
 		
+		const topImageStyle = {
+			position: "absolute",
+			left: 0,
+			top: 0,
+			width: "100%",
+			height: "100%",
+			backgroundSize: "cover",
+			backgroundImage: `linear-gradient(to top, #f3f4f7, transparent), url(${ data.bg })`
+		};
+		
+		
 		return {
 			data,
 			model,
-			getListTitle
+			getListTitle,
+			topImageStyle
 		};
 	}
 } )
