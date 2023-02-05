@@ -18,7 +18,7 @@ export async function main(
 		auth,
 		matchResult,
 		logger,
-		config,
+		setting,
 		messageData
 	}: InputParameter ): Promise<void> {
 	const match = <SwitchMatchResult>matchResult;
@@ -40,9 +40,9 @@ export async function main(
 	
 	if ( match.isOn() ) {
 		await auth.set( operator, target, guildId, AuthLevel.Manager );
-		await sendMessage( `用户 [ <@!${ target }> ] 已被设置为${ operator === config.master ? "全局" : "频道" }管理员` );
+		await sendMessage( `用户 [ <@!${ target }> ] 已被设置为${ operator === setting.master ? "全局" : "频道" }管理员` );
 	} else {
 		await auth.set( operator, target, guildId, AuthLevel.User );
-		await sendMessage( `用户 [ <@!${ target }> ] 的${ operator === config.master ? "全局" : "频道" }管理员已取消` );
+		await sendMessage( `用户 [ <@!${ target }> ] 的${ operator === setting.master ? "全局" : "频道" }管理员已取消` );
 	}
 }

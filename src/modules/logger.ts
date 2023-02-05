@@ -1,4 +1,4 @@
-import BotConfig from "./config";
+import BotSetting from "./config";
 import { configure, addLayout, getLogger, Configuration, Appender, Logger } from "log4js";
 import { parseZone } from "moment";
 
@@ -10,7 +10,7 @@ export default class WebConfiguration {
 	private readonly logger: Logger;
 	private readonly tcpLoggerPort: number;
 	
-	constructor( config: BotConfig ) {
+	constructor( config: BotSetting ) {
 		this.setNetworkLayout();
 		this.tcpLoggerPort = config.webConsole.tcpLoggerPort;
 		const cfg = this.getConfiguration( config.webConsole.enable, config.logLevel );
@@ -28,7 +28,7 @@ export default class WebConfiguration {
 		} ) );
 	}
 	
-	private getConfiguration( enable: boolean, logLevel: BotConfig["logLevel"] ): Configuration {
+	private getConfiguration( enable: boolean, logLevel: BotSetting["logLevel"] ): Configuration {
 		/* 日志输出至控制台 */
 		const console: Appender = { type: "console" };
 		/* 日志输出至TCP */

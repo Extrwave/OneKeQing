@@ -8,7 +8,7 @@ import {
 } from "qq-guild-bot";
 import * as log from "log4js";
 import moment from "moment";
-import BotConfig from "@modules/config";
+import BotSetting, { OtherConfig } from "@modules/config";
 import Redis, { __RedisKey } from "@modules/redis";
 import FileManagement from "@modules/file";
 import Plugin, { PluginReSubs } from "@modules/plugin";
@@ -26,12 +26,11 @@ import { trim } from "lodash";
 import { getGuildBaseInfo, getMemberInfo } from "@modules/utils/account";
 import { EmbedMsg } from "@modules/utils/embed";
 import { checkChannelLimit } from "#@management/channel";
-import { Sleep } from "./utils";
-
+import { Sleep } from "./utils"
 
 export interface BOT {
 	readonly redis: Redis;
-	readonly config: BotConfig;
+	readonly setting: BotSetting;
 	readonly client: IOpenAPI;
 	readonly ws;
 	readonly logger: log.Logger;
@@ -41,6 +40,7 @@ export interface BOT {
 	readonly command: Command;
 	readonly refresh: RefreshConfig;
 	readonly renderer: BasicRenderer;
+	config: OtherConfig;
 }
 
 export class Adachi {
@@ -52,24 +52,24 @@ export class Adachi {
 		Adachi.setEnv( file );
 		
 		/* 初始化应用模块 */
-		const config = new BotConfig( file );
+		const setting = new BotSetting( file );
 		/* 实例化Logger */
-		const logger = new WebConfiguration( config ).getLogger();
-		if ( config.webConsole.enable ) {
-			new WebConsole( config );
+		const logger = new WebConfiguration( setting ).getLogger();
+		if ( setting.webConsole.enable ) {
+			new WebConsole( setting );
 		}
 		/* 创建client实例*/
 		const client = createOpenAPI( {
-			appID: config.appID,
-			token: config.token,
-			sandbox: config.sandbox
+			appID: setting.appID,
+			token: setting.token,
+			sandbox: setting.sandbox
 		} );
 		// 创建 websocket 连接
 		const ws = createWebsocket( {
-				appID: config.appID,
-				token: config.token,
-				sandbox: config.sandbox,
-				intents: this.getBotIntents( config )
+				appID: setting.appID,
+				token: setting.token,
+				sandbox: setting.sandbox,
+				intents: this.getBotIntents( setting )
 			}
 		);
 		/* 捕获未知且未被 catch 的错误 */
@@ -81,27 +81,29 @@ export class Adachi {
 			}
 		} );
 		
-		const redis = new Redis( config.dbPort, config.dbPassword, logger, file );
-		const auth = new Authorization( config, redis );
-		const message = new MsgManager( config, client, redis );
+		const redis = new Redis( setting.dbPort, setting.dbPassword, logger, file );
+		const auth = new Authorization( setting, redis );
+		const message = new MsgManager( setting, client, redis );
 		const command = new Command( file );
 		const refresh = new RefreshConfig( file, command );
 		const renderer = new BasicRenderer();
+		const config = new OtherConfig( file );
 		
 		this.bot = {
 			client, ws, file, redis,
 			logger, message, auth, command,
-			config, refresh, renderer
+			setting, refresh, renderer, config
 		};
 		
 		refresh.registerRefreshableFunc( renderer );
+		refresh.registerRefreshableFile( "config", config )
 	}
 	
 	public run(): BOT {
 		Plugin.load( this.bot ).then( commands => {
 			this.bot.command.add( commands );
 			/* 事件监听 ,根据机器人类型选择能够监听的事件 */
-			if ( this.bot.config.area === "private" ) {
+			if ( this.bot.setting.area === "private" ) {
 				/* 私域机器人 */
 				this.bot.ws.on( "GUILD_MESSAGES", ( data: Message ) => {
 					if ( data.eventType === 'MESSAGE_CREATE' )
@@ -137,7 +139,7 @@ export class Adachi {
 	
 	private static setEnv( file: FileManagement ): void {
 		file.createDir( "config", "root" );
-		const exist: boolean = file.createYAML( "setting", BotConfig.initObject );
+		const exist: boolean = file.createYAML( "setting", BotSetting.initObject );
 		if ( exist ) {
 			return;
 		}
@@ -186,7 +188,7 @@ export class Adachi {
 		}
 		
 		/* 针对私域机器人的 @消息识别开关 */
-		if ( this.bot.config.area === "private" && this.bot.config.atBot && !isAt && !isPrivate ) {
+		if ( this.bot.setting.area === "private" && this.bot.setting.atBot && !isAt && !isPrivate ) {
 			return;
 		}
 		
@@ -410,7 +412,7 @@ export class Adachi {
 	 * 有额外事件需要，请先提前开启BOT在频道中的权限后添加
 	 * 参考地址：https://bot.q.qq.com/wiki/develop/api/gateway/intents.html
 	 */
-	private getBotIntents( config: BotConfig ): Array<AvailableIntentsEventsEnum> {
+	private getBotIntents( config: BotSetting ): Array<AvailableIntentsEventsEnum> {
 		let intents: Array<AvailableIntentsEventsEnum> = [
 			AvailableIntentsEventsEnum.GUILDS,
 			AvailableIntentsEventsEnum.GUILD_MEMBERS,
@@ -537,7 +539,7 @@ export class Adachi {
 		/* 初始化频道主权限 */
 		for ( let guild of allGuilds ) {
 			await bot.redis.addSetMember( __RedisKey.GUILD_USED, guild.id ); //存入BOT所进入的频道
-			if ( !ackMaster && guild.owner_id === bot.config.master ) {
+			if ( !ackMaster && guild.owner_id === bot.setting.master ) {
 				await bot.redis.setString( __RedisKey.GUILD_MASTER, guild.id ); //当前BOT主人所在频道
 				ackMaster = true;
 			}

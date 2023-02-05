@@ -1,5 +1,5 @@
 import { BasicConfig, CommandInfo, Unmatch } from "./main";
-import BotConfig from "../config";
+import BotSetting from "../config";
 import { snakeCase } from "lodash";
 
 export interface EnquireMatchResult {
@@ -36,7 +36,7 @@ export class Enquire extends BasicConfig {
 	private readonly units: MatchKeyword[] = [];
 	private readonly rawSentences: string[];
 	
-	constructor( config: EnquireConfig, botCfg: BotConfig, pluginName: string ) {
+	constructor( config: EnquireConfig, botCfg: BotSetting, pluginName: string ) {
 		super( config, pluginName );
 		const definedKeys: string[] = Object.keys( config.definedPair );
 		

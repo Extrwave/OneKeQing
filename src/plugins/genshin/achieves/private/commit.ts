@@ -11,14 +11,14 @@ CreateTime: 2022/10/3
  */
 
 export async function main(
-	{ sendMessage, messageData, file, refresh, config }: InputParameter
+	{ sendMessage, messageData, file, refresh, setting }: InputParameter
 ): Promise<void> {
 	
 	let accounts: Private[];
 	const userId = messageData.msg.author.id;
 	
 	//获取授权服务中的所有cookie -- privateCks
-	if ( userId === config.master ) {
+	if ( userId === setting.master ) {
 		accounts = privateClass.getUserPrivateList();
 	} else {
 		accounts = privateClass.getUserPrivateList( userId );

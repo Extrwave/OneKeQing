@@ -1,4 +1,4 @@
-import BotConfig from "@modules/config";
+import BotSetting from "@modules/config";
 import Redis, { __RedisKey } from "@modules/redis";
 
 /**
@@ -33,7 +33,7 @@ export default class Authorization implements AuthorizationMethod {
 	private readonly redis: Redis;
 	private static dbKey: string = `${ __RedisKey.AUTH_LEVEL }-`;
 	
-	constructor( config: BotConfig, redis: Redis ) {
+	constructor( config: BotSetting, redis: Redis ) {
 		this.master = config.master;
 		this.redis = redis;
 	}

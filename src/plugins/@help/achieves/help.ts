@@ -77,7 +77,7 @@ async function cardStyle( i: InputParameter, commands: BasicConfig[], version: s
 		cmdData[cmd.pluginName] = cmdData[cmd.pluginName] ? [ ...cmdData[cmd.pluginName], cmd ] : [ cmd ];
 	}
 	
-	const topBg = await getRandomBackground( 1 );
+	const topBg = await getRandomBackground( 0 );
 	
 	await i.redis.setString( __RedisKey.HELP_DATA, JSON.stringify( {
 		version: version,
@@ -97,7 +97,7 @@ async function getHelpMessage(
 	i: InputParameter
 ): Promise<void> {
 	let style;
-	switch ( i.config.helpMessageStyle ) {
+	switch ( i.setting.helpMessageStyle ) {
 		case "message":
 			style = messageStyle( title, list );
 			await i.sendMessage( style );
@@ -131,7 +131,7 @@ export async function main( i: InputParameter ): Promise<void> {
 	const scope = i.messageData.msg.direct_message ? MessageScope.Private : MessageScope.Guild;
 	
 	/* 使用图片帮助,默认获取全部指令 */
-	if ( i.config.helpMessageStyle === "card" ) {
+	if ( i.setting.helpMessageStyle === "card" ) {
 		const allCommands: BasicConfig[] = i.command
 			.get( auth, scope )
 			.filter( el => el.display );

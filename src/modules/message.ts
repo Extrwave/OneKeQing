@@ -5,7 +5,7 @@
 import bot from "ROOT";
 import * as fs from 'fs';
 import FormData from 'form-data';////需要自己安装
-import BotConfig from "@modules/config";
+import BotSetting from "@modules/config";
 import requests from "@modules/requests";
 import { IDirectMessage, IGuild, IMessage, IMessageRes, IOpenAPI, MessageToCreate } from 'qq-guild-bot';
 import Redis, { __RedisKey } from "@modules/redis";
@@ -37,9 +37,9 @@ export default class MsgManager implements MsgManagementMethod {
 	
 	private readonly client: IOpenAPI;
 	private readonly redis: Redis;
-	private readonly config: BotConfig;
+	private readonly config: BotSetting;
 	
-	constructor( config: BotConfig, client: IOpenAPI, redis: Redis ) {
+	constructor( config: BotSetting, client: IOpenAPI, redis: Redis ) {
 		this.client = client;
 		this.redis = redis;
 		this.config = config;
@@ -211,7 +211,7 @@ export default class MsgManager implements MsgManagementMethod {
 				sandbox: "https://sandbox.api.sgroup.qq.com",
 				online: "https://api.sgroup.qq.com"
 			}
-			const apiUrl = bot.config.sandbox ? environment.sandbox : environment.online;
+			const apiUrl = bot.setting.sandbox ? environment.sandbox : environment.online;
 			let url = '';
 			if ( isDirect ) {
 				url = `${ apiUrl }/dms/${ targetId }/messages`;
@@ -224,7 +224,7 @@ export default class MsgManager implements MsgManagementMethod {
 				method: "POST",
 				headers: {
 					"Content-Type": formData.getHeaders()["content-type"],
-					"Authorization": `Bot ${ bot.config.appID }.${ bot.config.token }`
+					"Authorization": `Bot ${ bot.setting.appID }.${ bot.setting.token }`
 				},
 				body: formData
 			} );

@@ -3,7 +3,7 @@ import { scheduleJob } from "node-schedule";
 import { createServer } from "net";
 import jwt from "express-jwt";
 import bodyParser from "body-parser";
-import BotConfig from "@modules/config";
+import BotSetting from "@modules/config";
 import useWebsocket from "express-ws";
 import express, { Express } from "express";
 import { Router } from 'express-serve-static-core';
@@ -23,7 +23,7 @@ export default class WebConsole {
 	private readonly secret: string;
 	private isFirstListen: boolean = true;
 	
-	constructor( config: BotConfig ) {
+	constructor( config: BotSetting ) {
 		const cfg = config.webConsole;
 		
 		this.secret = cfg.jwtSecret;

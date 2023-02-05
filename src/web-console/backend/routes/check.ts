@@ -8,7 +8,7 @@ import { validateToken } from "@web-console/backend/jwt";
 export default express.Router()
 	.get( "/", ( req, res ) => {
 		const token: string = getTokenByRequest( req ) || "";
-		const valid = validateToken( bot.config.webConsole.jwtSecret, token );
+		const valid = validateToken( bot.setting.webConsole.jwtSecret, token );
 		if ( valid ) {
 			res.status( 200 ).send( "Success" );
 		} else {
@@ -18,7 +18,7 @@ export default express.Router()
 	.post( "/password", ( req, res ) => {
 		const pwd = req.body.pwd;
 		
-		if ( pwd === bot.config.webConsole.adminPwd || pwd === Md5.init( bot.config.webConsole.adminPwd ) ) {
+		if ( pwd === bot.setting.webConsole.adminPwd || pwd === Md5.init( bot.setting.webConsole.adminPwd ) ) {
 			res.status( 200 ).send( { code: 200, data: {}, msg: "Success" } );
 		} else {
 			res.status( 403 ).send( { code: 403, data: {}, msg: "Password is incorrect" } );

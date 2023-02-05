@@ -6,11 +6,12 @@ CreateTime: 2022/6/21
 import * as msg from "@modules/message";
 import { __API, getChatResponse, getEmoji, getTextResponse } from "@modules/utils/chat-api";
 import { Message } from "@modules/utils/message";
-import BotConfig from "@modules/config";
+import BotSetting, { OtherConfig } from "@modules/config";
 
-export async function autoReply( messageData: Message, sendMessage: msg.SendFunc, config: BotConfig ) {
+export async function autoReply( messageData: Message, sendMessage: msg.SendFunc, config: OtherConfig ) {
 	//处理传入的数据
-	const autoChat = config.autoChat;
+	console.log( config );
+	const autoChat = config.autoChat.enable;
 	const msg: string = messageData.msg.content;
 	//开始匹配回答
 	if ( msg.length <= 0 ) {

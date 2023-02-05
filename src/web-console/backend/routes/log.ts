@@ -20,7 +20,7 @@ export default express.Router().get( "/", async ( req, res ) => {
 	
 	try {
 		if ( bot.file.isExist( path ) ) {
-			const file = await bot.file.readFileByStream( fileName, "root", bot.config.webConsole.logHighWaterMark );
+			const file = await bot.file.readFileByStream( fileName, "root", bot.setting.webConsole.logHighWaterMark );
 			const fullData = file.split( /[\n\r]/g ).filter( el => el.length !== 0 );
 			const respData = fullData
 				.map( el => JSON.parse( el ) )

@@ -3,7 +3,7 @@ import { InputParameter, SwitchMatchResult } from "@modules/command";
 import { idParser } from "@modules/utils";
 
 export async function main(
-	{ sendMessage, messageData, matchResult, auth, logger, config }: InputParameter
+	{ sendMessage, messageData, matchResult, auth, logger, setting }: InputParameter
 ): Promise<void> {
 	const match = <SwitchMatchResult>matchResult;
 	const { code, target } = idParser( match.match[0] );

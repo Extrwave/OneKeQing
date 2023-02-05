@@ -7,12 +7,12 @@ export default express.Router().post( "/", ( req, res ) => {
 	const num = <string>req.body.num;
 	const pwd = req.body.pwd;
 	
-	if ( bot.config.webConsole.adminName === num &&
-		( pwd === bot.config.webConsole.adminPwd || pwd === Md5.init( bot.config.webConsole.adminPwd ) )
+	if ( bot.setting.webConsole.adminName === num &&
+		( pwd === bot.setting.webConsole.adminPwd || pwd === Md5.init( bot.setting.webConsole.adminPwd ) )
 	) {
 		res.status( 200 ).send( {
 			token: getToken(
-				bot.config.webConsole.jwtSecret, parseInt( bot.config.appID )
+				bot.setting.webConsole.jwtSecret, parseInt( bot.setting.appID )
 			)
 		} );
 	} else {

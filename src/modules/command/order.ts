@@ -1,5 +1,5 @@
 import { BasicConfig, CommandInfo, Unmatch } from "./main";
-import BotConfig from "../config";
+import BotSetting from "../config";
 import bot from "ROOT";
 import { escapeRegExp } from "lodash";
 
@@ -27,7 +27,7 @@ export class Order extends BasicConfig {
 	public readonly regParam: string[][];
 	
 	
-	constructor( config: OrderConfig, botCfg: BotConfig, pluginName: string ) {
+	constructor( config: OrderConfig, botCfg: BotSetting, pluginName: string ) {
 		super( config, pluginName );
 		
 		const headers: string[] = config.headers.map( el => Order.header( el, botCfg.header ) );
@@ -79,13 +79,13 @@ export class Order extends BasicConfig {
 		try {
 			this.regPairs.forEach( pair => pair.genRegExps.forEach( reg => {
 				/* 是否存在指令起始符 */
-				const hasHeader = bot.config.header ? pair.header.includes( bot.config.header ) : false;
-				const rawHeader = pair.header.replace( bot.config.header, "" );
+				const hasHeader = bot.setting.header ? pair.header.includes( bot.setting.header ) : false;
+				const rawHeader = pair.header.replace( bot.setting.header, "" );
 				
 				/* 消息是否同时包含指令起始符与指令头 */
 				const headerRegStr: string = rawHeader.length !== 0 && /[\u4e00-\u9fa5]/.test( rawHeader )
-					? `${ hasHeader ? "(?=.*" + bot.config.header + ")" : "" }(?=.*?${ rawHeader })`
-					: bot.config.header
+					? `${ hasHeader ? "(?=.*" + bot.setting.header + ")" : "" }(?=.*?${ rawHeader })`
+					: bot.setting.header
 						? pair.header
 						: "";
 				const headerReg: RegExp | null = headerRegStr.length !== 0 ? new RegExp( headerRegStr ) : null;
@@ -94,7 +94,7 @@ export class Order extends BasicConfig {
 				if ( reg.test( content ) ) {
 					throw { type: "order", header: pair.header };
 				} else if ( headerReg && headerReg.test( content ) ) {
-					const header = bot.config.header == "" ? pair.header : `${ bot.config.header }|${ rawHeader }`;
+					const header = bot.setting.header == "" ? pair.header : `${ bot.setting.header }|${ rawHeader }`;
 					
 					const fogReg = new RegExp( header, "g" );
 					/* 重组正则，判断是否参数不符合要求 */
@@ -118,7 +118,7 @@ export class Order extends BasicConfig {
 	
 	public getFollow(): string {
 		const pairs = this.regPairs.concat();
-		if ( pairs[pairs.length - 1].header === Order.header( this.desc[0], bot.config.header ) ) {
+		if ( pairs[pairs.length - 1].header === Order.header( this.desc[0], bot.setting.header ) ) {
 			pairs.pop();
 		}
 		const headers: string = pairs

@@ -1,5 +1,5 @@
 import { BasicConfig, CommandInfo, Unmatch } from "./main";
-import BotConfig from "../config";
+import BotSetting from "../config";
 import { escapeRegExp, trimStart } from "lodash";
 
 export interface SwitchMatchResult {
@@ -28,7 +28,7 @@ export class Switch extends BasicConfig {
 	private readonly mode: "single" | "divided";
 	private readonly header: string;
 	
-	constructor( config: SwitchConfig, botCfg: BotConfig, pluginName: string ) {
+	constructor( config: SwitchConfig, botCfg: BotSetting, pluginName: string ) {
 		super( config, pluginName );
 		
 		if ( config.onKey === config.offKey ) {

@@ -98,7 +98,7 @@ export default express.Router()
 		res.status( 200 ).send( JSON.stringify( userInfo ) );
 	} )
 	.post( "/set", async ( req, res ) => {
-		const operator: string = bot.config.master;
+		const operator: string = bot.setting.master;
 		const target: string = <string>req.body.target;
 		const auth = <AuthLevel>parseInt( <string>req.body.auth );
 		const limits: { key: string, guild: string }[] = JSON.parse( <string>req.body.limits );

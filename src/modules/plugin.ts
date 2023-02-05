@@ -92,15 +92,15 @@ export default class Plugin {
 				switch ( config.type ) {
 					case "order":
 						if ( loaded ) cmd.Order.read( config, loaded );
-						command = new cmd.Order( config, bot.config, pluginName );
+						command = new cmd.Order( config, bot.setting, pluginName );
 						break;
 					case "switch":
 						if ( loaded ) cmd.Switch.read( config, loaded );
-						command = new cmd.Switch( config, bot.config, pluginName );
+						command = new cmd.Switch( config, bot.setting, pluginName );
 						break;
 					case "enquire":
 						if ( loaded ) cmd.Enquire.read( config, loaded );
-						command = new cmd.Enquire( config, bot.config, pluginName );
+						command = new cmd.Enquire( config, bot.setting, pluginName );
 						break;
 				}
 				data[key] = command.write();
