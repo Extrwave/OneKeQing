@@ -156,8 +156,9 @@ export default class MsgManager implements MsgManagementMethod {
 					formData.append( "msg_id", msgId );
 				if ( content.content )
 					formData.append( "content", atUser ? `<@!${ atUser }> ${ content.content }` : content.content );
+				const res = await sendFileImage( guildId, formData )
 				bot.logger.info( `[Send] [Private] [A: ${ userName }] [G: ${ guildName }]: ` + "[图片消息]" );
-				return sendFileImage( guildId, formData );
+				return res;
 			}
 			
 			content.msg_id = msgId;
@@ -191,8 +192,9 @@ export default class MsgManager implements MsgManagementMethod {
 					formData.append( "msg_id", msgId );
 				if ( content.content )
 					formData.append( "content", atUser ? `<@!${ atUser }> ${ content.content }` : content.content );
+				const res = await sendFileImage( channelId, formData );
 				bot.logger.info( `[Send] [Guild] [A: ${ userName }] [G: ${ guildName }]: ` + "[图片消息]" );
-				return sendFileImage( channelId, formData );
+				return res;
 			}
 			
 			content.msg_id = msgId;
