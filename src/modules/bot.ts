@@ -160,7 +160,6 @@ export class Adachi {
 		
 		file.createDir( "database", "root" );
 		file.createDir( "logs", "root" );
-		file.createDir( "data", "root" );
 		file.createYAML(
 			"commands",
 			{ tips: "此文件修改后需重启应用" }
@@ -188,7 +187,7 @@ export class Adachi {
 		}
 		
 		/* 针对私域机器人的 @消息识别开关 */
-		if ( this.bot.setting.area === "private" && this.bot.setting.atBot && !isAt && !isPrivate ) {
+		if ( this.bot.setting.area === "private" && this.bot.config.atBot && !isAt && !isPrivate ) {
 			return;
 		}
 		
@@ -506,6 +505,7 @@ export class Adachi {
 	public async getGuildsBotIn( bot: BOT ): Promise<IGuild[]> {
 		let currentId = "", over = false, ackMaster = false, retry = 3;
 		const allGuilds: IGuild[] = [];
+		let userNum: number = 0;
 		/*  */
 		while ( !over ) {
 			try {
@@ -535,9 +535,9 @@ export class Adachi {
 				}
 			}
 		}
-		bot.logger.info( `BOT 获取所有频道完成，共：${ allGuilds.length } 个` );
 		/* 初始化频道主权限 */
 		for ( let guild of allGuilds ) {
+			userNum += guild.member_count;
 			await bot.redis.addSetMember( __RedisKey.GUILD_USED, guild.id ); //存入BOT所进入的频道
 			if ( !ackMaster && guild.owner_id === bot.setting.master ) {
 				await bot.redis.setString( __RedisKey.GUILD_MASTER, guild.id ); //当前BOT主人所在频道
@@ -548,6 +548,8 @@ export class Adachi {
 		if ( !ackMaster ) {
 			bot.logger.error( "MasterID设置错误，部分功能会受到影响" );
 		}
+		await bot.redis.setString( __RedisKey.USER_NUM, userNum );
+		bot.logger.info( `BOT 获取所有频道完成，共：${ allGuilds.length } 个频道，合计：${userNum} 用户量` );
 		return allGuilds;
 	}
 	

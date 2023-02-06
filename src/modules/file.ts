@@ -7,7 +7,7 @@ import { set } from "object-immutable-set";
 import { parse, stringify } from "yaml";
 import * as fs from "fs";
 
-export type PresetPlace = "config" | "plugin" | "data" | "root";
+export type PresetPlace = "config" | "plugin" | "root";
 
 type Tuple<T, N extends number, L extends any[] = []> =
 	L["length"] extends N ? L : Tuple<T, N, [ ...L, T ]>;
@@ -44,12 +44,10 @@ export default class FileManagement implements ManagementMethod {
 	public readonly root: string;
 	public readonly config: string;
 	public readonly plugin: string;
-	public readonly data: string;
 	
 	constructor( root: string ) {
 		this.root = root;
 		this.config = resolve( root, "config" );
-		this.data = resolve( root, "data" );
 		this.plugin = resolve( root, "src/plugins" );
 	}
 	
@@ -68,8 +66,6 @@ export default class FileManagement implements ManagementMethod {
 			h = this.config;
 		else if ( place === "plugin" )
 			h = this.plugin;
-		else if ( place === "data" )
-			h = this.data;
 		else
 			h = this.root;
 		return resolve( h, path );

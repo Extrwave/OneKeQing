@@ -85,7 +85,7 @@ async function cardStyle( i: InputParameter, commands: BasicConfig[], version: s
 		bg: topBg
 	} ) );
 	
-	const res: RenderResult = await renderer.asLocalImage(
+	const res: RenderResult = await renderer.asBase64(
 		"/index.html" );
 	return res;
 }
@@ -97,7 +97,7 @@ async function getHelpMessage(
 	i: InputParameter
 ): Promise<void> {
 	let style;
-	switch ( i.setting.helpMessageStyle ) {
+	switch ( i.config.helpMessageStyle ) {
 		case "message":
 			style = messageStyle( title, list );
 			await i.sendMessage( style );
@@ -131,12 +131,12 @@ export async function main( i: InputParameter ): Promise<void> {
 	const scope = i.messageData.msg.direct_message ? MessageScope.Private : MessageScope.Guild;
 	
 	/* 使用图片帮助,默认获取全部指令 */
-	if ( i.setting.helpMessageStyle === "card" ) {
+	if ( i.config.helpMessageStyle === "card" ) {
 		const allCommands: BasicConfig[] = i.command
 			.get( auth, scope )
 			.filter( el => el.display );
 		const res = await cardStyle( i, allCommands, version );
-		if ( res.code === "local" ) {
+		if ( res.code === "base64" ) {
 			await i.sendMessage( { file_image: res.data } );
 			return;
 		} else if ( res.code === "url" ) {

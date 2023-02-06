@@ -1,11 +1,9 @@
 import fs from "fs";
-import bot from "ROOT";
-import { v4 } from 'uuid'
 import moment from "moment";
 import { resolve } from "path";
 import { Logger } from "log4js";
 import { randomSecret } from "@modules/utils";
-import { InputParameter, Order } from "@modules/command";
+import { InputParameter } from "@modules/command";
 import { MessageToSend } from "@modules/message";
 import {
 	convert2Lang,
@@ -25,12 +23,11 @@ import {
 import { IMessage } from "qq-guild-bot";
 import { gacha_config } from "../init";
 import { getPrivateAccount } from "@plugins/genshin/utils/private";
-import { AuthLevel } from "../../../modules/management/auth";
 
 
 const gacha_types = [ "301", "400", "302", "100", "200" ];
 
-async function sendExportResult( url: string, logger: Logger, sendMessage: ( content: MessageToSend | string, atUser?: string ) => Promise<void | IMessage> ) {
+async function sendExportResult( url: string, logger: Logger, sendMessage: ( content: MessageToSend | string, atUser?: boolean ) => Promise<void | IMessage> ) {
 	const QRCode = require( "qrcode" );
 	const options = {
 		errorCorrectionLevel: 'H',
@@ -38,31 +35,25 @@ async function sendExportResult( url: string, logger: Logger, sendMessage: ( con
 		color: {
 			dark: '#000',
 			light: '#FFF',
-		},
-		type: 'png'
+		}
 	}
-	const fileName = await bot.file.getFilePath( `${ v4() }.png`, "data" );
-	QRCode.toFile( fileName, url, options, ( err: any ) => {
-		if ( err ) {
+	QRCode.toDataURL( url, options, async ( err: any, image: string ) => {
+		if ( err || !image ) {
 			logger.error( "二维码生成失败：", err );
-			sendMessage( `二维码生成失败：${ err }` );
+			await sendMessage( `二维码生成失败：${ err }` );
 			return;
 		}
 		//发送二维码
-		const imageStream = fs.createReadStream( fileName );
-		fs.unlinkSync( fileName );
-		sendMessage( { content: "请扫描二维码获取链接", file_image: imageStream } );
+		image = image.replace( "data:image/png;base64,", "" );
+		await sendMessage( { content: "请扫描二维码获取链接", file_image: image } );
 	} )
 }
 
 async function export2JSON( export_data: Standard_Gacha, {
 	file,
 	sendMessage,
-	messageData,
-	client,
 	redis,
 	logger,
-	auth
 }: InputParameter ) {
 	if ( export_data.list.length === 0 ) {
 		await sendMessage( `当前账号${ export_data.info || "" }无历史抽卡数据.` );
@@ -98,9 +89,7 @@ async function export2JSON( export_data: Standard_Gacha, {
 		return;
 	} catch ( error ) {
 		logger.error( "抽卡记录导出成功，上传 OSS 失败！", error );
-		const CALL = <Order>bot.command.getSingle( "adachi.call", AuthLevel.User );
-		const appendMsg = CALL ? `私聊使用 ${ CALL.getHeaders()[0] } ` : "";
-		await sendMessage( `文件导出成功，上传云存储失败，请${ appendMsg }联系 BOT 持有者反馈该问题。` );
+		await sendMessage( `文件导出成功，上传云存储失败，请前往官频反馈该问题。` );
 		// 删掉避免占用空间，有需求重新生成。
 		fs.unlinkSync( export_json_path );
 	}
@@ -305,9 +294,7 @@ async function export2Excel( {
 		return;
 	} catch ( error ) {
 		logger.error( "抽卡记录导出成功，上传 OSS 失败！", error );
-		const CALL = <Order>bot.command.getSingle( "adachi.call", AuthLevel.User );
-		const appendMsg = CALL ? `私聊使用 ${ CALL.getHeaders()[0] } ` : "";
-		await sendMessage( `文件导出成功，上传云存储失败，请${ appendMsg }联系 BOT 持有者反馈该问题。` );
+		await sendMessage( `文件导出成功，上传云存储失败，请前往官频反馈该问题。` );
 		// 删掉避免占用空间，有需求重新生成。
 		fs.unlinkSync( export_excel_path );
 		return;

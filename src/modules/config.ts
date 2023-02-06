@@ -9,12 +9,9 @@ export default class BotSetting {
 	public readonly area: string;
 	public readonly master: string;
 	public readonly header: string;
-	public readonly atBot: boolean;
 	public readonly dbPort: number;
 	public readonly dbPassword: string;
 	public readonly countThreshold: number;
-	public readonly helpPort: number;
-	public readonly helpMessageStyle: string;
 	public readonly logLevel: "trace" | "debug" | "info" | "warn" |
 		"error" | "fatal" | "mark" | "off";
 	
@@ -36,12 +33,9 @@ export default class BotSetting {
 		master: "masterID",
 		area: "private",
 		header: "/",
-		atBot: false,
 		dbPort: 6379,
 		dbPassword: "",
 		countThreshold: 60,
-		helpPort: 54919,
-		helpMessageStyle: "message",
 		logLevel: "debug",
 		webConsole: {
 			enable: false,
@@ -57,7 +51,7 @@ export default class BotSetting {
 	constructor( file: FileManagement ) {
 		const config: any = file.loadYAML( "setting" );
 		const checkFields: Array<keyof BotSetting> = [
-			"appID", "token", "dbPassword", "atBot"
+			"appID", "token", "dbPassword"
 		];
 		
 		for ( let key of checkFields ) {
@@ -74,8 +68,6 @@ export default class BotSetting {
 		this.header = config.header;
 		this.dbPort = config.dbPort;
 		this.dbPassword = config.dbPassword;
-		this.atBot = config.atBot;
-		this.helpPort = config.helpPort;
 		this.countThreshold = config.countThreshold;
 		this.webConsole = {
 			enable: config.webConsole.enable,
@@ -86,12 +78,6 @@ export default class BotSetting {
 			logHighWaterMark: config.webConsole.logHighWaterMark,
 			jwtSecret: config.webConsole.jwtSecret
 		};
-		
-		
-		/* 公域Ark消息模板需要申请才可以使用 */
-		const helpList: string[] = [ "message", "embed", "ark", "card" ];
-		this.helpMessageStyle = helpList.includes( config.helpMessageStyle )
-			? config.helpMessageStyle : "message";
 		
 		const areaList: string[] = [ "private", "public" ];
 		this.area = areaList.includes( config.area ) ? config.area : "private";
@@ -106,6 +92,10 @@ export default class BotSetting {
 }
 
 export class OtherConfig {
+	public atBot: boolean;
+	public atUser: boolean;
+	public helpPort: number;
+	public helpMessageStyle: string;
 	public autoChat: {
 		enable: boolean;
 		type: number;
@@ -121,6 +111,10 @@ export class OtherConfig {
 	}
 	
 	static initObject = {
+		atBot: false,
+		atUser: false,
+		helpPort: 54919,
+		helpMessageStyle: "message",
 		autoChat: {
 			tip1: "type参数说明：1为青云客，2为腾讯NLP（需要secret）",
 			enable: false,
@@ -152,7 +146,8 @@ export class OtherConfig {
 		
 		const config: any = file.loadYAML( "config" );
 		const checkFields: Array<keyof OtherConfig> = [
-			"autoChat", 'alistDrive'
+			"autoChat", 'alistDrive', 'atUser',
+			'atBot', 'helpMessageStyle', 'helpPort'
 		];
 		
 		for ( let key of checkFields ) {
@@ -161,6 +156,14 @@ export class OtherConfig {
 			}
 		}
 		file.writeYAML( "config", config );
+		
+		this.atBot = config.atBot;
+		this.atUser = config.atUser;
+		this.helpPort = config.helpPort;
+		/* 公域Ark消息模板需要申请才可以使用 */
+		const helpList: string[] = [ "message", "embed", "ark", "card" ];
+		this.helpMessageStyle = helpList.includes( config.helpMessageStyle )
+			? config.helpMessageStyle : "message";
 		
 		this.autoChat = {
 			enable: config.autoChat.enable,
@@ -179,6 +182,10 @@ export class OtherConfig {
 	
 	public async refresh( config ): Promise<string> {
 		try {
+			this.atBot = config.atBot;
+			this.atUser = config.atUser;
+			this.helpPort = config.helpPort;
+			this.helpMessageStyle = config.helpMessageStyle;
 			this.autoChat = config.autoChat;
 			this.alistDrive = config.alistDrive;
 			return "config.yml 重新加载完毕";

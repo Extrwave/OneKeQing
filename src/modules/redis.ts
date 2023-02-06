@@ -13,6 +13,7 @@ export const __RedisKey = {
 	
 	/* USER */
 	USER_BOT_ID: "adachi.user-bot-id", //BOT ID
+	USER_NUM: "adachi.user-num", //用户数量
 	USER_INFO: "adachi.user-info", //泛获取用户的基本信息
 	USER_USED_GUILD: "adachi.user-used-guild", //用户使用过BOT的所有频道
 	

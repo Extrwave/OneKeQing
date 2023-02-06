@@ -3,7 +3,7 @@
  CreateTime: 2022/6/12
  */
 import bot from "ROOT";
-import * as fs from 'fs';
+import v4 from "uuid";
 import FormData from 'form-data';////需要自己安装
 import BotSetting from "@modules/config";
 import requests from "@modules/requests";
@@ -15,12 +15,12 @@ import { ErrorMsg, Message, MessageType } from "@modules/utils/message";
 import { Account, getGuildBaseInfo, getMemberInfo } from "@modules/utils/account";
 
 export interface MessageToSend extends MessageToCreate {
-	file_image?: fs.ReadStream;
+	file_image?: string;
 	markdown?: Markdown;
 	keyboard?: Keyboard
 }
 
-export type SendFunc = ( content: MessageToSend | string, atUser?: string ) => Promise<IMessage | void>;
+export type SendFunc = ( content: MessageToSend | string, atUser?: boolean ) => Promise<IMessage | void>;
 
 interface MsgManagementMethod {
 	/* 已知频道私信发送方法 */
@@ -77,7 +77,7 @@ export default class MsgManager implements MsgManagementMethod {
 		const guildName = guildInfo ? guildInfo.name : "神秘频道";
 		const userInfo = <Account>await getMemberInfo( userId, guildId );
 		const userName = userInfo ? userInfo.account.nick : "神秘用户";
-		return this.sendGuildEntity( userName, guildName, channelId, msgId );
+		return this.sendGuildEntity( userId, userName, guildName, channelId, msgId );
 	}
 	
 	
@@ -138,11 +138,11 @@ export default class MsgManager implements MsgManagementMethod {
 	sendPrivateEntity( userName: string, guildName: string, guildId: string, msgId?: string ) {
 		const client = this.client;
 		const sendFileImage = this.sendFileImageFunc( true );
-		return async function ( content: MessageToSend | string, atUser?: string ): Promise<IMessage> {
+		return async function ( content: MessageToSend | string, atUser?: boolean ): Promise<IMessage> {
 			if ( !content || typeof content === 'string' ) {
 				content = content ? content : `BOT尝试发送一条空消息，一般是没有正确返回错误信息，请记录时间点向开发者反馈 ~`;
 				const response = await client.directMessageApi.postDirectMessage( guildId, {
-					content: atUser ? `<@!${ atUser }> ${ content }` : content,
+					content: content,
 					msg_id: msgId
 				} );
 				bot.logger.info( `[Send] [Private] [A: ${ userName }] [G: ${ guildName }]: ` + content );
@@ -151,7 +151,10 @@ export default class MsgManager implements MsgManagementMethod {
 			
 			if ( content.file_image ) {
 				let formData = new FormData();
-				formData.append( "file_image", content.file_image );
+				formData.append( "file_image", Buffer.from( content.file_image, 'base64' ), {
+					contentType: 'image/png',
+					filename: v4() + ".png"
+				} );
 				if ( msgId )
 					formData.append( "msg_id", msgId );
 				if ( content.content )
@@ -171,14 +174,15 @@ export default class MsgManager implements MsgManagementMethod {
 		}
 	}
 	
-	sendGuildEntity( userName: string, guildName: string, channelId: string, msgId?: string ) {
+	sendGuildEntity( userId: string, userName: string, guildName: string, channelId: string, msgId?: string ) {
 		const client = this.client;
 		const sendFileImage = this.sendFileImageFunc( false );
-		return async function ( content: MessageToSend | string, atUser?: string ): Promise<IMessage> {
+		return async function ( content: MessageToSend | string, atUser?: boolean ): Promise<IMessage> {
+			atUser = atUser || bot.config.atUser;
 			if ( !content || typeof content === 'string' ) {
 				content = content ? content : `BOT尝试发送一条空消息，一般是没有正确返回错误信息，请记录时间点向开发者反馈 ~`;
 				const response = await client.messageApi.postMessage( channelId, {
-					content: atUser ? `<@!${ atUser }> ${ content }` : content,
+					content: atUser ? `<@!${ userId }> ${ content }` : content,
 					msg_id: msgId
 				} );
 				bot.logger.info( `[Send] [Guild] [A: ${ userName }] [G: ${ guildName }]: ` + content );
@@ -187,11 +191,15 @@ export default class MsgManager implements MsgManagementMethod {
 			
 			if ( content.file_image ) {
 				let formData = new FormData();
-				formData.append( "file_image", content.file_image );
+				formData.append( "file_image", Buffer.from( content.file_image, 'base64' ), {
+					contentType: 'image/png',
+					filename: v4() + ".png"
+				} );
 				if ( msgId )
 					formData.append( "msg_id", msgId );
-				if ( content.content )
-					formData.append( "content", atUser ? `<@!${ atUser }> ${ content.content }` : content.content );
+				formData.append( "content", atUser ?
+					content.content ? `<@!${ userId }> ${ content.content }` : `<@!${ userId }> `
+					: content.content ? content.content : "" );
 				const res = await sendFileImage( channelId, formData );
 				bot.logger.info( `[Send] [Guild] [A: ${ userName }] [G: ${ guildName }]: ` + "[图片消息]" );
 				return res;
@@ -199,7 +207,7 @@ export default class MsgManager implements MsgManagementMethod {
 			
 			content.msg_id = msgId;
 			if ( content.content ) {
-				content.content = atUser ? `<@!${ atUser } ${ content.content }>` : content.content;
+				content.content = atUser ? `<@!${ userId } ${ content.content }>` : content.content;
 			}
 			const response = await client.messageApi.postMessage( channelId, content );
 			bot.logger.info( `[Send] [Guild] [A: ${ userName }] [G: ${ guildName }]: ` + "[其他消息]" );

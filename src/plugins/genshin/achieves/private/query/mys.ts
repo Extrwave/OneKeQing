@@ -55,14 +55,14 @@ export async function mysQuery( userID: string, idMsg: string ) {
 
 export async function mysHandler( userID: string, appointName: string, sendMessage: SendFunc ): Promise<IMessage | void> {
 	await sendMessage( "获取成功，正在生成图片..." );
-	const res: RenderResult = await renderer.asLocalImage(
+	const res: RenderResult = await renderer.asBase64(
 		"/card.html", {
 			userId: userID,
 			style: config.cardWeaponStyle,
 			profile: config.cardProfile,
 			appoint: appointName
 		} );
-	if ( res.code === "local" ) {
+	if ( res.code === "base64" ) {
 		await sendMessage( { file_image: res.data } );
 	} else if ( res.code === "url" ) {
 		await sendMessage( { image: res.data } );

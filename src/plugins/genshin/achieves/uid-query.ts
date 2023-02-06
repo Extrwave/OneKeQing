@@ -75,14 +75,14 @@ export async function main( i: InputParameter ): Promise<void> {
 		}
 	}
 	await sendMessage( "获取成功，正在生成图片..." );
-	const res: RenderResult = await renderer.asLocalImage(
+	const res: RenderResult = await renderer.asBase64(
 		"/user-base.html", {
 			userId: target, stranger,
 			style: config.cardWeaponStyle,
 			profile: config.cardProfile
 		}
 	);
-	if ( res.code === "local" ) {
+	if ( res.code === "base64" ) {
 		await sendMessage( { file_image: res.data } );
 	} else if ( res.code === "url" ) {
 		await sendMessage( { image: res.data } );
