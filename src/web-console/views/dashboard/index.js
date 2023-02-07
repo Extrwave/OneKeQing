@@ -134,7 +134,8 @@ export default defineComponent( {
 			}, {
 				label: "用户数量",
 				icon: "icon-user",
-				value: userCount
+				value: userCount,
+				special: true
 			}, {
 				label: "群组数量",
 				icon: "icon-group",

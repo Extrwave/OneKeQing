@@ -40,7 +40,8 @@ export default express.Router()
 			
 			/* 用户数量 */
 			const userData: string[] = await bot.redis.getKeysByPrefix( __RedisKey.USER_USED_GUILD );
-			const userCount = userData.length;
+			const userNum = await bot.redis.getString( __RedisKey.USER_NUM );
+			const userCount = userData.length + "/" + userNum;
 			
 			/* 群组数量 */
 			const guildCount: number = await bot.redis.getSetMemberNum( __RedisKey.GUILD_USED );
