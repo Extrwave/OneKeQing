@@ -7,6 +7,7 @@ CreateTime: 2023/2/3
 import bot from "ROOT";
 import requests from "@modules/requests";
 import { randomInt } from "#genshin/utils/random";
+import { Buffer } from "buffer";
 
 /**
  *@0 Help Top BG
@@ -15,10 +16,10 @@ import { randomInt } from "#genshin/utils/random";
  * ....
  * @param type
  */
-export function getRandomBackground( type: number ): Promise<string> {
+export function getRandomBackground( path: string ): Promise<string> {
 	const baseUrl = bot.config.alistDrive.baseUrl;
 	const baseDown = baseUrl + "/d";
-	const baseDir = bot.config.alistDrive.baseDir + bot.config.alistDrive.allDirs[type];
+	const baseDir = bot.config.alistDrive.baseDir + path;
 	
 	return new Promise( ( resolve, reject ) => {
 		requests( {
@@ -41,3 +42,28 @@ export function getRandomBackground( type: number ): Promise<string> {
 		} )
 	} )
 }
+
+export async function uploadToAlist( path: string, fileName: string, buffer: Buffer ): Promise<{
+	code: number,
+	message: string,
+	data: any
+}> {
+	const baseUrl = bot.config.alistDrive.baseUrl;
+	const baseDir = bot.config.alistDrive.baseDir + path;
+	return new Promise( ( resolve, reject ) => {
+		requests( {
+			method: "PUT",
+			url: baseUrl + "/api/fs/put",
+			headers: {
+				'authorization': bot.config.alistDrive.auth,
+				'file-path': baseDir + "/" + fileName
+			},
+			body: buffer
+		} ).then( result => {
+			resolve( JSON.parse( result ) );
+		} ).catch( reason => {
+			reject( reason );
+		} )
+	} )
+}
+

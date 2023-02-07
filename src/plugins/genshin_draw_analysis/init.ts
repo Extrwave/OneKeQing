@@ -6,10 +6,8 @@ import { OrderConfig } from "@modules/command";
 import { PluginSetting } from "@modules/plugin";
 import { execHandle, findFreePort } from "@modules/utils";
 import { checkDependencies } from "./util/util";
-import GachaAnalysisConfig from "./module/GachaAnalysisConfig";
 
 export let renderer: Renderer;
-export let gacha_config: GachaAnalysisConfig;
 
 const draw_analysis_history: OrderConfig = {
 	type: "order",
@@ -63,12 +61,9 @@ const del_gacha_log: OrderConfig = {
 
 
 export async function init( { logger, file, renderer: botRender, refresh }: BOT ): Promise<PluginSetting> {
-	gacha_config = GachaAnalysisConfig.create( file );
-	refresh.registerRefreshableFile( GachaAnalysisConfig.FILE_NAME, gacha_config );
 	
 	logger.debug( "开始检测插件需要的依赖是否已安装..." );
 	const dependencies: string[] = [ "exceljs" ];
-	dependencies.push( "qiniu" );
 	dependencies.push( "qrcode" );
 	const uninstall_dependencies: string[] = checkDependencies( file, ...dependencies );
 	for ( let uni_dep of uninstall_dependencies ) {

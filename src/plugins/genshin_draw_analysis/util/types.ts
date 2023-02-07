@@ -84,13 +84,3 @@ export interface Standard_Gacha_Excel {
 	rank_type: string;
 	gacha_type: string;
 }
-
-export interface QiniuOssConfig {
-	accessKey: string;
-	secretKey: string;
-	bucket: string;
-	// 带协议头
-	domain: string;
-	// 上传后的目录
-	folder: string;
-}

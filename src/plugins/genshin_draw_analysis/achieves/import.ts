@@ -2,9 +2,8 @@ import fetch from "node-fetch";
 import { InputParameter } from "@modules/command";
 import { DB_KEY, Gacha_Info, Standard_Gacha } from "#genshin_draw_analysis/util/types";
 import { fakeIdFn } from "#genshin_draw_analysis/util/util";
-import { gacha_config } from "#genshin_draw_analysis/init";
 
-async function importFromUIGFJson( file_url, { redis, sendMessage }: InputParameter ): Promise<void> {
+async function importFromUIGFJson( file_url, { redis, sendMessage, config }: InputParameter ): Promise<void> {
 	const response: Response = await fetch( file_url );
 	let rawString = await response.text();
 	//将ID转为字符串避免精度丢失
@@ -26,7 +25,7 @@ async function importFromUIGFJson( file_url, { redis, sendMessage }: InputParame
 		await sendMessage( `[ UID${ info.uid } ] 的 ${ list.length } 条抽卡记录数据已导入。` );
 	} else {
 		await sendMessage( "文件不存在或者不支持的格式\n" +
-			`请前往上传: ${ gacha_config.uploadAddr }` );
+			`请前往上传: ${ config.alistDrive.baseUrl }${ config.alistDrive.baseDir }/WishAbout/Upload` );
 	}
 }
 
@@ -59,17 +58,16 @@ async function importFromUIGFExcel( file_url: string, { redis, sendMessage }: In
 		import_uid = uid;
 		redis.setHash( `${ DB_KEY.ANALYSIS_DATA }-${ uigf_gacha_type }-${ uid }`, { [id]: JSON.stringify( gacha_info ) } );
 	} );
-	
 	await sendMessage( `[ UID${ import_uid } ] 的 ${ sheetValues.length } 条抽卡记录数据已导入。` );
 }
 
 export async function main( bot: InputParameter ): Promise<void> {
-	let download_url = gacha_config.downloadAddr;
-	const { sendMessage, messageData, client, logger } = bot;
+	let download_url = bot.config.alistDrive.baseUrl + "/d" + bot.config.alistDrive.baseDir + "/WishAbout/Upload";
+	const { sendMessage, messageData } = bot;
 	let content = messageData.msg.content;
 	const reg = new RegExp( /(?<fileName>[A-Za-z0-9-]+\.)\s*(?<importType>json|excel$)/ );
 	const exec: RegExpExecArray | null = reg.exec( content );
-	download_url += content;
+	download_url += "/" + content;
 	const importType: string | undefined = exec?.groups?.importType;
 	try {
 		if ( importType === 'json' ) {
@@ -82,6 +80,6 @@ export async function main( bot: InputParameter ): Promise<void> {
 		}
 	} catch ( error ) {
 		await sendMessage( "文件获取失败，请前往上传\n" +
-			gacha_config.uploadAddr );
+			`${ bot.config.alistDrive.baseUrl }${ bot.config.alistDrive.baseDir }/WishAbout/Upload` );
 	}
 }

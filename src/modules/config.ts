@@ -107,7 +107,6 @@ export class OtherConfig {
 		auth: string;
 		baseUrl: string;
 		baseDir: string;
-		allDirs: string[];
 	}
 	
 	static initObject = {
@@ -126,12 +125,7 @@ export class OtherConfig {
 			tip: "Alist 挂载云盘作为存储，其中allDirs为具体的某些文件夹",
 			auth: "xxx",
 			baseUrl: "https://drive.ethreal.cn",
-			baseDir: "/189Cloud",
-			allDirs: [
-				"/HelpTopBG",
-				"/UidTopBG",
-				"/CharIM"
-			]
+			baseDir: "/189Cloud"
 		}
 	}
 	
@@ -175,8 +169,7 @@ export class OtherConfig {
 		this.alistDrive = {
 			auth: config.alistDrive.auth,
 			baseUrl: config.alistDrive.baseUrl,
-			baseDir: config.alistDrive.baseDir,
-			allDirs: config.alistDrive.allDirs
+			baseDir: config.alistDrive.baseDir
 		}
 	}
 	

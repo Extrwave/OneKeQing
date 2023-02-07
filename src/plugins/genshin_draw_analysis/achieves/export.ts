@@ -1,16 +1,11 @@
-import fs from "fs";
 import moment from "moment";
-import { resolve } from "path";
-import { Logger } from "log4js";
 import { randomSecret } from "@modules/utils";
 import { InputParameter } from "@modules/command";
-import { MessageToSend } from "@modules/message";
 import {
 	convert2Lang,
 	convert2Readable,
 	get_sheet_name,
-	getColor,
-	upload2Qiniu
+	getColor
 } from "#genshin_draw_analysis/util/util";
 import {
 	Gacha_Info,
@@ -20,40 +15,17 @@ import {
 	Standard_Gacha_Excel_Origin_Data,
 	Standard_Gacha_Info
 } from "#genshin_draw_analysis/util/types";
-import { IMessage } from "qq-guild-bot";
-import { gacha_config } from "../init";
 import { getPrivateAccount } from "@plugins/genshin/utils/private";
+import { Buffer } from "buffer";
+import { uploadToAlist } from "@modules/utils/drive";
 
 
 const gacha_types = [ "301", "400", "302", "100", "200" ];
 
-async function sendExportResult( url: string, logger: Logger, sendMessage: ( content: MessageToSend | string, atUser?: boolean ) => Promise<void | IMessage> ) {
-	const QRCode = require( "qrcode" );
-	const options = {
-		errorCorrectionLevel: 'H',
-		margin: 1,
-		color: {
-			dark: '#000',
-			light: '#FFF',
-		}
-	}
-	QRCode.toDataURL( url, options, async ( err: any, image: string ) => {
-		if ( err || !image ) {
-			logger.error( "二维码生成失败：", err );
-			await sendMessage( `二维码生成失败：${ err }` );
-			return;
-		}
-		//发送二维码
-		image = image.replace( "data:image/png;base64,", "" );
-		await sendMessage( { content: "请扫描二维码获取链接", file_image: image } );
-	} )
-}
-
 async function export2JSON( export_data: Standard_Gacha, {
-	file,
 	sendMessage,
-	redis,
 	logger,
+	config
 }: InputParameter ) {
 	if ( export_data.list.length === 0 ) {
 		await sendMessage( `当前账号${ export_data.info || "" }无历史抽卡数据.` );
@@ -72,26 +44,21 @@ async function export2JSON( export_data: Standard_Gacha, {
 	} )
 	const json = JSON.stringify( export_data );
 	const file_name = `UIGF-${ export_data.info.uid }-${ moment( export_data.info.export_timestamp * 1000 ).format( "yyMMDDHHmmss" ) }.json`;
-	const tmp_path = resolve( file.root, 'data' );
-	if ( !fs.existsSync( tmp_path ) ) {
-		fs.mkdirSync( tmp_path );
-	}
-	const export_json_path = resolve( tmp_path, file_name );
-	const opened: number = fs.openSync( export_json_path, "w" );
-	fs.writeSync( opened, json );
-	fs.closeSync( opened );
-	//上传JSON文件,上传到 OSS
+	const buffer = Buffer.from( json );
+	//上传JSON文件,上传到 Alist
 	try {
-		const url: string = await upload2Qiniu( export_json_path, file_name, gacha_config.qiniuOss, redis );
-		// 导出后删掉临时文件
-		fs.unlinkSync( export_json_path );
-		await sendExportResult( url, logger, sendMessage );
+		const result = await uploadToAlist( "/WishAbout/Export", file_name, buffer );
+		if ( result.code === 200 ) {
+			await sendMessage( `上传云存储成功，获取地址为:\n` +
+				`${ config.alistDrive.baseUrl }${ config.alistDrive.baseDir }/WishAbout/Export/${ file_name }` );
+			return sendMessage( "如文件不显示，请点击右下角刷新按钮刷新缓存即可" );
+		}
+		logger.error( "抽卡记录导出成功，上传云存储失败！", result );
+		await sendMessage( "抽卡记录导出成功，上传云存储失败！\n" + result.message );
 		return;
 	} catch ( error ) {
-		logger.error( "抽卡记录导出成功，上传 OSS 失败！", error );
+		logger.error( "抽卡记录导出成功，上传 Alist 失败！", error );
 		await sendMessage( `文件导出成功，上传云存储失败，请前往官频反馈该问题。` );
-		// 删掉避免占用空间，有需求重新生成。
-		fs.unlinkSync( export_json_path );
 	}
 }
 
@@ -151,13 +118,9 @@ async function export2Excel( {
 	                             info: { uid, lang, export_timestamp },
 	                             list
                              }: Standard_Gacha, {
-	                             file,
-	                             client,
-	                             messageData,
 	                             sendMessage,
-	                             redis,
+	                             config,
 	                             logger,
-	                             auth
                              }: InputParameter ) {
 	if ( list.length === 0 ) {
 		await sendMessage( `当前账号${ uid || "" }无历史抽卡数据.` );
@@ -279,25 +242,20 @@ async function export2Excel( {
 	} );
 	
 	const file_name = `UIGF-${ uid }-${ moment( export_timestamp * 1000 ).format( "yyMMDDHHmmss" ) }.xlsx`;
-	const tmp_path = resolve( file.root, 'data' );
-	if ( !fs.existsSync( tmp_path ) ) {
-		fs.mkdirSync( tmp_path );
-	}
-	const export_excel_path = resolve( tmp_path, file_name );
-	await workbook.xlsx.writeFile( export_excel_path );
+	const buffer = workbook.xlsx.writeBuffer();
 	//发送Excel文件，上传到 OSS
 	try {
-		const url: string = await upload2Qiniu( export_excel_path, file_name, gacha_config.qiniuOss, redis );
-		// 导出后删掉临时文件
-		fs.unlinkSync( export_excel_path );
-		await sendExportResult( url, logger, sendMessage );
-		return;
+		const result = await uploadToAlist( "/WishAbout/Export", file_name, buffer );
+		if ( result.code === 200 ) {
+			await sendMessage( `上传Alist成功，获取地址为:
+			${ config.alistDrive.baseUrl }${ config.alistDrive.baseDir }/WishAbout/Export/${ file_name }` );
+			return sendMessage( "如文件不显示，请点击右下角刷新按钮刷新缓存即可" );
+		}
+		logger.error( "抽卡记录导出成功，上传 Alist 失败！", result );
+		await sendMessage( "抽卡记录导出成功，上传 Alist 失败！\n" + result.message );
 	} catch ( error ) {
-		logger.error( "抽卡记录导出成功，上传 OSS 失败！", error );
+		logger.error( "抽卡记录导出成功，上传 Alist 失败！", error );
 		await sendMessage( `文件导出成功，上传云存储失败，请前往官频反馈该问题。` );
-		// 删掉避免占用空间，有需求重新生成。
-		fs.unlinkSync( export_excel_path );
-		return;
 	}
 }
 
@@ -362,7 +320,25 @@ export async function main( i: InputParameter ): Promise<void> {
 	} else {
 		const url = await redis.getString( `genshin_draw_analysis.url-${ uid }` );
 		if ( url ) {
-			await sendExportResult( url, logger, sendMessage );
+			const QRCode = require( "qrcode" );
+			const options = {
+				errorCorrectionLevel: 'H',
+				margin: 1,
+				color: {
+					dark: '#000',
+					light: '#FFF',
+				}
+			}
+			QRCode.toDataURL( url, options, async ( err: any, image: string ) => {
+				if ( err || !image ) {
+					logger.error( "二维码生成失败：", err );
+					await sendMessage( `二维码生成失败：${ err }` );
+					return;
+				}
+				//发送二维码
+				image = image.replace( "data:image/png;base64,", "" );
+				await sendMessage( { content: "请扫描二维码获取链接", file_image: image } );
+			} );
 		} else {
 			await sendMessage( "链接已经过期，请重新使用抽卡分析指令获取" );
 		}
