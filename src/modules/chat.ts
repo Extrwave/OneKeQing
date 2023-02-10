@@ -10,7 +10,6 @@ import BotSetting, { OtherConfig } from "@modules/config";
 
 export async function autoReply( messageData: Message, sendMessage: msg.SendFunc, config: OtherConfig ) {
 	//处理传入的数据
-	console.log( config );
 	const autoChat = config.autoChat.enable;
 	const msg: string = messageData.msg.content;
 	//开始匹配回答

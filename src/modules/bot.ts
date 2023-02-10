@@ -388,7 +388,7 @@ export class Adachi {
 		if ( groupUnionReg.test( content ) ) {
 			msg = isPrivate ? `该指令仅限群聊使用 ~ ` : `您没有权限执行此命令 ~ `;
 		} else if ( privateUnionReg.test( content ) ) {
-			msg = isPrivate ? `您没有权限执行此命令 ~ ` : `该指令仅限群聊使用 ~ `;
+			msg = isPrivate ? `您没有权限执行此命令 ~ ` : `该指令仅限私聊使用 ~ `;
 		}
 		return msg;
 	}
