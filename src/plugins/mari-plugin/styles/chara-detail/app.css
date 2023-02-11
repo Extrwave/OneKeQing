@@ -12,7 +12,7 @@
 	top: 0;
 	right: 0;
 	bottom: 0;
-	background: url("https://cdn.ethreal.cn/genshin/panel/detail-page.png") top center no-repeat;
+	background: url("https://img.ethreal.cn/i/2023/02/11/63e753925b06b.png") top center no-repeat;
 	background-size: cover;
 	filter: hue-rotate(var(--bg-hue-rotate)) brightness(80%);
 }
