@@ -5,6 +5,8 @@ CreateTime: 2023/2/3
 
 /* 获取随机背景图 */
 import bot from "ROOT";
+import fetch from "node-fetch";
+import FormData from "form-data";
 import requests from "@modules/requests";
 import { randomInt } from "#genshin/utils/random";
 import { Buffer } from "buffer";
@@ -16,7 +18,7 @@ import { Buffer } from "buffer";
  * ....
  * @param type
  */
-export function getRandomBackground( path: string ): Promise<string> {
+export function getRandomImageUrl( path: string ): Promise<string> {
 	const baseUrl = bot.config.alistDrive.baseUrl;
 	const baseDown = baseUrl + "/d";
 	const baseDir = bot.config.alistDrive.baseDir + path;
@@ -65,5 +67,13 @@ export async function uploadToAlist( path: string, fileName: string, buffer: Buf
 			reject( reason );
 		} )
 	} )
+}
+
+export async function getImageFormdata( url: string ): Promise<FormData> {
+	const down: Response = await fetch( url );
+	const buffer = Buffer.from( await down.arrayBuffer() );
+	const type = url.substring( url.length - 3 );
+	const formData = new FormData();
+	formData.append("file_image")
 }
 

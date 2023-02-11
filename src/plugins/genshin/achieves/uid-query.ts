@@ -5,7 +5,6 @@ import { getRegion } from "#genshin/utils/region";
 import { InputParameter } from "@modules/command";
 import { mysHandler, mysQuery } from "#genshin/achieves/private/query/mys";
 import { characterInfoPromise, detailInfoPromise } from "#genshin/utils/promise";
-import { getRandomBackground } from "@modules/utils/drive";
 
 interface UIDResult {
 	info: number | string;

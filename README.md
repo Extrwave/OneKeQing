@@ -1,5 +1,5 @@
 <div align="center">
-    <img src="https://cdn.ethreal.cn/img/keqing-1671524823.png" width="200"/>
+    <img src="https://drive.ethreal.cn/d/OneDrive/StaticResource/keqing-1671524823.png" width="200"/>
     <h3> 一碗牛杂  </h3>
     <div>
         <a href="https://docs.ethreal.cn" target="_blank">官方文档</a>

@@ -2,15 +2,13 @@ import { BasicConfig, InputParameter } from "@modules/command";
 import FileManagement from "@modules/file";
 import { filterUserUsableCommand } from "../utils/filter";
 import { Ark, Embed } from "qq-guild-bot";
-import { getArkListMessage } from "@modules/utils/arks";
+import { createArkListMessage } from "@modules/utils/arks";
 import { RenderResult } from "@modules/renderer";
 import { renderer } from "../init";
 import { MessageScope } from "@modules/utils/message";
 import { __RedisKey } from "@modules/redis";
 import { PluginCNames } from "@modules/plugin";
-import requests from "@modules/requests";
-import { randomInt } from "#genshin/utils/random";
-import { getRandomBackground } from "@modules/utils/drive";
+import { getRandomImageUrl } from "@modules/utils/drive";
 
 
 interface HelpCommand {
@@ -55,7 +53,7 @@ function arkStyle( title: string, list: string[] ): Ark {
 	list.push( "===============================" );
 	list.push( "[ ] 必填, ( ) 选填, | 选择" );
 	list.push( "授权相关指令仅在私聊中生效" );
-	let arkHelpMsg: Ark = getArkListMessage( title, "BOT 使用帮助", list );
+	let arkHelpMsg: Ark = createArkListMessage( title, "BOT 使用帮助", list );
 	return <Ark>arkHelpMsg;
 }
 
@@ -77,7 +75,7 @@ async function cardStyle( i: InputParameter, commands: BasicConfig[], version: s
 		cmdData[cmd.pluginName] = cmdData[cmd.pluginName] ? [ ...cmdData[cmd.pluginName], cmd ] : [ cmd ];
 	}
 	
-	const topBg = await getRandomBackground( "/HelpTopBG" );
+	const topBg = await getRandomImageUrl( "/HelpTopBG" );
 	
 	await i.redis.setString( __RedisKey.HELP_DATA, JSON.stringify( {
 		version: version,

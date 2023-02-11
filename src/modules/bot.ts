@@ -316,8 +316,8 @@ export class Adachi {
 			const sendMessage: Msg.SendFunc = await bot.message.getSendPrivateFunc( userID, srcGuildId, msgID );
 			const cmdSet: BasicConfig[] = bot.command.get( auth, MessageScope.Private );
 			const unionReg: RegExp = bot.command.getUnion( auth, MessageScope.Private );
-			await that.execute( messageData, sendMessage, cmdSet, [], unionReg, true, true );
 			bot.logger.info( `[Recv] [Private] [A: ${ authorName }] [G: ${ guildName }]: ${ content }` );
+			await that.execute( messageData, sendMessage, cmdSet, [], unionReg, true, true );
 		}
 	}
 	
@@ -340,12 +340,11 @@ export class Adachi {
 			const sendMessage: Msg.SendFunc = await bot.message.getSendGuildFunc( userID, guildId, channelID, msgID );
 			const cmdSet: BasicConfig[] = bot.command.get( auth, MessageScope.Guild );
 			const unionReg: RegExp = bot.command.getUnion( auth, MessageScope.Guild );
-			await that.execute( messageData, sendMessage, cmdSet, [ ...uLim ], unionReg, false, isAt );
-			
 			//暂存一下msg_id, guildId, channelId 供推送消息使用
 			await bot.redis.setHashField( __RedisKey.GUILD_USED_CHANNEL, guildId, channelID ); //记录可以推送消息的频道
 			// await bot.redis.setString( `adachi.msgId-temp-${ guild }-${ channelID }`, msgID, 290 ); //记录推送消息引用的msgID，被动
 			await bot.logger.info( `[Recv] [Guild] [A: ${ authorName }] [G: ${ guildName }]: ${ content }` );
+			await that.execute( messageData, sendMessage, cmdSet, [ ...uLim ], unionReg, false, isAt );
 		}
 	}
 	
@@ -549,7 +548,7 @@ export class Adachi {
 			bot.logger.error( "MasterID设置错误，部分功能会受到影响" );
 		}
 		await bot.redis.setString( __RedisKey.USER_NUM, userNum );
-		bot.logger.info( `BOT 获取所有频道完成，共：${ allGuilds.length } 个频道，合计：${userNum} 用户量` );
+		bot.logger.info( `BOT 获取所有频道完成，共：${ allGuilds.length } 个频道，合计：${ userNum } 用户量` );
 		return allGuilds;
 	}
 	

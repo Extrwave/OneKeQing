@@ -16,7 +16,7 @@ export interface MessageArkKv {
 	obj?: ArkObj[];
 }
 
-export function getArkListMessage( desc: string, prompt: string, list: string[] ): Ark {
+export function createArkListMessage( desc: string, prompt: string, list: string[] ): Ark {
 	let arkMsg: MessageArk = {
 		template_id: "23",
 		kv: [

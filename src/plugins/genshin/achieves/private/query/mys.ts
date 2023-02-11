@@ -7,7 +7,6 @@ import { RenderResult } from "@modules/renderer";
 import { mysInfoPromise } from "#genshin/utils/promise";
 import { getPrivateAccount } from "#genshin/utils/private";
 import { characterID, config, renderer } from "#genshin/init";
-import { getRandomBackground } from "@modules/utils/drive";
 
 export async function main( i: InputParameter ): Promise<void> {
 	const { sendMessage, messageData } = i;

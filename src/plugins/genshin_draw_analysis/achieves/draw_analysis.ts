@@ -2,7 +2,6 @@ import bot from "ROOT";
 import fetch from "node-fetch";
 import { renderer } from "../init";
 import { IMessage } from "qq-guild-bot";
-import { MessageToSend } from "@modules/message";
 import { RenderResult } from "@modules/renderer";
 import { AuthLevel } from "@modules/management/auth";
 import { InputParameter, Order } from "@modules/command";
@@ -10,9 +9,10 @@ import { Private } from "#genshin/module/private/main";
 import { getPrivateAccount } from "#genshin/utils/private";
 import { AuthKey, DB_KEY, GachaPoolInfo } from "#genshin_draw_analysis/util/types";
 import { getGameBiz, sleep } from "#genshin_draw_analysis/util/util";
-import { generateAuthKey, getSToken, updatePoolId } from "#genshin_draw_analysis/util/api";
+import { generateAuthKey, updatePoolId } from "#genshin_draw_analysis/util/api";
 import { cookie2Obj } from "@plugins/genshin/utils/cookie";
 import { obj2ParamsStr } from "@modules/utils";
+import { MessageToSend } from "@modules/utils/message";
 
 export async function analysisHandler( uid: string, style: string, sendMessage: ( content: MessageToSend | string, atUser?: boolean ) => Promise<IMessage | void> ) {
 	const res: RenderResult = await renderer.asBase64(
