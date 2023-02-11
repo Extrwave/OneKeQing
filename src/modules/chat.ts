@@ -6,7 +6,7 @@ CreateTime: 2022/6/21
 import * as msg from "@modules/message";
 import { __API, getChatResponse, getEmoji, getTextResponse } from "@modules/utils/chat-api";
 import { Message } from "@modules/utils/message";
-import BotSetting, { OtherConfig } from "@modules/config";
+import { OtherConfig } from "@modules/config";
 
 export async function autoReply( messageData: Message, sendMessage: msg.SendFunc, config: OtherConfig ) {
 	//处理传入的数据
@@ -23,10 +23,10 @@ export async function autoReply( messageData: Message, sendMessage: msg.SendFunc
 	}
 	
 	if ( /Help|教程|帮助|Cookie|Start/i.test( msg ) ) {
-		const message = "官频有教程贴和视频教程 ~ \n" +
-			"基本使用教程：https://blog.ethreal.cn/archives/bothelp\n" +
-			"cookie获取教程: https://blog.ethreal.cn/archives/cookies\n" +
-			"云原神签到教程: https://blog.ethreal.cn/archives/yystoken";
+		const message = "频道 枫叶丹 有视频教程 ~ \n" +
+			"基本使用教程：https://drive.ethreal.cn/189Cloud/Markdown/bothelp.md\n" +
+			"cookie获取教程: https://drive.ethreal.cn/189Cloud/Markdown/cookies.md\n" +
+			"云原神签到教程: https://drive.ethreal.cn/189Cloud/Markdown/yystoken.md";
 		await sendMessage( message );
 		return;
 	}

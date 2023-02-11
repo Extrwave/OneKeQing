@@ -9,7 +9,7 @@ const template = `<div class="help">
 		</div>
 		<div class="right-header">
 			<p class="version">官方频道：&nbsp; 枫叶丹</p>
-			<img src="https://cdn.ethreal.cn/img/1675409783562-1675409784.png" alt="枫叶丹官频">
+			<img src="https://img.ethreal.cn/i/2023/02/63e8dbaac6acc.png" alt="枫叶丹官频">
 		</div>
 	</header>
 	<main>
