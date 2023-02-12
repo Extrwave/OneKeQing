@@ -373,7 +373,7 @@ export default <PluginSetting>{
 		privateConfirm, privateCancel, privateRemove,
 		privateSubList, privateReorder, privateToggleSign,
 		privateToggleNote, privateNoteEvent, privateNowNote,
-		privateAbyssQuery, privateLedger, privateCharQuery,
-		privateSign, privateCommit, alias, daily
+		privateAbyssQuery, privateLedger, privateSign,
+		privateCommit, alias, daily
 	]
 };

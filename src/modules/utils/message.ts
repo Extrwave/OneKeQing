@@ -77,7 +77,10 @@ export enum MessageType {
 }
 
 export interface MessageToSend extends MessageToCreate {
-	file_image?: string;
+	file_image?: string | {
+		data: string,
+		type: string
+	}
 	markdown?: Markdown;
 	keyboard?: Keyboard
 }

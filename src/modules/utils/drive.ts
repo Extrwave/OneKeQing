@@ -6,7 +6,6 @@ CreateTime: 2023/2/3
 /* 获取随机背景图 */
 import bot from "ROOT";
 import fetch from "node-fetch";
-import FormData from "form-data";
 import requests from "@modules/requests";
 import { randomInt } from "#genshin/utils/random";
 import { Buffer } from "buffer";
@@ -36,11 +35,15 @@ export function getRandomImageUrl( path: string ): Promise<string> {
 				per_page: 200
 			}
 		} ).then( result => {
-			const ran = randomInt( 0, result.data.content.length );
-			const fileAddr = baseDir + "/" + result.data.content[ran].name;
-			resolve( baseDown + fileAddr );
+			if ( result.data.total !== 0 ) {
+				const ran = randomInt( 0, result.data.total );
+				const fileAddr = baseDir + "/" + result.data.content[ran].name;
+				return resolve( baseDown + fileAddr );
+			}
+			reject( '没有找到 $ 的更多绘图' );
 		} ).catch( reason => {
-			resolve( baseDown + baseDir + "/1.png" );
+			bot.logger.error( reason );
+			reject( reason );
 		} )
 	} )
 }
@@ -69,11 +72,13 @@ export async function uploadToAlist( path: string, fileName: string, buffer: Buf
 	} )
 }
 
-export async function getImageFormdata( url: string ): Promise<FormData> {
+export async function downloadImage( url: string ): Promise<{
+	data: string,
+	type: string
+}> {
 	const down: Response = await fetch( url );
 	const buffer = Buffer.from( await down.arrayBuffer() );
 	const type = url.substring( url.length - 3 );
-	const formData = new FormData();
-	formData.append("file_image")
+	return { data: buffer.toString( 'base64' ), type: type };
 }
 

@@ -7,9 +7,9 @@ export const dbKeyCos = `adachi-plugins-our-wives`; //米游社Cos图片缓存
 export const dbKeyRef = `adachi-plugins-our-refresh`; //米游社刷新计时key
 
 /* 随机获取一张缓存在redis的coser图片 */
-import { CosPost, Forum, getPostImage } from "#coser-image/util/api";
 import bot from "ROOT";
 import { requestResponse } from "@modules/requests";
+import { CosPost, Forum, getPostImage } from "#come-image/util/api";
 
 export async function getCoserImage(): Promise<CosPost> {
 	let num = await bot.redis.getListLength( dbKeyCos );

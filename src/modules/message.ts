@@ -161,9 +161,16 @@ export default class MsgManager implements MsgManagementMethod {
 			} else {
 				/* 添加file_image */
 				if ( message.file_image ) {
-					formData.append( "file_image", Buffer.from( message.file_image, 'base64' ), {
-						contentType: 'image/png',
-						filename: v4() + ".png"
+					let data, type = 'png';
+					if ( typeof message.file_image !== 'string' ) {
+						data = message.file_image.data;
+						type = message.file_image.type;
+					} else {
+						data = message.file_image;
+					}
+					formData.append( "file_image", Buffer.from( data, 'base64' ), {
+						contentType: `image/${ type }`,
+						filename: v4() + `.${ type }`
 					} );
 					logInfo.push( "[IMAGE]" );
 				}

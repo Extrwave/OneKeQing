@@ -1,9 +1,9 @@
 import bot from "ROOT";
 import { InputParameter } from "@modules/command";
-import { CosPost, getAnimation } from "#coser-image/util/api";
+import { CosPost } from "#come-image/util/api";
 import * as Msg from "@modules/message";
-import { dbKeyCos, dbKeyRef, getCoserImage, newSomePost } from "#coser-image/achieves/data";
-import { secondToString } from "#coser-image/util/time";
+import { dbKeyCos, dbKeyRef, getCoserImage, newSomePost } from "#come-image/achieves/data";
+import { secondToString } from "#come-image/util/time";
 
 /**
 Author: Ethereal
@@ -14,13 +14,8 @@ CreateTime: 2022/6/28
 export async function main( { sendMessage, messageData, redis }: InputParameter ) {
 	const content = messageData.msg.content;
 	
-	if ( content === "ani" ) {
-		//获取一张动漫图片
-		await getAniImage( sendMessage );
-		return;
-	} else if ( content === "more" ) {
+	if ( content === "more" ) {
 		await getCosMore( sendMessage );
-		return;
 	}
 	await getMysImage( sendMessage );
 	return;
@@ -70,11 +65,4 @@ async function getCosMore( sendMessage: Msg.SendFunc ) {
 		return;
 	}
 }
-
-async function getAniImage( sendMessage: Msg.SendFunc ) {
-	await sendMessage( {
-		image: await getAnimation()
-	} )
-}
-
 
