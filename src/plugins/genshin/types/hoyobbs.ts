@@ -50,3 +50,33 @@ export interface DataSwitch {
 	isPublic: boolean;
 	switchName: string;
 }
+
+/**
+ * @interface
+ * 版块详细数据
+ * @id 版块ID
+ * @name 中文名
+ * @en_name 英文名
+ * @app_icon 版块图标
+ * @icon 略缩图
+ * @search_trend_word 搜索关键词
+ * @level_image
+ * @topic_num
+ * @op_name
+ * @main_color
+ * @has_wiki
+ */
+export interface BBSGameItem {
+	id: number,
+	name: string,
+	en_name: string,
+	app_icon: string,
+	icon: string,
+	search_trend_word: string,
+	level_image: string,
+	level_text_color: string,
+	topic_num: number,
+	op_name: string,
+	main_color: string,
+	has_wiki: boolean
+}

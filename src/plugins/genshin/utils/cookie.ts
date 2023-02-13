@@ -23,7 +23,7 @@ export interface FilterMysCookieResult {
 	uid: string,
 	mysID: string,
 	cookie: string,
-	cookieV2: string
+	stoken: string
 }
 
 
@@ -59,9 +59,8 @@ export function checkCookieInvalidReason( message: string, id?: string | number,
 		matchResult = `${ isPublic ? ErrorMsg.PUBLIC_COOKIE_INVALID : ErrorMsg.PRIVATE_COOKIE_INVALID }`;
 	}
 	/* 去除链接和空消息的可能性，保证消息能正常发出 */
-	message = message ? message : ErrorMsg.UNKNOWN;
-	message = message.replace( /\./g, "。" );
-	matchResult = matchResult ? matchResult : message;
+	message = message.replace( /\./g, "点" );
+	matchResult = matchResult ? matchResult : message ? message : ErrorMsg.UNKNOWN;
 	header ? bot.logger.warn( header + matchResult ) : "";
 	return header + matchResult;
 }
@@ -74,7 +73,7 @@ export function checkCookieInvalidReason( message: string, id?: string | number,
  * */
 export async function checkMysCookieInvalid( rawCookie: string ): Promise<FilterMysCookieResult> {
 	
-	let cookieV1 = '', cookieV2 = '', mysID;
+	let CTOKEN = '', STOKEN = '', mysID;
 	/* 首先是处理login_ticket */
 	if ( rawCookie.includes( "login_ticket=" ) && rawCookie.includes( "login_uid=" ) ) {
 		const { login_ticket, login_uid } = cookie2Obj( rawCookie );
@@ -86,8 +85,8 @@ export async function checkMysCookieInvalid( rawCookie: string ): Promise<Filter
 		const mid = await getMidByLtoken( ltoken, login_uid );
 		//根据Stoken获取cookie_token
 		const { cookie_token } = await getCookieTokenBySToken( stoken, mid, login_uid );
-		cookieV1 = `ltoken=${ ltoken }; ltuid=${ login_uid }; account_id=${ login_uid }; cookie_token=${ cookie_token };`;
-		cookieV2 = `stoken=${ stoken }; stuid=${ login_uid }; mid=${ mid }`;
+		CTOKEN = `ltoken=${ ltoken }; ltuid=${ login_uid }; account_id=${ login_uid }; cookie_token=${ cookie_token };`;
+		STOKEN = `stoken=${ stoken }; stuid=${ login_uid }; mid=${ mid }`;
 	}
 	/* 其次处理SToken */
 	else if ( rawCookie.includes( "stoken=" ) && rawCookie.includes( "mid=" ) && rawCookie.includes( "stuid" ) ) {
@@ -95,30 +94,30 @@ export async function checkMysCookieInvalid( rawCookie: string ): Promise<Filter
 		mysID = stuid;
 		const ltoken = await getLtoken( stoken, mid );
 		const { cookie_token } = await getCookieTokenBySToken( stoken, mid, stuid );
-		cookieV1 = `ltoken=${ ltoken }; ltuid=${ stuid }; account_id=${ stuid }; cookie_token=${ cookie_token };`;
-		cookieV2 = `stoken=${ stoken }; stuid=${ stuid }; mid=${ mid };`;
+		CTOKEN = `ltoken=${ ltoken }; ltuid=${ stuid }; account_id=${ stuid }; cookie_token=${ cookie_token };`;
+		STOKEN = `stoken=${ stoken }; stuid=${ stuid }; mid=${ mid };`;
 	} else if ( rawCookie.includes( "ltoken=" ) && rawCookie.includes( "ltuid=" ) ) {
 		const { ltoken, ltuid } = cookie2Obj( rawCookie );
 		mysID = ltuid;
 		/* V1版cookie_token直接使用 */
 		if ( rawCookie.includes( "cookie_token" ) ) {
 			const { cookie_token } = cookie2Obj( rawCookie );
-			cookieV1 = `ltoken=${ ltoken }; ltuid=${ ltuid }; account_id=${ ltuid }; cookie_token=${ cookie_token };`;
+			CTOKEN = `ltoken=${ ltoken }; ltuid=${ ltuid }; account_id=${ ltuid }; cookie_token=${ cookie_token };`;
 		} else {
-			cookieV1 = `ltoken=${ ltoken }; ltuid=${ ltuid }; account_id=${ ltuid };`;
+			CTOKEN = `ltoken=${ ltoken }; ltuid=${ ltuid }; account_id=${ ltuid };`;
 		}
 	} else {
 		throw ErrorMsg.COOKIE_FORMAT_INVALID;
 	}
 	
 	/* 验证Cookie的有效性 */
-	const { retcode, message, data } = await getBaseInfo( parseInt( mysID ), cookieV1 );
+	const { retcode, message, data } = await getBaseInfo( parseInt( mysID ), CTOKEN );
 	if ( !ApiType.isBBS( data ) ) {
 		throw ErrorMsg.UNKNOWN;
 	}
 	
 	if ( retcode !== 0 ) {
-		throw checkCookieInvalidReason( message, Cookies.checkMysID( cookieV1 ) );
+		throw checkCookieInvalidReason( message, Cookies.checkMysID( CTOKEN ) );
 	} else if ( !data.list || data.list.length === 0 ) {
 		throw ErrorMsg.NOT_FOUND;
 	}
@@ -131,18 +130,18 @@ export async function checkMysCookieInvalid( rawCookie: string ): Promise<Filter
 	return {
 		uid: uid,
 		mysID: mysID,
-		cookie: cookieV1,
-		cookieV2: cookieV2
+		cookie: CTOKEN,
+		stoken: STOKEN
 	};
 }
 
 export async function refreshTokenBySToken( pri: Private ): Promise<FilterMysCookieResult> {
-	const { stoken } = cookie2Obj( pri.setting.cookieV2 );
+	const { stoken } = cookie2Obj( pri.setting.stoken );
 	if ( !stoken ) {
 		throw `没有授权SToken，无法刷新`;
 	}
 	bot.logger.info( `[${ pri.setting.mysID }] 正在根据SToken刷新Token` );
-	return await checkMysCookieInvalid( pri.setting.cookieV2 );
+	return await checkMysCookieInvalid( pri.setting.stoken );
 }
 
 export function cookie2Obj( cookie: string ): any {

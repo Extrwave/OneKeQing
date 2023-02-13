@@ -48,7 +48,7 @@ export async function main(
 	if ( !url || url.indexOf( "http" ) <= -1 ) {
 		let info: Private | string | undefined;
 		// 从私人服务获取V2版本Cookie
-		let cookie = account.setting.cookieV2;
+		let cookie = account.setting.stoken;
 		let game_uid = account.setting.uid;
 		let server = account.setting.server;
 		let mysID = account.setting.mysID;

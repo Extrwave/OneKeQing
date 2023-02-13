@@ -214,10 +214,9 @@ export class NoteService implements Service {
 			const time = new Date( now + remaining * 1000 );
 			
 			const job: Job = scheduleJob( time, async () => {
-				const pushInfo = await this.refreshPushInfo()
-					.catch( async () => {
-						await sendMessage( `树脂量已经到达 ${ t } 啦 ~`, this.parent.setting.userID )
-					} );
+				const pushInfo = await this.refreshPushInfo().catch( () => {
+					return;
+				} );
 				/* 树脂量一小时内已使用，当前树脂与预期差距大于 20 时不推送 */
 				if ( pushInfo && Math.abs( pushInfo.currentResin - t ) <= 20 ) {
 					const embedMsg = new EmbedMsg(

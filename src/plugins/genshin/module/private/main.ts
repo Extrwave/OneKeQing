@@ -49,12 +49,12 @@ export class UserInfo {
 	public readonly userID: string;
 	public readonly mysID: number;
 	public cookie: string;
-	public cookieV2: string;
+	public stoken: string;
 	
-	constructor( uid: string, cookie: string, userID: string, mysID: number, cookieV2: string = "" ) {
+	constructor( uid: string, cookie: string, userID: string, mysID: number, stoken: string = "" ) {
 		this.uid = uid;
 		this.cookie = cookie;
-		this.cookieV2 = cookieV2;
+		this.stoken = stoken;
 		this.userID = userID;
 		this.mysID = mysID;
 		this.server = getRegion( uid[0] );
@@ -83,7 +83,7 @@ export class Private {
 		return new Private(
 			data.setting.uid, data.setting.cookie,
 			data.setting.userID, data.setting.mysID,
-			data.id, data.options, data.setting.cookieV2
+			data.id, data.options, data.setting.stoken
 		);
 	}
 	
@@ -91,10 +91,10 @@ export class Private {
 		uid: string, cookie: string,
 		userID: string, mysID: number,
 		id: number, options?: Record<string, any>,
-		cookieV2: string = ""
+		stoken: string = ""
 	) {
 		this.options = options || {};
-		this.setting = new UserInfo( uid, cookie, userID, mysID, cookieV2 );
+		this.setting = new UserInfo( uid, cookie, userID, mysID, stoken );
 		
 		const md5: string = Md5.init( `${ userID }-${ uid }` );
 		this.id = id;
@@ -134,7 +134,7 @@ export class Private {
 	
 	public async replaceCookie( cookie: string ): Promise<void> {
 		if ( cookie.includes( "stoken" ) ) {
-			this.setting.cookieV2 = cookie;
+			this.setting.stoken = cookie;
 		} else {
 			this.setting.cookie = cookie;
 		}
@@ -209,7 +209,7 @@ export class PrivateClass {
 		return this.getUserPrivateList( userID ).map( el => el.setting );
 	}
 	
-	public async addPrivate( uid: string, cookie: string, userID: string, cookieV2: string = "" ): Promise<string> {
+	public async addPrivate( uid: string, cookie: string, userID: string, stoken: string = "" ): Promise<string> {
 		let isRefresh = false;
 		const list: Private[] = this.getUserPrivateList( userID );
 		const PRIVATE_UPGRADE = <Order>bot.command.getSingle( "silvery-star-private-replace", AuthLevel.Master );
@@ -228,7 +228,7 @@ export class PrivateClass {
 		const execRes = <RegExpExecArray>reg.exec( cookie );
 		const mysID: number = parseInt( execRes[1] );
 		
-		const newPrivate = new Private( uid, cookie, userID, mysID, list.length + 1, undefined, cookieV2 );
+		const newPrivate = new Private( uid, cookie, userID, mysID, list.length + 1, undefined, stoken );
 		this.list.push( newPrivate );
 		await bot.redis.setString( newPrivate.dbKey, newPrivate.stringify() );
 		

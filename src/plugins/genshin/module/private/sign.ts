@@ -4,9 +4,15 @@ import { Private, Service } from "./main";
 import { Award, SignInInfo } from "#genshin/types";
 import { scheduleJob, Job } from "node-schedule";
 import { sendMessage } from "#genshin/utils/private";
-import { randomInt } from "#genshin/utils/random";
-import { signInInfoPromise, signInResultPromise, SinInAwardPromise } from "#genshin/utils/promise";
+import { randomInt, randomSleep } from "#genshin/utils/random";
 import { EmbedMsg } from "@modules/utils/embed";
+import {
+	mihoyoBBSGetMybPromise,
+	mihoyoBBSTaskPromise,
+	signInInfoPromise,
+	signInResultPromise,
+	SinInAwardPromise
+} from "#genshin/utils/promise";
 
 scheduleJob( "0 5 0 * * *", async () => {
 	await SinInAwardPromise();
@@ -38,7 +44,9 @@ export class SignInService implements Service {
 			/* 启动时候签到一小时内进行 */
 			const signDelay: number = randomInt( 0, 3600 );
 			setTimeout( async () => {
-				await this.sign();
+				await this.gameSign();
+				await randomSleep( 3, 6, true );
+				await this.bbsSign();
 			}, signDelay );
 		}
 	}
@@ -56,7 +64,8 @@ export class SignInService implements Service {
 	public async toggleEnableStatus( status?: boolean ): Promise<string> {
 		this.enable = status === undefined ? !this.enable : status;
 		if ( this.enable ) {
-			await this.sign( true );
+			await this.gameSign( true );
+			await this.bbsSign( true );
 			this.setScheduleJob();
 		} else {
 			this.cancelScheduleJob();
@@ -66,8 +75,7 @@ export class SignInService implements Service {
 		return `米游社签到功能已${ this.enable ? "开启" : "关闭" }`;
 	}
 	
-	
-	public async sign( reply: boolean = false ): Promise<void> {
+	public async gameSign( reply: boolean = false ): Promise<void> {
 		const { uid, server, cookie } = this.parent.setting;
 		let resultMsg: EmbedMsg | string;
 		try {
@@ -80,9 +88,9 @@ export class SignInService implements Service {
 				await signInResultPromise( uid, server, cookie );
 				const award: Award = awards[info.totalSignDay];
 				resultMsg = new EmbedMsg(
-					`今日米游社签到成功`,
+					`今日米游社原神签到成功`,
 					"",
-					`今日米游社签到成功`,
+					`今日米游社原神签到成功`,
 					award.icon,
 					`原神账号：${ uid }`,
 					`今日奖励：${ award.name } × ${ award.cnt }`,
@@ -92,9 +100,9 @@ export class SignInService implements Service {
 			} else {
 				const award: Award = awards[info.totalSignDay - 1];
 				resultMsg = new EmbedMsg(
-					`今日米游社已签到`,
+					`今日米游社原神已签到`,
 					"",
-					`今日米游社已签到`,
+					`今日米游社原神已签到`,
 					award.icon,
 					`原神账号：${ uid }`,
 					`今日奖励：${ award.name } × ${ award.cnt }`,
@@ -113,6 +121,28 @@ export class SignInService implements Service {
 		}
 	}
 	
+	public async bbsSign( reply: boolean = false ) {
+		const { mysID, cookie, stoken } = this.parent.setting;
+		try {
+			bot.logger.info( `[MysID ${ mysID }] 执行每日米游社任务` );
+			const content = await mihoyoBBSTaskPromise( mysID, stoken );
+			const mybData = await mihoyoBBSGetMybPromise( cookie );
+			content.push( `今日获取米游币：${ mybData.today_total_points - mybData.can_get_points }` );
+			content.push( `当前米游币数量：${ mybData.total_points }` );
+			const embedMsg = new EmbedMsg(
+				`今日米游社任务结果`,
+				"",
+				`今日米游社任务结果`,
+				"https://img.ethreal.cn/i/2023/02/63e9ca1bd4e09.png",
+				...content,
+				`期待明天与你再次相见` );
+			reply ? await sendMessage( { embed: embedMsg }, this.parent.setting.userID ) : "";
+		} catch ( error ) {
+			bot.logger.error( <string>error );
+			reply ? await sendMessage( `今日米游社任务执行失败\n${ <string>error }`, this.parent.setting.userID ) : "";
+		}
+	}
+	
 	private setScheduleJob(): void {
 		this.job = scheduleJob( "0 30 7 * * *", () => {
 			/* 每日签到一小时内内随机进行 */
@@ -120,7 +150,9 @@ export class SignInService implements Service {
 			const time = new Date().setSeconds( sec * 10 );
 			
 			const job: Job = scheduleJob( time, async () => {
-				await this.sign( true );
+				await this.gameSign( true );
+				await randomSleep( 3, 6, true );
+				await this.bbsSign( true );
 				job.cancel();
 			} );
 		} );

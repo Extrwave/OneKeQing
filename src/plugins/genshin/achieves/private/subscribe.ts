@@ -55,9 +55,9 @@ async function confirm(
 			return `你还未申请授权服务，请先使用「${ SUBSCRIBE.getHeaders()[0] }」`;
 		}
 		/* 对Cookie进行简化保留 */
-		const { uid, cookie, cookieV2 } = await checkMysCookieInvalid( rawCookie );
+		const { uid, cookie, stoken } = await checkMysCookieInvalid( rawCookie );
 		pull( tempSubscriptionList, userID );
-		return await privateClass.addPrivate( uid, cookie, userID, cookieV2 );
+		return await privateClass.addPrivate( uid, cookie, userID, stoken );
 	} catch ( error ) {
 		return checkCookieInvalidReason( <string>error );
 	}

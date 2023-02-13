@@ -32,11 +32,11 @@ async function replaceCookie( userID: string, newCookie: string ) {
 	}
 	
 	try {
-		const { uid, mysID, cookie, cookieV2 } = await checkMysCookieInvalid( newCookie );
+		const { uid, mysID, cookie, stoken } = await checkMysCookieInvalid( newCookie );
 		for ( let account of accounts ) {
 			if ( mysID === account.setting.mysID.toString() ) {
 				await account.replaceCookie( cookie );
-				cookieV2 ? await account.replaceCookie( cookieV2 ) : "";
+				stoken ? await account.replaceCookie( stoken ) : "";
 				return `[ UID${ uid } ] Cookie 更新成功`;
 			}
 		}

@@ -3,7 +3,7 @@ import { omit, pick, set } from "lodash";
 import { Cookies } from "#genshin/module";
 import * as ApiType from "#genshin/types";
 import * as api from "#genshin/utils/api";
-import { Award, CharacterCon } from "#genshin/types";
+import { Award, BBSGameItem, CharacterCon } from "#genshin/types";
 import { characterID, cookies } from "#genshin/init";
 import {
 	getCalendarDetail,
@@ -13,6 +13,7 @@ import {
 	verifyLtoken
 } from "#genshin/utils/api";
 import { checkCookieInvalidReason, cookie2Obj } from "#genshin/utils/cookie";
+import { randomSleep } from "#genshin/utils/random";
 
 export enum ErrorMsg {
 	UNKNOWN = "网络未知错误",
@@ -378,7 +379,7 @@ export async function signInInfoPromise(
 	server: string,
 	cookie: string
 ): Promise<ApiType.SignInInfo> {
-	const { retcode, message, data } = await api.getSignInInfo( uid, server, cookie );
+	const { retcode, message, data } = await api.getGenshinSignInInfo( uid, server, cookie );
 	if ( !ApiType.isSignInInfo( data ) ) {
 		throw ErrorMsg.UNKNOWN;
 	}
@@ -398,7 +399,7 @@ export async function signInResultPromise(
 	server: string,
 	cookie: string
 ): Promise<ApiType.SignInResult> {
-	const { retcode, message, data } = await api.mihoyoBBSSignIn( uid, server, cookie );
+	const { retcode, message, data } = await api.mihoyoGenshinSignIn( uid, server, cookie );
 	if ( !ApiType.isSignInResult( data ) ) {
 		throw ErrorMsg.UNKNOWN;
 	}
@@ -414,7 +415,7 @@ export async function signInResultPromise(
 }
 
 export async function SinInAwardPromise(): Promise<Award[]> {
-	const { retcode, message, data } = await api.getSignInReward();
+	const { retcode, message, data } = await api.getGenshinSignInReward();
 	await bot.redis.setString( `adachi.genshin-sign-in-award`, JSON.stringify( data.awards ), 3600 * 24 );
 	bot.logger.info( "签到奖励列表已获取" );
 	return data.awards;
@@ -533,6 +534,138 @@ export async function calendarPromise(): Promise<ApiType.CalendarData[]> {
 	return calcDataList;
 }
 
+/* 米游社任务相关 */
+export async function mihoyoBBSTaskPromise( mysID: number, stoken: string ): Promise<string[]> {
+	const content: string[] = [ `米游社账号：${ mysID }` ];
+	const bbsItems: BBSGameItem[] = await mihoyoGetBBSGameItemPromise();
+	// 各个版块签到
+	if ( bbsItems && bbsItems.length >= 0 ) {
+		for ( let bbsItem of bbsItems ) {
+			try {
+				const signed = await mihoyoBBSItemSignInfoPromise( bbsItem.id, stoken );
+				if ( signed ) {
+					content.push( `[${ bbsItem.name }] 今日已经签到` );
+					continue;
+				}
+				const result = await mihoyoBBSItemSignPromise( mysID, bbsItem.id, stoken );
+				content.push( `[${ bbsItem.name }] ${ result }` );
+				await randomSleep( 5, 10, true );
+			} catch ( error ) {
+				content.push( `[${ bbsItem.name }] ${ <string>error }` );
+			}
+		}
+	} else {
+		content.push( `获取米游社所有版块失败` );
+	}
+	
+	//米游社各项任务
+	let scanAck = 0;
+	const data = await mihoyoGetPostsPromise( stoken );
+	for ( let post of data ) {
+		try {
+			await mihoyoGetFullPostPromise( stoken, post.post.post_id );
+			await mihoyoBBSUpvotePostPromise( stoken, post.post.post_id );
+			await mihoyoBBSSharePostPromise( stoken, post.post.post_id );
+			scanAck++;
+			if ( scanAck >= 8 ) break;
+		} catch ( error ) {
+			content.push( `[帖子] ` + <string>error );
+		}
+	}
+	content.push( `成功浏览点赞分享帖子 ${ scanAck } 个` );
+	content.push( `浏览点赞帖子可能暂时无效` );
+	return Array.from( new Set( content ) );
+}
+
+async function mihoyoGetBBSGameItemPromise(): Promise<BBSGameItem[]> {
+	const redisKey = `extrwave.genshin-bbs-game-item`;
+	const temp = await bot.redis.getString( redisKey );
+	if ( temp ) {
+		return JSON.parse( temp );
+	}
+	const { retcode, message, data } = await api.mihoyoBBSGetGameItem();
+	return new Promise( ( resolve, reject ) => {
+		if ( retcode === 0 ) {
+			bot.redis.setString( redisKey, JSON.stringify( data.list ), 3600 * 72 );
+			return resolve( data.list );
+		}
+		reject( message );
+	} );
+}
+
+async function mihoyoBBSItemSignInfoPromise(
+	gids: number, cookie: string ): Promise<string> {
+	const { retcode, message, data } = await api.mihoyoBBSItemSignInfo( gids, cookie );
+	return new Promise( ( resolve, reject ) => {
+		if ( retcode !== 0 ) {
+			return reject( checkCookieInvalidReason( message ) );
+		}
+		resolve( data.is_signed );
+	} )
+}
+
+async function mihoyoBBSItemSignPromise(
+	mysID: number, gids: number, cookie: string ): Promise<string> {
+	const { retcode, message, data } = await api.mihoyoBBSItemSign( mysID, gids, cookie );
+	return new Promise( ( resolve, reject ) => {
+		if ( retcode === 0 ) {
+			return resolve( '今日签到成功' )
+		}
+		reject( checkCookieInvalidReason( message ) );
+	} )
+}
+
+async function mihoyoGetPostsPromise( cookie: string, gids: number = 2, last_id: string = "" ): Promise<any> {
+	const { retcode, message, data } = await api.mihoyoBBSGetPosts( cookie, gids, last_id );
+	return new Promise( ( resolve, reject ) => {
+		if ( retcode === -100 || retcode !== 0 || !data.list || data.list.length <= 0 ) {
+			return reject( checkCookieInvalidReason( message ) );
+		}
+		resolve( data.list );
+	} )
+}
+
+async function mihoyoGetFullPostPromise( cookie: string, post_id: string ): Promise<any> {
+	const { retcode, message, data } = await api.mihoyoBBSGetFullPost( cookie, post_id );
+	return new Promise( ( resolve, reject ) => {
+		if ( retcode !== 0 ) {
+			return reject( checkCookieInvalidReason( message ) );
+		}
+		resolve( data );
+	} )
+}
+
+async function mihoyoBBSUpvotePostPromise( cookie: string, post_id: string ) {
+	const { retcode, message, data } = await api.mihoyoBBSUpvotePost( cookie, post_id );
+	return new Promise( ( resolve, reject ) => {
+		if ( retcode !== 0 ) {
+			return reject( checkCookieInvalidReason( message ) );
+		}
+		resolve( data );
+	} )
+}
+
+async function mihoyoBBSSharePostPromise( cookie: string, post_id: string ) {
+	const { retcode, message, data } = await api.mihoyoBBSSharePost( cookie, post_id );
+	return new Promise( ( resolve, reject ) => {
+		if ( retcode !== 0 ) {
+			return reject( checkCookieInvalidReason( message ) );
+		}
+		resolve( data );
+	} )
+}
+
+export async function mihoyoBBSGetMybPromise( cookie: string ): Promise<any> {
+	const { retcode, message, data } = await api.mihoyoBBSGetMyb( cookie );
+	return new Promise( ( resolve, reject ) => {
+		if ( retcode !== 0 ) {
+			return reject( checkCookieInvalidReason( message ) );
+		}
+		resolve( data );
+	} )
+}
+
+/* Token转换相关API */
 export async function getCookieTokenBySToken(
 	stoken: string,
 	mid: string,

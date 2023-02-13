@@ -1,5 +1,5 @@
 import bot from "ROOT";
-import request, { formatGetURL } from "@modules/requests";
+import request, { formatGetURL, IParams } from "@modules/requests";
 import { parse } from "yaml";
 import { toCamelCase } from "./camel-case";
 import { set } from "lodash";
@@ -13,16 +13,11 @@ import fetch from "node-fetch";
 import { Sleep } from "@modules/utils";
 import { config } from "#genshin/init";
 import * as ApiType from "#genshin/types";
+import { randomString } from "#genshin/utils/random";
+import { Cookies } from "#genshin/module";
 
 const __API = {
-	FETCH_ROLE_ID: "https://api-takumi-record.mihoyo.com/game_record/app/card/wapi/getGameRecordCard",
-	FETCH_ROLE_INDEX: "https://api-takumi-record.mihoyo.com/game_record/app/genshin/api/index",
-	FETCH_ROLE_CHARACTERS: "https://api-takumi-record.mihoyo.com/game_record/app/genshin/api/character",
-	FETCH_ROLE_SPIRAL_ABYSS: "https://api-takumi-record.mihoyo.com/game_record/app/genshin/api/spiralAbyss",
-	FETCH_ROLE_DAILY_NOTE: "https://api-takumi-record.mihoyo.com/game_record/app/genshin/api/dailyNote",
-	FETCH_ROLE_AVATAR_DETAIL: "https://api-takumi.mihoyo.com/event/e20200928calculate/v1/sync/avatar/detail",
-	FETCH_GACHA_LIST: "https://webstatic.mihoyo.com/hk4e/gacha_info/cn_gf01/gacha/list.json",
-	FETCH_GACHA_DETAIL: "https://webstatic.mihoyo.com/hk4e/gacha_info/cn_gf01/$/zh-cn.json",
+	/* 云端相关配置 */
 	FETCH_ARTIFACT: "https://adachi-bot.oss-cn-beijing.aliyuncs.com/Version2/artifact/artifact.yml",
 	FETCH_SLIP: "https://adachi-bot.oss-cn-beijing.aliyuncs.com/Version2/slip/index.yml",
 	FETCH_WISH_CONFIG: "https://adachi-bot.oss-cn-beijing.aliyuncs.com/Version2/wish/config/$.json",
@@ -33,31 +28,87 @@ const __API = {
 	FETCH_ALMANAC: "https://adachi-bot.oss-cn-beijing.aliyuncs.com/Version2/almanac/almanac.yml",
 	FETCH_CHARACTER_ID: "https://adachi-bot.oss-cn-beijing.aliyuncs.com/Version2/character/id.yml",
 	FETCH_UID_HOME: "https://adachi-bot.oss-cn-beijing.aliyuncs.com/Version2/home/home.yml",
+	/* 米游社相关 */
+	FETCH_ROLE_ID: "https://api-takumi-record.mihoyo.com/game_record/app/card/wapi/getGameRecordCard",
+	FETCH_ROLE_INDEX: "https://api-takumi-record.mihoyo.com/game_record/app/genshin/api/index",
+	FETCH_ROLE_CHARACTERS: "https://api-takumi-record.mihoyo.com/game_record/app/genshin/api/character",
+	FETCH_ROLE_SPIRAL_ABYSS: "https://api-takumi-record.mihoyo.com/game_record/app/genshin/api/spiralAbyss",
+	FETCH_ROLE_DAILY_NOTE: "https://api-takumi-record.mihoyo.com/game_record/app/genshin/api/dailyNote",
+	FETCH_ROLE_AVATAR_DETAIL: "https://api-takumi.mihoyo.com/event/e20200928calculate/v1/sync/avatar/detail",
+	FETCH_GACHA_LIST: "https://webstatic.mihoyo.com/hk4e/gacha_info/cn_gf01/gacha/list.json",
+	FETCH_GACHA_DETAIL: "https://webstatic.mihoyo.com/hk4e/gacha_info/cn_gf01/$/zh-cn.json",
 	FETCH_SIGN_IN: "https://api-takumi.mihoyo.com/event/bbs_sign_reward/sign",
 	FETCH_SIGN_INFO: "https://api-takumi.mihoyo.com/event/bbs_sign_reward/info",
-	FETCH_SIGNIN_AWARD: "https://api-takumi.mihoyo.com/event/bbs_sign_reward/home?act_id=e202009291139501",
+	FETCH_SIGNIN_AWARD: "https://api-takumi.mihoyo.com/event/bbs_sign_reward/home",
 	FETCH_LEDGER: "https://hk4e-api.mihoyo.com/event/ys_ledger/monthInfo",
 	FETCH_CALENDAR_LIST: "https://hk4e-api.mihoyo.com/common/hk4e_cn/announcement/api/getAnnList",
 	FETCH_CALENDAR_DETAIL: "https://hk4e-api.mihoyo.com/common/hk4e_cn/announcement/api/getAnnContent",
-	//验证码服务相关
-	FETCH_CREATE_VERIFICATION: "https://api-takumi-record.mihoyo.com/game_record/app/card/wapi/createVerification",
-	FETCH_GEETEST: "https://api.geetest.com/gettype.php",
+	FETCH_BBS_LIST: "https://bbs-api.miyoushe.com/apihub/api/getGameList",
+	FETCH_BBS_SIGN_INFO: "https://bbs-api.miyoushe.com/apihub/sapi/querySignInStatus",
+	FETCH_BBS_SIGN_IN: "https://bbs-api.miyoushe.com/apihub/app/api/signIn",
+	FETCH_BBS_GET_POST: "https://bbs-api.miyoushe.com/post/wapi/getForumPostList",
+	FETCH_BBS_FULL_POST: "https://bbs-api.miyoushe.com/post/api/getPostFull",
+	FETCH_BBS_UPVOTE_POST: "https://bbs-api.miyoushe.com/apihub/sapi/upvotePost",
+	FETCH_BBS_SHARE_POST: "https://bbs-api.miyoushe.com/apihub/api/getShareConf",
+	FETCH_BBS_GET_TASK: "https://api-takumi.mihoyo.com/apihub/wapi/getUserMissionsState",
+	/* 验证码服务相关 */
 	FETCH_GET_VERIFY: "https://challenge.minigg.cn",
+	FETCH_GEETEST: "https://api.geetest.com/gettype.php",
+	FETCH_CREATE_VERIFICATION: "https://api-takumi-record.mihoyo.com/game_record/app/card/wapi/createVerification",
 	FETCH_VERIFY_VERIFICATION: "https://api-takumi-record.mihoyo.com/game_record/app/card/wapi/verifyVerification",
-	//Token转换相关
+	/* Token转换相关 */
 	FETCH_GET_MULTI_TOKEN: "https://api-takumi.mihoyo.com/auth/api/getMultiTokenByLoginTicket",
 	FETCH_GET_COOKIE_TOKEN: "https://api-takumi.mihoyo.com/auth/api/getCookieAccountInfoBySToken",
 	FETCH_VERIFY_LTOKEN: "https://passport-api-v4.mihoyo.com/account/ma-cn-session/web/verifyLtoken",
 	FETCH_GET_LTOKEN_BY_STOKEN: "https://passport-api.mihoyo.com/account/auth/api/getLTokenBySToken"
 };
 
+const genshinActivityID: string = "e202009291139501";
 const HEADERS = {
-	"User-Agent": "Mozilla/5.0 (iPhone; CPU iPhone OS 13_2_3 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) miHoYoBBS/2.29.1",
-	"Referer": "https://webstatic.mihoyo.com/",
-	"x-rpc-app_version": "2.29.1",
-	"x-rpc-client_type": 5,
-	"DS": "",
-	"Cookie": ""
+	NORMAL: {
+		"User-Agent": "Mozilla/5.0 (iPhone; CPU iPhone OS 13_2_3 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) miHoYoBBS/2.29.1",
+		"Referer": "https://webstatic.mihoyo.com/",
+		"x-rpc-app_version": "2.29.1",
+		"x-rpc-client_type": 5,
+		"DS": "",
+		"Cookie": ""
+	},
+	SIGN: {
+		"User-Agent": "Mozilla/5.0 (Linux; Android 9; Unspecified Device) AppleWebKit/537.36 (KHTML, like Gecko) " +
+			"Version/4.0 Chrome/39.0.0.0 Mobile Safari/537.36 miHoYoBBS/2.3.0",
+		"Referer": "https://webstatic.mihoyo.com/bbs/event/signin-ys/index.html" +
+			`?bbs_auth_required=true&act_id=${ genshinActivityID }&utm_source=bbs&utm_medium=mys&utm_campaign=icon`,
+		"Accept": "application/json, text/plain, */*",
+		"Accept-Encoding": "gzip, deflate",
+		"Accept-Language": "zh-CN,en-US;q=0.8",
+		"Origin": "https://webstatic.mihoyo.com",
+		"X-Requested-With": "com.mihoyo.hyperion",
+		"x-rpc-app_version": "2.34.1",
+		"x-rpc-client_type": 5,
+		"x-rpc-platform": "ios",
+		"x-rpc-device_model": "iPhone7,1",
+		"x-rpc-device_name": "abcd",
+		"x-rpc-channel": "appstore",
+		"x-rpc-sys_version": "12.4.1",
+		"x-rpc-device_id": guid(),
+		"DS": ""
+	},
+	BBS: {
+		"Referer": "https://app.mihoyo.com",
+		'Host': "bbs-api.mihoyo.com",
+		"x-rpc-app_version": "2.34.1",
+		"x-rpc-channel": "appstore",
+		"x-rpc-client_type": "5",
+		"x-rpc-device_id": guid(),
+		"x-rpc-device_model": "iPhone7,1",
+		"x-rpc-device_name": randomString( 5 ),
+		"x-rpc-sys_version": "12.4.1",
+		"user-agent": "Mozilla/5.0 (iPhone; CPU iPhone OS 13_2_3 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) miHoYoBBS/2.34.1",
+		"DS": "",
+		"Cookie": ""
+	}
+	
+	
 };
 
 const verifyMsg = "API请求遭遇验证码拦截 ~";
@@ -72,9 +123,10 @@ export async function getBaseInfo( mysID: number, cookie: string, time: number =
 			url: __API.FETCH_ROLE_ID,
 			qs: query,
 			headers: {
-				...HEADERS,
+				...HEADERS.NORMAL,
 				"DS": getDS( query ),
-				"Cookie": cookie
+				"Cookie": cookie,
+				"x-rpc-device_id": guid()
 			}
 		} )
 			.then( async ( result ) => {
@@ -108,9 +160,10 @@ export async function getDetailInfo( uid: number, server: string, cookie: string
 			url: __API.FETCH_ROLE_INDEX,
 			qs: query,
 			headers: {
-				...HEADERS,
+				...HEADERS.NORMAL,
 				"DS": getDS( query ),
-				"Cookie": cookie
+				"Cookie": cookie,
+				"x-rpc-device_id": guid()
 			}
 		} )
 			.then( async ( result ) => {
@@ -146,10 +199,11 @@ export async function getCharactersInfo( roleID: number, server: string, charIDs
 			json: true,
 			body,
 			headers: {
-				...HEADERS,
+				...HEADERS.NORMAL,
 				"DS": getDS( undefined, JSON.stringify( body ) ),
 				"Cookie": cookie,
-				"content-type": "application/json"
+				"content-type": "application/json",
+				"x-rpc-device_id": guid()
 			}
 		} )
 			.then( async ( result ) => {
@@ -183,9 +237,10 @@ export async function getDailyNoteInfo( uid: number, server: string, cookie: str
 			url: __API.FETCH_ROLE_DAILY_NOTE,
 			qs: query,
 			headers: {
-				...HEADERS,
+				...HEADERS.NORMAL,
 				"DS": getDS( query ),
-				"Cookie": cookie
+				"Cookie": cookie,
+				"x-rpc-device_id": guid()
 			}
 		} )
 			.then( async ( result ) => {
@@ -220,9 +275,10 @@ export async function getAvatarDetailInfo( uid: string, avatarID: number, server
 			url: __API.FETCH_ROLE_AVATAR_DETAIL,
 			qs: query,
 			headers: {
-				...HEADERS,
+				...HEADERS.NORMAL,
 				"DS": getDS( query ),
-				"Cookie": cookie
+				"Cookie": cookie,
+				"x-rpc-device_id": guid()
 			}
 		} )
 			.then( async ( result ) => {
@@ -259,9 +315,10 @@ export async function getSpiralAbyssInfo( roleID: number, server: string, period
 			url: __API.FETCH_ROLE_SPIRAL_ABYSS,
 			qs: query,
 			headers: {
-				...HEADERS,
+				...HEADERS.NORMAL,
 				"DS": getDS( query ),
-				"Cookie": cookie
+				"Cookie": cookie,
+				"x-rpc-device_id": guid()
 			}
 		} )
 			.then( async ( result ) => {
@@ -297,8 +354,9 @@ export async function getLedger( uid: string, server: string, mon: number, cooki
 			url: __API.FETCH_LEDGER,
 			qs: query,
 			headers: {
-				...HEADERS,
-				"Cookie": cookie
+				...HEADERS.NORMAL,
+				"Cookie": cookie,
+				"x-rpc-device_id": guid()
 			}
 		} )
 			.then( async ( result ) => {
@@ -487,33 +545,12 @@ export async function getUidHome(): Promise<any> {
 	} );
 }
 
-/* 参考 https://github.com/DGP-Studio/DGP.Genshin.MiHoYoAPI/blob/main/Sign/SignInProvider.cs */
-const activityID: string = "e202009291139501";
-const SIGN_HEADERS = {
-	"User-Agent": "Mozilla/5.0 (Linux; Android 9; Unspecified Device) AppleWebKit/537.36 (KHTML, like Gecko) " +
-		"Version/4.0 Chrome/39.0.0.0 Mobile Safari/537.36 miHoYoBBS/2.3.0",
-	"Referer": "https://webstatic.mihoyo.com/bbs/event/signin-ys/index.html" +
-		`?bbs_auth_required=true&act_id=${ activityID }&utm_source=bbs&utm_medium=mys&utm_campaign=icon`,
-	"Accept": "application/json, text/plain, */*",
-	"Accept-Encoding": "gzip, deflate",
-	"Accept-Language": "zh-CN,en-US;q=0.8",
-	"Origin": "https://webstatic.mihoyo.com",
-	"X-Requested-With": "com.mihoyo.hyperion",
-	"x-rpc-app_version": "2.34.1",
-	"x-rpc-client_type": 5,
-	"x-rpc-platform": "ios",
-	"x-rpc-device_model": "iPhone7,1",
-	"x-rpc-device_name": "abcd",
-	"x-rpc-channel": "appstore",
-	"x-rpc-sys_version": "12.4.1",
-	"x-rpc-device_id": guid(),
-	"DS": ""
-};
-
 /* Sign In API */
-export async function mihoyoBBSSignIn( uid: string, region: string, cookie: string ): Promise<ResponseBody> {
+
+/* 参考 https://github.com/DGP-Studio/DGP.Genshin.MiHoYoAPI/blob/main/Sign/SignInProvider.cs */
+export async function mihoyoGenshinSignIn( uid: string, region: string, cookie: string ): Promise<ResponseBody> {
 	const body = {
-		act_id: activityID,
+		act_id: genshinActivityID,
 		uid, region
 	};
 	
@@ -524,10 +561,11 @@ export async function mihoyoBBSSignIn( uid: string, region: string, cookie: stri
 			json: true,
 			body,
 			headers: {
-				...SIGN_HEADERS,
+				...HEADERS.SIGN,
 				"content-type": "application/json",
 				"Cookie": cookie,
-				"DS": getDS2()
+				"DS": getDS2(),
+				"x-rpc-device_id": guid()
 			}
 		} )
 			.then( async ( result ) => {
@@ -550,9 +588,9 @@ export async function mihoyoBBSSignIn( uid: string, region: string, cookie: stri
 	} );
 }
 
-export async function getSignInInfo( uid: string, region: string, cookie: string ): Promise<ResponseBody> {
+export async function getGenshinSignInInfo( uid: string, region: string, cookie: string ): Promise<ResponseBody> {
 	const query = {
-		act_id: activityID,
+		act_id: genshinActivityID,
 		region, uid
 	};
 	
@@ -562,7 +600,7 @@ export async function getSignInInfo( uid: string, region: string, cookie: string
 			url: __API.FETCH_SIGN_INFO,
 			qs: query,
 			headers: {
-				...SIGN_HEADERS,
+				...HEADERS.SIGN,
 				"Cookie": cookie
 			}
 		} )
@@ -577,13 +615,242 @@ export async function getSignInInfo( uid: string, region: string, cookie: string
 	} );
 }
 
-export async function getSignInReward(): Promise<any> {
+export async function getGenshinSignInReward(): Promise<any> {
 	return new Promise( ( resolve ) => {
-		fetch( __API.FETCH_SIGNIN_AWARD )
+		fetch( __API.FETCH_SIGNIN_AWARD + `?act_id=${ genshinActivityID }` )
 			.then( async ( result: Response ) => {
 				resolve( JSON.parse( await result.text() ) );
 			} );
 	} );
+}
+
+/* 米游社任务相关 */
+export async function mihoyoBBSGetGameItem(): Promise<any> {
+	return new Promise( ( resolve ) => {
+		fetch( __API.FETCH_BBS_LIST )
+			.then( async ( result: Response ) => {
+				resolve( await result.json() );
+			} );
+	} );
+}
+
+export async function mihoyoBBSItemSignInfo( gids: number, cookie: string ): Promise<any> {
+	const query = { gids };
+	return new Promise( ( resolve, reject ) => {
+		request( {
+			method: "GET",
+			url: formatGetURL( __API.FETCH_BBS_SIGN_INFO, query ),
+			headers: {
+				...HEADERS.BBS,
+				cookie,
+				DS: getDS( query )
+			},
+			json: true
+		} ).then( result => {
+			resolve( result );
+		} ).catch( reason => {
+			reject( reason );
+		} )
+	} )
+}
+
+export async function mihoyoBBSItemSign( mysID: number, gids: number, cookie: string, time: number = 0 ): Promise<any> {
+	const body = { gids };
+	return new Promise( ( resolve, reject ) => {
+		request( {
+			method: "POST",
+			url: __API.FETCH_BBS_SIGN_IN,
+			headers: {
+				...HEADERS.BBS,
+				cookie,
+				DS: getDS( undefined, JSON.stringify( body ) )
+			},
+			json: true,
+			body: body
+		} ).then( async result => {
+			if ( result.retcode !== 1034 ) {
+				return resolve( result );
+			}
+			bot.logger.warn( `[ MysID${ mysID } ][myssign] 查询遇到验证码` );
+			if ( config.verifyEnable && time <= config.verifyRepeat ) {
+				const error = await bypassQueryVerification( cookie );
+				bot.logger.debug( `[ MysID${ mysID } ][myssign] 第 ${ time + 1 } 次验证码绕过${ error ? "失败：" + error : "成功" }` );
+				return resolve( await mihoyoBBSItemSign( mysID, gids, cookie, ++time ) );
+			}
+			reject( config.verifyEnable ? verifyError : verifyMsg );
+		} ).catch( reason => {
+			reject( reason );
+		} )
+	} )
+}
+
+export async function mihoyoBBSGetPosts( cookie: string, gids: number, last_id: string = "", time: number = 0 ): Promise<any> {
+	const query: IParams = {
+		gids: gids,
+		forum_id: 26,
+		is_good: "false",
+		is_hot: "true"
+	}
+	return new Promise( ( resolve, reject ) => {
+		request( {
+			method: "GET",
+			url: formatGetURL( __API.FETCH_BBS_GET_POST, query ),
+			headers: {
+				...HEADERS.NORMAL,
+				cookie: cookie
+			},
+			json: true
+		} ).then( async result => {
+			if ( result.retcode !== 1034 ) {
+				return resolve( result );
+			}
+			const MysID = Cookies.checkMysID( cookie );
+			bot.logger.warn( `[ MysID${ MysID } ][getPost] 查询遇到验证码` );
+			if ( config.verifyEnable && time <= config.verifyRepeat ) {
+				const error = await bypassQueryVerification( cookie );
+				bot.logger.debug( `[ MysID${ MysID } ][getPost] 第 ${ time + 1 } 次验证码绕过${ error ? "失败：" + error : "成功" }` );
+				return resolve( await mihoyoBBSGetPosts( cookie, gids, last_id, ++time ) );
+			}
+			reject( config.verifyEnable ? verifyError : verifyMsg );
+		} ).catch( reason => {
+			reject( reason );
+		} )
+	} )
+}
+
+export async function mihoyoBBSGetFullPost( cookie: string, postId: string, time: number = 0 ): Promise<any> {
+	const query: IParams = { post_id: postId };
+	return new Promise( ( resolve, reject ) => {
+		request( {
+			method: "GET",
+			url: formatGetURL( __API.FETCH_BBS_FULL_POST, query ),
+			headers: {
+				...HEADERS.BBS,
+				cookie: cookie,
+				DS: getDS2()
+			},
+			json: true
+		} )
+			.then( async result => {
+				if ( result.retcode !== 1034 ) {
+					return resolve( result );
+				}
+				const MysID = Cookies.checkMysID( cookie );
+				bot.logger.warn( `[ MysID${ MysID } ][viewPost] 查询遇到验证码` );
+				if ( config.verifyEnable && time <= config.verifyRepeat ) {
+					const error = await bypassQueryVerification( cookie );
+					bot.logger.debug( `[ MysID${ MysID } ][viewPost] 第 ${ time + 1 } 次验证码绕过${ error ? "失败：" + error : "成功" }` );
+					return resolve( await mihoyoBBSGetFullPost( cookie, postId, ++time ) );
+				}
+				reject( config.verifyEnable ? verifyError : verifyMsg );
+			} ).catch( reason => {
+			reject( reason );
+		} );
+	} )
+}
+
+export async function mihoyoBBSUpvotePost( cookie: string, post_id: string, time: number = 0 ): Promise<any> {
+	const body = {
+		post_id: post_id,
+		is_cancel: false
+	}
+	
+	return new Promise( ( resolve, reject ) => {
+		request( {
+			method: "POST",
+			url: __API.FETCH_BBS_UPVOTE_POST,
+			headers: {
+				...HEADERS.BBS,
+				cookie: cookie,
+				DS: getDS2()
+			},
+			json: true,
+			body: body
+		} ).then( async result => {
+			if ( result.retcode !== 1034 ) {
+				return resolve( result );
+			}
+			const MysID = Cookies.checkMysID( cookie );
+			bot.logger.warn( `[ MysID${ MysID } ][upvote] 查询遇到验证码` );
+			if ( config.verifyEnable && time <= config.verifyRepeat ) {
+				const error = await bypassQueryVerification( cookie );
+				bot.logger.debug( `[ MysID${ MysID } ][upvote] 第 ${ time + 1 } 次验证码绕过${ error ? "失败：" + error : "成功" }` );
+				return resolve( await mihoyoBBSUpvotePost( cookie, post_id, ++time ) );
+			}
+			reject( config.verifyEnable ? verifyError : verifyMsg );
+		} ).catch( reason => {
+			reject( reason );
+		} )
+	} )
+}
+
+export async function mihoyoBBSSharePost( cookie: string, post_id: string, time: number = 0 ): Promise<any> {
+	const data = {
+		entity_type: 1,
+		entity_id: post_id
+	}
+	return new Promise( ( resolve, reject ) => {
+		request( {
+			method: "GET",
+			url: formatGetURL( __API.FETCH_BBS_SHARE_POST, data ),
+			headers: {
+				...HEADERS.BBS,
+				cookie: cookie,
+				DS: getDS2()
+			},
+			json: true
+		} )
+			.then( async result => {
+				if ( result.retcode !== 1034 ) {
+					return resolve( result );
+				}
+				const MysID = Cookies.checkMysID( cookie );
+				bot.logger.warn( `[ MysID${ MysID } ][share] 查询遇到验证码` );
+				if ( config.verifyEnable && time <= config.verifyRepeat ) {
+					const error = await bypassQueryVerification( cookie );
+					bot.logger.debug( `[ MysID${ MysID } ][share] 第 ${ time + 1 } 次验证码绕过${ error ? "失败：" + error : "成功" }` );
+					return resolve( await mihoyoBBSSharePost( cookie, post_id, ++time ) );
+				}
+				reject( config.verifyEnable ? verifyError : verifyMsg );
+			} )
+			.catch( reason => {
+				reject( reason );
+			} )
+	} )
+}
+
+export async function mihoyoBBSGetMyb( cookie: string, time: number = 0 ): Promise<any> {
+	const query: IParams = {
+		point_sn: "myb"
+	}
+	return new Promise( ( resolve, reject ) => {
+		request( {
+			method: "GET",
+			url: formatGetURL( __API.FETCH_BBS_GET_TASK, query ),
+			headers: {
+				...HEADERS.BBS,
+				cookie: cookie,
+				DS: getDS( query )
+			},
+			json: true
+		} )
+			.then( async result => {
+				if ( result.retcode !== 1034 ) {
+					return resolve( result );
+				}
+				const MysID = Cookies.checkMysID( cookie );
+				bot.logger.warn( `[ MysID${ MysID } ][getMyb] 查询遇到验证码` );
+				if ( config.verifyEnable && time <= config.verifyRepeat ) {
+					const error = await bypassQueryVerification( cookie );
+					bot.logger.debug( `[ MysID${ MysID } ][getMyb] 第 ${ time + 1 } 次验证码绕过${ error ? "失败：" + error : "成功" }` );
+					return resolve( await mihoyoBBSGetMyb( cookie, ++time ) );
+				}
+				reject( config.verifyEnable ? verifyError : verifyMsg );
+			} )
+			.catch( reason => {
+				reject( reason );
+			} )
+	} )
 }
 
 /* 验证码相关解决方案 */
@@ -600,7 +867,7 @@ export async function bypassQueryVerification( cookie: string, gt?: string, chal
 				"is_high": "true"
 			} ),
 			headers: {
-				...HEADERS,
+				...HEADERS.NORMAL,
 				"DS": getDS( { is_high: true } ),
 				"Cookie": cookie
 			}
@@ -654,7 +921,7 @@ export async function bypassQueryVerification( cookie: string, gt?: string, chal
 		json: true,
 		body,
 		headers: {
-			...HEADERS,
+			...HEADERS.NORMAL,
 			"DS": getDS( undefined, JSON.stringify( body ) ),
 			"Cookie": cookie
 		}
@@ -667,7 +934,7 @@ export async function bypassQueryVerification( cookie: string, gt?: string, chal
 
 export async function mihoyoBBSVerifySignIn( uid: string, region: string, cookie: string, gt: string, challenge: string ): Promise<ResponseBody> {
 	const body = {
-		act_id: activityID,
+		act_id: genshinActivityID,
 		uid, region
 	};
 	
@@ -701,7 +968,7 @@ export async function mihoyoBBSVerifySignIn( uid: string, region: string, cookie
 			json: true,
 			body,
 			headers: {
-				...SIGN_HEADERS,
+				...HEADERS.SIGN,
 				"content-type": "application/json",
 				"Cookie": cookie,
 				"DS": getDS2(),
@@ -762,22 +1029,16 @@ export async function getMultiTokenByLoginTicket( uid: number, loginTicket: stri
 		uid: uid
 	};
 	
+	
 	return new Promise( ( resolve, reject ) => {
 		request( {
 			method: "GET",
 			url: __API.FETCH_GET_MULTI_TOKEN,
 			headers: {
+				...HEADERS.BBS,
 				"host": "api-takumi.mihoyo.com",
-				"x-rpc-app_version": "2.28.1",
-				"x-rpc-channel": "mihoyo",
-				"x-rpc-client_type": "2",
-				"x-rpc-device_id": guid(),
-				"x-rpc-device_model": "SM-977N",
-				"x-rpc-device_name": "Samsung SM-G977N",
-				"x-rpc-sys_version": "12",
 				"origin": "https://webstatic.mihoyo.com",
 				"referer": "https://webstatic.mihoyo.com/",
-				"user-agent": "Mozilla/5.0 (iPhone; CPU iPhone OS 13_2_3 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) miHoYoBBS/2.28.1",
 				"x-requested-with": "com.mihoyo.hyperion",
 				"ds": generateDS(),
 				"cookie": cookie
@@ -809,7 +1070,7 @@ export async function verifyLtoken( ltoken: string, ltuid: string ): Promise<Res
 			method: "POST",
 			url: __API.FETCH_VERIFY_LTOKEN,
 			headers: {
-				...HEADERS,
+				...HEADERS.NORMAL,
 				Referer: "https://bbs.mihoyo.com/",
 				cookie: cookie
 			},
@@ -838,7 +1099,7 @@ export async function getLTokenBySToken( stoken: string, mid: string ): Promise<
 			method: "GET",
 			url: __API.FETCH_GET_LTOKEN_BY_STOKEN,
 			headers: {
-				...HEADERS,
+				...HEADERS.NORMAL,
 				cookie: cookie,
 				DS: getDS( undefined, undefined )
 			},
@@ -855,7 +1116,4 @@ export async function getLTokenBySToken( stoken: string, mid: string ): Promise<
 			reject( reason );
 		} )
 	} )
-	
 }
-
-
