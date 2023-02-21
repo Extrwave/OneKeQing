@@ -123,6 +123,9 @@ export class SignInService implements Service {
 	
 	public async bbsSign( reply: boolean = false ) {
 		const { mysID, cookie, stoken } = this.parent.setting;
+		if ( !stoken ) {
+			return;
+		}
 		try {
 			bot.logger.info( `[MysID ${ mysID }] 执行每日米游社任务` );
 			const content = await mihoyoBBSTaskPromise( mysID, stoken );

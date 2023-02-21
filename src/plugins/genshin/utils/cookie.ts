@@ -86,7 +86,7 @@ export async function checkMysCookieInvalid( rawCookie: string ): Promise<Filter
 		//根据Stoken获取cookie_token
 		const { cookie_token } = await getCookieTokenBySToken( stoken, mid, login_uid );
 		CTOKEN = `ltoken=${ ltoken }; ltuid=${ login_uid }; account_id=${ login_uid }; cookie_token=${ cookie_token };`;
-		STOKEN = `stoken=${ stoken }; stuid=${ login_uid }; mid=${ mid }`;
+		// STOKEN = `stoken=${ stoken }; stuid=${ login_uid }; mid=${ mid }`;
 	}
 	/* 其次处理SToken */
 	else if ( rawCookie.includes( "stoken=" ) && rawCookie.includes( "mid=" ) && rawCookie.includes( "stuid" ) ) {
