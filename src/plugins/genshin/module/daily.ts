@@ -8,7 +8,6 @@ import { take } from "lodash";
 import { RenderResult } from "@modules/renderer";
 import { renderer } from "#genshin/init";
 import { calendarPromise } from "#genshin/utils/promise";
-import { getMemberInfo } from "@modules/utils/account";
 
 export interface DailyMaterial {
 	"Mon&Thu": string[];
@@ -102,7 +101,7 @@ export class DailyClass {
 			this.detail = await getDailyMaterial();
 		} );
 		
-		scheduleJob( "0 0 6 * * *", async () => {
+		scheduleJob( "0 0 7 * * *", async () => {
 			const date: Date = new Date();
 			
 			/* 获取当日副本对应的角色和武器 */
@@ -112,7 +111,7 @@ export class DailyClass {
 			
 			/* 获取所有角色和武器的信息 */
 			await this.getAllData( week, todayInfoSet, true );
-
+			
 			/* 私发订阅信息 */
 			const users: string[] = await bot.redis.getKeysByPrefix( "silvery-star.daily-sub-" );
 			
@@ -122,26 +121,19 @@ export class DailyClass {
 				if ( data === undefined ) {
 					continue;
 				}
-				await data.save( userID );
-				const res: RenderResult = await getRenderResult( userID, true );
-				if ( res.code === "error" ) {
-					const sendToMaster = await bot.message.getSendMasterFunc();
-					await sendToMaster( "每日素材订阅图片渲染异常\n" + res.data );
-					continue;
-				}
-				const randomMinute: number = randomInt( 3, 59 );
-				date.setMinutes( randomMinute );
+				await data.save( userID ); //保存订阅数据
 				
-				scheduleJob( date, async () => {
-					const info = await getMemberInfo( userID );
-					if ( !info ) {
-						bot.logger.error( "私信发送失败，检查成员是否退出频道 ID：" + userID );
+				const randomMinute: number = randomInt( 3, 59 ) * 1000 * 60;
+				
+				scheduleJob( Date.now() + randomMinute, async () => {
+					const res: RenderResult = await getRenderResult( userID, true );
+					const sendToUser = await bot.message.getPostPrivateFunc( userID );
+					if ( res.code === "base64" ) {
+						sendToUser ? await sendToUser( { content: "今日材料如下", file_image: res.data } ) : "";
+					} else if ( res.code === "url" ) {
+						sendToUser ? await sendToUser( { content: "今日材料如下", image: res.data } ) : "";
 					} else {
-						const sendMessage = await bot.message.getSendPrivateFunc( userID, info.guildId );
-						if ( res.code === "base64" )
-							await sendMessage( { content: "今日材料如下", file_image: res.data } );
-						if ( res.code === "url" )
-							await sendMessage( { content: "今日材料如下", image: res.data } );
+						sendToUser ? await sendToUser( "每日素材订阅图片渲染异常\n" + res.data ) : "";
 					}
 				} );
 			}
@@ -243,13 +235,13 @@ export class DailyClass {
 			return { code: "error", data: "周日所有材料都可以刷取哦~" };
 		}
 		
-		const data: DailySet | undefined = await this.getUserSubList( userID, initWeek === undefined ? undefined : week );
-		/* 是否是订阅数据 */
-		const subState = data !== undefined;
-		const set = data === undefined ? new DailySet( this.getDataSet( week ), this.eventData ) : data;
-		
-		await set.save( userID );
-		return await getRenderResult( userID, subState, initWeek === undefined ? undefined : week );
+		/* 是否是订阅数据，主动查询不涉及订阅数据 */
+		// const data: DailySet | undefined = await this.getUserSubList( userID, initWeek === undefined ? undefined : week );
+		// const subState = data !== undefined;
+		// const set = data === undefined ? new DailySet( this.getDataSet( week ), this.eventData ) : data;
+		// await set.save( userID );
+		await new DailySet( this.getDataSet( week ), this.eventData ).save( userID );
+		return await getRenderResult( userID, false, initWeek === undefined ? undefined : week );
 	}
 	
 	public async modifySubscription( userID: string, operation: boolean, name: string ): Promise<string> {

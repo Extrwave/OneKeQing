@@ -13,8 +13,9 @@ import fetch from "node-fetch";
 import { Sleep } from "@modules/utils";
 import { config } from "#genshin/init";
 import * as ApiType from "#genshin/types";
-import { randomString } from "#genshin/utils/random";
+import { randomInt, randomString } from "#genshin/utils/random";
 import { Cookies } from "#genshin/module";
+import { getBBSItemForumIds } from "#genshin/utils/region";
 
 const __API = {
 	/* 云端相关配置 */
@@ -46,6 +47,7 @@ const __API = {
 	FETCH_BBS_LIST: "https://bbs-api.miyoushe.com/apihub/api/getGameList",
 	FETCH_BBS_SIGN_INFO: "https://bbs-api.miyoushe.com/apihub/sapi/querySignInStatus",
 	FETCH_BBS_SIGN_IN: "https://bbs-api.miyoushe.com/apihub/app/api/signIn",
+	FETCH_BBS_GET_ALL_FORUM: "https://bbs-api-static.miyoushe.com/apihub/wapi/getAllGamesForums",
 	FETCH_BBS_GET_POST: "https://bbs-api.miyoushe.com/post/wapi/getForumPostList",
 	FETCH_BBS_FULL_POST: "https://bbs-api.miyoushe.com/post/api/getPostFull",
 	FETCH_BBS_UPVOTE_POST: "https://bbs-api.miyoushe.com/apihub/sapi/upvotePost",
@@ -685,11 +687,10 @@ export async function mihoyoBBSItemSign( mysID: number, gids: number, cookie: st
 }
 
 export async function mihoyoBBSGetPosts( cookie: string, gids: number, last_id: string = "", time: number = 0 ): Promise<any> {
+	const forumIds = getBBSItemForumIds( gids );
 	const query: IParams = {
-		gids: gids,
-		forum_id: 26,
-		is_good: "false",
-		is_hot: "true"
+		forum_id: forumIds[randomInt( 0, forumIds.length - 1 )],
+		page_size: 10
 	}
 	return new Promise( ( resolve, reject ) => {
 		request( {

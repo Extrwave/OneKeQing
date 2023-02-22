@@ -538,6 +538,7 @@ export async function calendarPromise(): Promise<ApiType.CalendarData[]> {
 export async function mihoyoBBSTaskPromise( mysID: number, stoken: string ): Promise<string[]> {
 	const content: string[] = [ `米游社账号：${ mysID }` ];
 	const bbsItems: BBSGameItem[] = await mihoyoGetBBSGameItemPromise();
+	const posts: any[] = [];
 	// 各个版块签到
 	if ( bbsItems && bbsItems.length >= 0 ) {
 		for ( let bbsItem of bbsItems ) {
@@ -549,6 +550,10 @@ export async function mihoyoBBSTaskPromise( mysID: number, stoken: string ): Pro
 				}
 				const result = await mihoyoBBSItemSignPromise( mysID, bbsItem.id, stoken );
 				content.push( `[${ bbsItem.name }] ${ result }` );
+				bot.logger.debug( `[MysID ${ mysID }] [${ bbsItem.name }] ${ result }` );
+				const post = await mihoyoGetPostsPromise( stoken, bbsItem.id );
+				post.length > 0 ? bot.logger.debug( `[MysID ${ mysID }] 获取 ${ bbsItem.name } 分区帖子成功` ) : "";
+				posts.push( ...post );
 				await randomSleep( 5, 10, true );
 			} catch ( error ) {
 				content.push( `[${ bbsItem.name }] ${ <string>error }` );
@@ -560,18 +565,19 @@ export async function mihoyoBBSTaskPromise( mysID: number, stoken: string ): Pro
 	
 	//米游社各项任务
 	let scanAck = 0;
-	const data = await mihoyoGetPostsPromise( stoken );
-	for ( let post of data ) {
+	for ( let post of posts ) {
 		try {
 			await mihoyoGetFullPostPromise( stoken, post.post.post_id );
 			await mihoyoBBSUpvotePostPromise( stoken, post.post.post_id );
 			await mihoyoBBSSharePostPromise( stoken, post.post.post_id );
+			bot.logger.debug( `[MysID ${ mysID }] 浏览点赞分享帖子：${ post.post.subject }` );
 			scanAck++;
-			if ( scanAck >= 8 ) break;
+			await randomSleep( 5, 10, true );
 		} catch ( error ) {
 			content.push( `[帖子] ` + <string>error );
 		}
 	}
+	bot.logger.debug( `[MysID ${ mysID }] 成功浏览点赞分享 ${ scanAck } 个帖子` );
 	content.push( `成功浏览点赞分享帖子 ${ scanAck } 个` );
 	content.push( `浏览点赞帖子可能暂时无效` );
 	return Array.from( new Set( content ) );
@@ -615,7 +621,7 @@ async function mihoyoBBSItemSignPromise(
 	} )
 }
 
-async function mihoyoGetPostsPromise( cookie: string, gids: number = 2, last_id: string = "" ): Promise<any> {
+async function mihoyoGetPostsPromise( cookie: string, gids: number = 26, last_id: string = "" ): Promise<[]> {
 	const { retcode, message, data } = await api.mihoyoBBSGetPosts( cookie, gids, last_id );
 	return new Promise( ( resolve, reject ) => {
 		if ( retcode === -100 || retcode !== 0 || !data.list || data.list.length <= 0 ) {

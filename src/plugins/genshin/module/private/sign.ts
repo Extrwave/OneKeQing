@@ -21,7 +21,8 @@ scheduleJob( "0 5 0 * * *", async () => {
 export class SignInService implements Service {
 	public readonly parent: Private;
 	public enable: boolean;
-	private job?: Job;
+	private gameJob?: Job;
+	private bbsJob?: Job;
 	
 	public FixedField = <const>"sign";
 	static FixedField = <const>"sign";
@@ -38,16 +39,10 @@ export class SignInService implements Service {
 	public async loadedHook(): Promise<void> {
 		if ( this.enable ) {
 			const delay: number = randomInt( 0, 99 );
+			/* 启动时候签到一小时内进行 */
 			setTimeout( async () => {
 				this.setScheduleJob();
 			}, delay * 100 );
-			/* 启动时候签到一小时内进行 */
-			const signDelay: number = randomInt( 0, 3600 );
-			setTimeout( async () => {
-				await this.gameSign();
-				await randomSleep( 3, 6, true );
-				await this.bbsSign();
-			}, signDelay );
 		}
 	}
 	
@@ -64,9 +59,9 @@ export class SignInService implements Service {
 	public async toggleEnableStatus( status?: boolean ): Promise<string> {
 		this.enable = status === undefined ? !this.enable : status;
 		if ( this.enable ) {
-			await this.gameSign( true );
-			await this.bbsSign( true );
 			this.setScheduleJob();
+			this.gameSign( true ).catch();
+			this.bbsSign( true ).catch();
 		} else {
 			this.cancelScheduleJob();
 		}
@@ -147,14 +142,21 @@ export class SignInService implements Service {
 	}
 	
 	private setScheduleJob(): void {
-		this.job = scheduleJob( "0 30 7 * * *", () => {
+		this.gameJob = scheduleJob( "0 30 7 * * *", () => {
 			/* 每日签到一小时内内随机进行 */
 			const sec: number = randomInt( 0, 360 );
 			const time = new Date().setSeconds( sec * 10 );
-			
 			const job: Job = scheduleJob( time, async () => {
 				await this.gameSign( true );
-				await randomSleep( 3, 6, true );
+				job.cancel();
+			} );
+		} );
+		
+		this.bbsJob = scheduleJob( "0 30 8 * * *", () => {
+			/* 每日签到5小时内内随机进行 */
+			const sec: number = randomInt( 0, 360 * 5 );
+			const time = new Date().setSeconds( sec * 10 );
+			const job: Job = scheduleJob( time, async () => {
 				await this.bbsSign( true );
 				job.cancel();
 			} );
@@ -162,8 +164,11 @@ export class SignInService implements Service {
 	}
 	
 	private cancelScheduleJob(): void {
-		if ( this.job !== undefined ) {
-			this.job.cancel();
+		if ( this.gameJob !== undefined ) {
+			this.gameJob.cancel();
+		}
+		if ( this.bbsJob !== undefined ) {
+			this.bbsJob.cancel();
 		}
 	}
 }
