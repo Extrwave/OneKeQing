@@ -343,7 +343,7 @@ const privateToggleNote: OrderConfig = {
 const privateLedger: OrderConfig = {
 	type: "order",
 	cmdKey: "silvery-star-private-ledger",
-	desc: [ "旅行札记", "(序号) [月份]" ],
+	desc: [ "札记", "(序号) [月份]" ],
 	headers: [ "led" ],
 	regexps: [ "(\\d+)?", "(\\d+)?" ],
 	main: "achieves/private/query/ledger",

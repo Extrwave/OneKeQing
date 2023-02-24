@@ -1,7 +1,7 @@
-import { BasicConfig, CommandInfo, Unmatch } from "./main";
-import BotSetting from "../config";
 import bot from "ROOT";
+import BotSetting from "../config";
 import { escapeRegExp } from "lodash";
+import { BasicConfig, CommandInfo, Unmatch } from "./main";
 
 export interface OrderMatchResult {
 	type: "order";
@@ -133,6 +133,10 @@ export class Order extends BasicConfig {
 		return Order.addLineFeedChar(
 			this.desc[0], follow
 		);
+	}
+	
+	public getCNHeader(): string {
+		return bot.setting.header + this.desc[0];
 	}
 	
 	public getHeaders(): string[] {

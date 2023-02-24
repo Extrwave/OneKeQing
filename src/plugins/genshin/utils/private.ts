@@ -47,7 +47,7 @@ export async function getPrivateAccount( userID: string, idMsg: string = "1" ): 
 			"深渊查询         旅行札记\n" +
 			"质变仪提醒    详细主页查询\n\n" +
 			"如需添加授权，请私聊发送\n" +
-			`[  ${ PRIVATE_ADD.getHeaders()[0] }  ] 并按照提示完成操作`;
+			`[  ${ PRIVATE_ADD.getCNHeader() }  ] 并按照提示完成操作`;
 	} else if ( accounts.length - 1 < id || id === -1 ) {
 		const PRIVATE_LIST = <Order>bot.command.getSingle( "silvery-star-private-list", AuthLevel.Master );
 		return `无效的序号，请使用 ${ PRIVATE_LIST.getHeaders()[0] } 检查`;
