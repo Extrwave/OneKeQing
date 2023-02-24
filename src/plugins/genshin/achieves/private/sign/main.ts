@@ -17,7 +17,7 @@ export async function main( { sendMessage, messageData }: InputParameter ): Prom
 	} else {
 		await sendMessage( "开始米游社原神签到..." );
 		await ( <SignInService>single.services[SignInService.FixedField] ).gameSign( true );
-		await sendMessage( "开始米游币任务签到..." )
+		await sendMessage( "开始米游币任务签到，请耐心等待..." );
 		await ( <SignInService>single.services[SignInService.FixedField] ).bbsSign( true );
 	}
 }

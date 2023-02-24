@@ -119,10 +119,10 @@ export class SignInService implements Service {
 	public async bbsSign( reply: boolean = false ) {
 		const { mysID, cookie, stoken } = this.parent.setting;
 		if ( !stoken ) {
-			return;
+			return reply ? await sendMessage( "未授权SToken，无法支持此任务", this.parent.setting.userID ) : "";
 		}
 		try {
-			bot.logger.info( `[MysID ${ mysID }] 执行每日米游社任务` );
+			bot.logger.info( `[MysID ${ mysID }] 执行每日米游社任务，请耐心等待...` );
 			const content = await mihoyoBBSTaskPromise( mysID, stoken );
 			const mybData = await mihoyoBBSGetMybPromise( cookie );
 			content.push( `今日获取米游币：${ mybData.today_total_points - mybData.can_get_points }` );
@@ -142,7 +142,7 @@ export class SignInService implements Service {
 	}
 	
 	private setScheduleJob(): void {
-		this.gameJob = scheduleJob( "0 30 7 * * *", () => {
+		this.gameJob = scheduleJob( "0 5 6 * * *", () => {
 			/* 每日签到一小时内内随机进行 */
 			const sec: number = randomInt( 0, 360 );
 			const time = new Date().setSeconds( sec * 10 );
@@ -152,9 +152,9 @@ export class SignInService implements Service {
 			} );
 		} );
 		
-		this.bbsJob = scheduleJob( "0 30 8 * * *", () => {
-			/* 每日签到5小时内内随机进行 */
-			const sec: number = randomInt( 0, 360 * 5 );
+		this.bbsJob = scheduleJob( "0 7 8 * * *", () => {
+			/* 每日签到两小时内内随机进行 */
+			const sec: number = randomInt( 0, 360 * 2 );
 			const time = new Date().setSeconds( sec * 10 );
 			const job: Job = scheduleJob( time, async () => {
 				await this.bbsSign( true );

@@ -3,6 +3,8 @@
  * 角色数据
  * @avatars 角色数据列表
  * */
+import { Skills } from "#genshin/types/avatar";
+
 export interface Character {
 	type: "character";
 	avatars: Avatar[];
@@ -171,6 +173,7 @@ export type CharacterInformation = {
 	constellations: CharacterCon;
 	artifacts: CharacterArt;
 	effects: CharacterEffect;
+	skills?: Skills;
 } & CharacterBase;
 
 export type ArtifactSetStat = {

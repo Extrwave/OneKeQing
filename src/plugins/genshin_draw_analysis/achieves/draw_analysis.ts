@@ -47,7 +47,7 @@ export async function main(
 	let url = await redis.getString( `${ DB_KEY.ANALYSIS_URL }-${ uid }` );
 	if ( !url || url.indexOf( "http" ) <= -1 ) {
 		let info: Private | string | undefined;
-		// 从私人服务获取V2版本Cookie
+		// 从私人服务获取SToken
 		let cookie = account.setting.stoken;
 		let game_uid = account.setting.uid;
 		let server = account.setting.server;
@@ -56,7 +56,7 @@ export async function main(
 		try {
 			if ( !cookie ) {
 				const PR = <Order>bot.command.getSingle( "silvery-star-private-replace", AuthLevel.Master );
-				await sendMessage( `需要V2版本Cookie，请查看教程获取并通过 ${ PR.getHeaders()[0] } 更新` );
+				await sendMessage( `需要SToken，请查看教程获取并通过 ${ PR.getHeaders()[0] } 更新` );
 				return;
 			}
 			

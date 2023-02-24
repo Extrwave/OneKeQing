@@ -78,10 +78,6 @@ export async function main(
 	}
 	try {
 		const dbKey: string = `silvery-star.character-temp-${ userID }`;
-		const skills: Skills = await mysAvatarDetailInfoPromise(
-			uid, charID, server, cookie, charInfo.constellations
-		);
-		
 		const coefficients: number[] = [ 20, 15, 30, 35 ];
 		const list: ScoreItem[] = [ {
 			label: "圣遗物",
@@ -94,10 +90,10 @@ export async function main(
 			percentage: charInfo.level / 90
 		}, {
 			label: "天赋升级",
-			percentage: Math.min(
-				skills.reduce(
+			percentage: charInfo.skills ? Math.min(
+				charInfo.skills.reduce(
 					( pre, cur ) => pre + cur.levelCurrent, 0 ), 24
-			) / 24
+			) / 24 : 0
 		} ];
 		
 		const score: EvaluateScore = {
@@ -109,7 +105,6 @@ export async function main(
 		
 		await redis.setString( dbKey, JSON.stringify( {
 			...charInfo,
-			skills,
 			score,
 			uid
 		} ) );

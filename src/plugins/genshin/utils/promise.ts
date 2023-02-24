@@ -3,7 +3,7 @@ import { omit, pick, set } from "lodash";
 import { Cookies } from "#genshin/module";
 import * as ApiType from "#genshin/types";
 import * as api from "#genshin/utils/api";
-import { Award, BBSGameItem, CharacterCon } from "#genshin/types";
+import { Award, BBSGameItem, CharacterCon, Skills } from "#genshin/types";
 import { characterID, cookies } from "#genshin/init";
 import {
 	getCalendarDetail,
@@ -200,7 +200,14 @@ export async function characterInfoPromise(
 			} )
 		}
 		
-		avatars.push( { ...base, weapon, constellations, artifacts, effects } );
+		/* 新增获取角色技能信息 */
+		let skills: Skills | undefined;
+		if ( !isPublic ) {
+			skills = await mysAvatarDetailInfoPromise(
+				uid.toString(), char.id, server, cookie, constellations
+			).catch();
+		}
+		avatars.push( { ...base, weapon, constellations, artifacts, effects, skills } );
 	}
 	
 	await bot.redis.setHash( `silvery-star.card-data-${ uid }`, {

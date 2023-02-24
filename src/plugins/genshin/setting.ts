@@ -316,7 +316,7 @@ const privateToggleSign: OrderConfig = {
 	desc: [ "开关签到", "[序号]" ],
 	headers: [ "signin" ],
 	regexps: [ "(\\d+)?" ],
-	main: "achieves/private/sign-in/main",
+	main: "achieves/private/sign/switch",
 	detail: "该指令用于切换米游社签到的开/关状态"
 };
 
@@ -326,7 +326,7 @@ const privateSign: OrderConfig = {
 	desc: [ "签到", "(序号)" ],
 	headers: [ "sign" ],
 	regexps: [ "(\\d+)?" ],
-	main: "achieves/private/sign-in/sign",
+	main: "achieves/private/sign/main",
 	detail: "该指令用于手动米游社签到"
 };
 
