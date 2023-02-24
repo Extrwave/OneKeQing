@@ -15,7 +15,7 @@ async function cancelPrivate( userID: string, id: number ): Promise<string> {
 			"深渊查询         旅行札记\n" +
 			"质变仪提醒    详细主页查询\n\n" +
 			"如需添加授权，请私聊发送\n" +
-			`[  ${ PRIVATE_ADD.getHeaders()[0] }  ] 并按照提示完成操作`;
+			`[  ${ PRIVATE_ADD.getCNHeader() }  ] 并按照提示完成操作`;
 	}
 	return `[ UID${ await privateClass.delSinglePrivate( userID, id ) } ] 授权服务已取消`;
 }

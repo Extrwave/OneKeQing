@@ -62,23 +62,6 @@ export async function main(
 					sendMasterFunc( { image: "https://" + value.url } );
 				} );
 			}
-			const messageRes = await sendMasterFunc( `引用此消息回复：[ ${ name } ]` );
-			await sendMessage( `已将消息发送给开发者啦 ~ ` );
-			if ( !messageRes || !messageRes.id ) {
-				throw new Error( "发送消息返回对象异常" );
-			}
-			const dbKey = `${ __RedisKey.MESSAGE_CALL_PASSIVE }-${ messageRes.id }`;
-			const gdbKey = `${ __RedisKey.MESSAGE_CALL_INITIATIVE }-${ messageRes.id }`;
-			if ( msgType === MessageType.Private ) {
-				await redis.setHashField( dbKey, "msgId", msgId );
-			} else {
-				await redis.setHashField( dbKey, "channelId", channelId );
-				await redis.setHashField( dbKey, "msgId", msgId );
-			}
-			await redis.setHashField( gdbKey, "srcGuild", guildId );
-			await redis.setHashField( gdbKey, "userId", userId );
-			await redis.setTimeout( gdbKey, 3600 * 12 ); //主动回复限制12小时内，应该可以自己改长一点
-			await redis.setTimeout( dbKey, 300 ); //被动回复5分钟有效
 		} catch ( error ) {
 			await sendMessage( `消息发送失败，原因：\n${ error }\n请前往BOT资料卡上官频反馈` );
 			return;
