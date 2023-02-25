@@ -98,10 +98,6 @@ export default class Plugin {
 						if ( loaded ) cmd.Switch.read( config, loaded );
 						command = new cmd.Switch( config, bot.setting, pluginName );
 						break;
-					case "enquire":
-						if ( loaded ) cmd.Enquire.read( config, loaded );
-						command = new cmd.Enquire( config, bot.setting, pluginName );
-						break;
 				}
 				data[key] = command.write();
 				commands.push( command );

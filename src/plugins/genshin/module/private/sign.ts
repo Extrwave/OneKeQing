@@ -53,7 +53,7 @@ export class SignInService implements Service {
 	public async initTest(): Promise<string> {
 		const TOGGLE_SIGN = <Order>bot.command.getSingle( "silvery-star-private-toggle-sign" );
 		const content = await this.toggleEnableStatus( true );
-		return `${ content }\n「${ TOGGLE_SIGN.getHeaders()[0] }+序号」开关签到功能`;
+		return `${ content }\n[ ${ TOGGLE_SIGN.getCNHeader() }+序号 ] 开关签到功能`;
 	}
 	
 	public async toggleEnableStatus( status?: boolean ): Promise<string> {
@@ -119,7 +119,7 @@ export class SignInService implements Service {
 	public async bbsSign( reply: boolean = false ) {
 		const { mysID, cookie, stoken } = this.parent.setting;
 		if ( !stoken ) {
-			return reply ? await sendMessage( "未授权SToken，无法支持此任务", this.parent.setting.userID ) : "";
+			return reply ? await sendMessage( `[MysID ${ mysID }] 未授权SToken，无法支持此任务`, this.parent.setting.userID ) : "";
 		}
 		try {
 			bot.logger.info( `[MysID ${ mysID }] 执行每日米游社任务，请耐心等待...` );

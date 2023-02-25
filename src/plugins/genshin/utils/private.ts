@@ -50,7 +50,7 @@ export async function getPrivateAccount( userID: string, idMsg: string = "1" ): 
 			`[  ${ PRIVATE_ADD.getCNHeader() }  ] 并按照提示完成操作`;
 	} else if ( accounts.length - 1 < id || id === -1 ) {
 		const PRIVATE_LIST = <Order>bot.command.getSingle( "silvery-star-private-list", AuthLevel.Master );
-		return `无效的序号，请使用 ${ PRIVATE_LIST.getHeaders()[0] } 检查`;
+		return `无效的序号，请使用 [ ${ PRIVATE_LIST.getCNHeader() } ] 检查`;
 	}
 	return accounts[id];
 }

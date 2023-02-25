@@ -56,7 +56,7 @@ export async function main(
 		try {
 			if ( !cookie ) {
 				const PR = <Order>bot.command.getSingle( "silvery-star-private-replace", AuthLevel.Master );
-				await sendMessage( `需要SToken，请查看教程获取并通过 ${ PR.getHeaders()[0] } 更新` );
+				await sendMessage( `需要SToken，请查看教程获取并通过 [ ${ PR.getCNHeader() } ] 更新` );
 				return;
 			}
 			

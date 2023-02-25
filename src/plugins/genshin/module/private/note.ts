@@ -73,8 +73,8 @@ export class NoteService implements Service {
 			const SET_TIME = <Order>bot.command.getSingle( "silvery-star-note-set-time", AuthLevel.Master );
 			const TOGGLE_NOTE = <Order>bot.command.getSingle( "silvery-star-private-toggle-note", AuthLevel.Master );
 			
-			const appendSetTime = SET_TIME ? `「${ SET_TIME.getHeaders()[0] }+账户序号+树脂量」调整推送条件\n` : "";
-			const appendToggleNote = TOGGLE_NOTE ? `「${ TOGGLE_NOTE.getHeaders()[0] }+账户序号」关闭上述推送\n` : "";
+			const appendSetTime = SET_TIME ? `[ ${ SET_TIME.getCNHeader() }+账户序号+树脂量 ] 调整推送条件\n` : "";
+			const appendToggleNote = TOGGLE_NOTE ? `[ ${ TOGGLE_NOTE.getCNHeader() }+账户序号 ] 关闭上述推送\n` : "";
 			
 			return "\n实时便笺功能已开启：\n" +
 				"树脂数量达到 120 和 155 时会私聊推送\n" +

@@ -54,7 +54,7 @@ const __API = {
 	FETCH_BBS_SHARE_POST: "https://bbs-api.miyoushe.com/apihub/api/getShareConf",
 	FETCH_BBS_GET_TASK: "https://api-takumi.mihoyo.com/apihub/wapi/getUserMissionsState",
 	/* 验证码服务相关 */
-	FETCH_GET_VERIFY: "https://challenge.minigg.cn",
+	FETCH_GET_VERIFY: "http://challenge.minigg.co/geetest",
 	FETCH_GEETEST: "https://api.geetest.com/gettype.php",
 	FETCH_CREATE_VERIFICATION: "https://api-takumi-record.mihoyo.com/game_record/app/card/wapi/createVerification",
 	FETCH_VERIFY_VERIFICATION: "https://api-takumi-record.mihoyo.com/game_record/app/card/wapi/verifyVerification",

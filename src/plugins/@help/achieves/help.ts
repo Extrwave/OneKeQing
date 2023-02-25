@@ -62,8 +62,8 @@ async function cardStyle( i: InputParameter, commands: BasicConfig[], version: s
 	const cmdList: HelpCommand[] = commands.map( ( cmd, cKey ) => {
 		return {
 			id: cKey + 1,
-			header: cmd.desc[0],
-			body: cmd.getFollow(),
+			header: cmd.getCNHeader(),
+			body: cmd.getParams(),
 			cmdKey: cmd.cmdKey,
 			detail: cmd.detail,
 			pluginName: PluginCNames[cmd.pluginName]
@@ -154,7 +154,7 @@ export async function main( i: InputParameter ): Promise<void> {
 		}, "" );
 		await i.sendMessage( title + keys );
 	} else {
-		const msgList: string[] = commands.map( el => `${ ++ID }. ${ el.getDesc() }` );
+		const msgList: string[] = commands.map( el => `${ ++ID }. ${ el.getCNDesc() }` );
 		await getHelpMessage( title, version, commands, msgList, i );
 	}
 }

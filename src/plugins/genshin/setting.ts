@@ -105,15 +105,15 @@ const slip: OrderConfig = {
 
 const alias: SwitchConfig = {
 	type: "switch",
-	mode: "single",
+	mode: "divided",
 	cmdKey: "silvery-star-alias-customize",
-	desc: [ "修改别名", "#{OPT} [本名] [别名]" ],
-	header: "alias",
-	regexp: [ "#{OPT}", "[\\u4e00-\\u9fa5]+", "[\\w\\u4e00-\\u9fa5]+" ],
+	desc: [ "别名相关", "[本名] [别名]" ],
+	header: "",
+	regexp: [ "[\\u4e00-\\u9fa5]+", "[\\w\\u4e00-\\u9fa5]+" ],
 	main: "achieves/alias",
 	auth: AuthLevel.Manager,
-	onKey: "add",
-	offKey: "del",
+	onKey: "添加别名",
+	offKey: "删除别名",
 	detail: "本指令用于修改角色或武器名的别名\n" +
 		"如当你为「枫原万叶」设置别名「天帝」后\n" +
 		"使用角色信息、信息查询等功能时\n" +
@@ -122,14 +122,14 @@ const alias: SwitchConfig = {
 
 const daily: SwitchConfig = {
 	type: "switch",
-	mode: "single",
+	mode: "divided",
 	cmdKey: "silvery-star-daily",
-	desc: [ "材料订阅", "#{OPT} [角色|武器|活动]" ],
-	header: "sub",
-	regexp: [ "#{OPT}", "[\\w\\u4e00-\\u9fa5]+" ],
+	desc: [ "", "[角色|武器|活动]" ],
+	header: "",
+	regexp: [ "[\\w\\u4e00-\\u9fa5]+" ],
 	main: "achieves/daily",
-	onKey: "add",
-	offKey: "del",
+	onKey: "添加订阅",
+	offKey: "移除订阅",
 	detail: "为自己添加/删除角色天赋/武器的突破材料以及当前进行中的活动订阅\n" +
 		"每天的 6:00~7:00 随机时间进行推送\n"
 };
@@ -294,8 +294,8 @@ const privateAbyssQuery: SwitchConfig = {
 	regexp: [ "(\\d+)?" ],
 	main: "achieves/private/query/abyss",
 	stop: false,
-	onKey: "caby",
-	offKey: "laby",
+	onKey: "本期深渊",
+	offKey: "上期深渊",
 	detail: "分别为查询上期与本期的深渊数据\n"
 };
 
@@ -343,7 +343,7 @@ const privateToggleNote: OrderConfig = {
 const privateLedger: OrderConfig = {
 	type: "order",
 	cmdKey: "silvery-star-private-ledger",
-	desc: [ "札记", "(序号) [月份]" ],
+	desc: [ "旅行札记", "(序号) [月份]" ],
 	headers: [ "led" ],
 	regexps: [ "(\\d+)?", "(\\d+)?" ],
 	main: "achieves/private/query/ledger",
@@ -354,7 +354,7 @@ const privateLedger: OrderConfig = {
 const privateCommit: OrderConfig = {
 	type: "order",
 	cmdKey: "silvery-star-private-commit",
-	desc: [ "贡献Cookie", "" ],
+	desc: [ "贡献CK", "" ],
 	headers: [ "commit" ],
 	regexps: [],
 	ignoreCase: true,

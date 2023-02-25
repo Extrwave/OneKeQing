@@ -1,6 +1,7 @@
-import { BasicConfig, CommandInfo, Unmatch } from "./main";
+import bot from "ROOT";
 import BotSetting from "../config";
 import { escapeRegExp, trimStart } from "lodash";
+import { BasicConfig, CommandInfo, Unmatch } from "./main";
 
 export interface SwitchMatchResult {
 	type: "switch";
@@ -150,29 +151,58 @@ export class Switch extends BasicConfig {
 	}
 	
 	public getFollow(): string {
-		const param = this.desc[1];
 		const [ onKey, offKey ] = this.keys;
 		
-		let header: string, follow: string;
+		let header: string;
 		
 		if ( this.mode === "single" ) {
-			const swi: string = `[${ onKey }|${ offKey }]`;
-			follow = param.replace( "#{OPT}", swi );
 			header = this.header;
 		} else {
-			header = `${ onKey }|${ offKey }`;
-			follow = param.replace( /#{OPT}/, "" )
-				.trim()
-				.replace( /\s+/g, " " );
+			header = `${ onKey } | ${ offKey }`;
 		}
-		return `${ header } ${ follow }`;
+		return `${ header } ${ this.getParams() }`;
 	}
 	
 	public getDesc(): string {
 		const follow = this.getFollow();
-		
 		return Switch.addLineFeedChar(
 			this.desc[0], follow
 		);
+	}
+	
+	public getParams(): string {
+		const param = this.desc[1];
+		const [ onKey, offKey ] = this.keys;
+		if ( this.mode === "single" ) {
+			const swi: string = `[${ onKey } | ${ offKey }]`;
+			return param.replace( "#{OPT}", swi );
+		} else {
+			return param.replace( /#{OPT}/, "" )
+				.trim()
+				.replace( /\s+/g, " " );
+		}
+	}
+	
+	public getCNHeader(): string {
+		const [ onKey, offKey ] = this.keys;
+		if ( this.mode === "single" ) {
+			return bot.setting.header + this.desc[0];
+		} else {
+			return `${ onKey } | ${ offKey }`;
+		}
+	}
+	
+	/* 获取中文指令帮助 */
+	public getCNDesc(): string {
+		let header = this.getCNHeader();
+		let param = this.getParams();
+		const [ onKey, offKey ] = this.keys;
+		if ( this.mode === "single" ) {
+			const swi: string = `[${ onKey } | ${ offKey }]`;
+			param = param.replace( "#{OPT}", swi ).trim();
+		} else {
+			param = param.replace( "#{OPT}", "" ).trim();
+		}
+		return `${ header } ${ param }`;
 	}
 }

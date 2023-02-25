@@ -135,11 +135,21 @@ export class Order extends BasicConfig {
 		);
 	}
 	
+	public getHeaders(): string[] {
+		return this.regPairs.map( el => el.header );
+	}
+	
+	/* 获取中文指令头 */
 	public getCNHeader(): string {
 		return bot.setting.header + this.desc[0];
 	}
 	
-	public getHeaders(): string[] {
-		return this.regPairs.map( el => el.header );
+	public getParams(): string {
+		return this.desc[1];
+	}
+	
+	/* 获取中文指令帮助 */
+	public getCNDesc(): string {
+		return `${ this.getCNHeader() } ${ this.getParams() }`;
 	}
 }

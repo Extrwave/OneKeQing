@@ -53,7 +53,7 @@ export async function main(
 			`频道：${ guildInfo?.name }`,
 			`消息：\n\n`,
 			`  ${ content }\n\n`,
-			`使用 ${ REPLY_USER.getHeaders()[0] } 引用消息快捷回复 ~ `
+			`使用 [ ${ REPLY_USER.getCNHeader() } ] 引用消息快捷回复 ~ `
 		)
 		try {
 			await sendMasterFunc( { embed: embedMsg } );

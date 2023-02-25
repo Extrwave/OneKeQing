@@ -39,10 +39,10 @@ async function subscribe( userID: string, send: SendFunc, a: AuthLevel, CONFIRM:
 		"请务必确保 BOT 持有者可信任\n" +
 		`BOT承诺保护您的账户信息安全\n` +
 		`确定开启授权功能请使用此指令\n ` +
-		`「 ${ CONFIRM.getHeaders()[0] } cookie 」 来继续\n` +
+		`[ ${ CONFIRM.getCNHeader() } cookie ] 来继续\n` +
 		"cookie是需要按照教程获取并替换\n" +
 		"请在 3 分钟内进行超时会自动取消\n" +
-		"频道发送「 @BOT 教程 」获取教程";
+		"频道发送 [ @BOT 教程 ] 获取教程";
 	
 }
 
@@ -52,7 +52,7 @@ async function confirm(
 ): Promise<string> {
 	try {
 		if ( !tempSubscriptionList.some( el => el === userID ) ) {
-			return `你还未申请授权服务，请先使用「${ SUBSCRIBE.getHeaders()[0] }」`;
+			return `你还未申请授权服务，请先使用 [ ${ SUBSCRIBE.getCNHeader() } ]`;
 		}
 		/* 对Cookie进行简化保留 */
 		const { uid, cookie, stoken } = await checkMysCookieInvalid( rawCookie );

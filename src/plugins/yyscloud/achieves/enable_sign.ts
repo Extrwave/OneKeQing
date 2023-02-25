@@ -38,7 +38,7 @@ async function subscribe( userID: string, send: SendFunc, a: AuthLevel, CONFIRM:
 		"请务必确保 BOT 持有者可信任\n" +
 		`BOT承诺保护您的账户信息安全\n` +
 		`确定开启授权功能请使用此指令\n ` +
-		`「 ${ CONFIRM.getHeaders()[0] } token 」 来继续\n` +
+		`[ ${ CONFIRM.getCNHeader() } token ] 来继续\n` +
 		"token是需要按照教程获取并替换\n" +
 		"请在 3 分钟内进行超时会自动取消\n" +
 		"频道发送「 @BOT 教程 」获取教程";
@@ -49,7 +49,7 @@ async function confirm(
 	a: AuthLevel, SUBSCRIBE: Order
 ): Promise<string> {
 	if ( !tempSubscriptionList.some( el => el === userID ) ) {
-		return `你还未申请云原神签到服务，请先使用「${ SUBSCRIBE.getHeaders()[0] }」申请`;
+		return `你还未申请云原神签到服务，请先使用 [ ${ SUBSCRIBE.getCNHeader() } ] 申请`;
 	}
 	
 	const reg = new RegExp( /.*?oi=([0-9]+).*?/g );
@@ -67,7 +67,7 @@ async function confirm(
 
 /* 根据SilverStar的Private Subscribe编写 */
 export async function main(
-	{ messageData, command, auth, sendMessage, matchResult }: InputParameter
+	{ messageData, command, sendMessage, matchResult }: InputParameter
 ): Promise<void> {
 	
 	const userID: string = messageData.msg.author.id;

@@ -50,7 +50,7 @@ export function checkCookieInvalidReason( message: string, id?: string | number,
 	if ( isPublic && cookies.isAllUsed() ) {
 		bot.logger.warn( "可能所有公共cookie查询次数已上限，请增加可用cookie到config/cookie.yaml" );
 		return `可能公共cookie查询次数已上限\n` +
-			`建议使用 ${ COMMIT.getHeaders()[0] } 贡献你的授权\n` +
+			`建议使用 [ ${ COMMIT.getCNHeader() } ] 贡献你的授权\n` +
 			`贡献的Cookie仅会用于公共查询服务\n` +
 			`欢迎各位参与 BOT 共同运营 ~ `;
 	} else if ( timesOut.test( message ) ) {

@@ -199,7 +199,7 @@ export class PrivateClass {
 			const PRIVATE_LIST = <Order>bot.command.getSingle(
 				"silvery-star-private-list", AuthLevel.Master
 			);
-			return `无效的序号，请使用 ${ PRIVATE_LIST.getHeaders()[0] } 检查`;
+			return `无效的序号，请使用 [ ${ PRIVATE_LIST.getCNHeader() } ] 检查`;
 		} else {
 			return list[privateID - 1];
 		}
@@ -221,7 +221,7 @@ export class PrivateClass {
 			}
 		} );
 		if ( isRefresh ) {
-			return `UID${ uid } 的授权服务已经更新\n` + `下次可使用『 ${ PRIVATE_UPGRADE.getHeaders()[0] } cookie 』直接更新`;
+			return `UID${ uid } 的授权服务已经更新\n` + `下次可使用 [ ${ PRIVATE_UPGRADE.getCNHeader() } cookie ] 直接更新`;
 		}
 		
 		const reg = new RegExp( /.*?tuid=([0-9]+).*?/g );
