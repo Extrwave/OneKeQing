@@ -656,7 +656,7 @@ export async function mihoyoBBSItemSignInfo( gids: number, cookie: string ): Pro
 	} )
 }
 
-export async function mihoyoBBSItemSign( mysID: number, gids: number, cookie: string, time: number = 0 ): Promise<any> {
+export async function mihoyoBBSItemSign( mysID: number, gids: number, stoken: string, ctoken: string, time: number = 0 ): Promise<any> {
 	const body = { gids };
 	return new Promise( ( resolve, reject ) => {
 		request( {
@@ -664,7 +664,7 @@ export async function mihoyoBBSItemSign( mysID: number, gids: number, cookie: st
 			url: __API.FETCH_BBS_SIGN_IN,
 			headers: {
 				...HEADERS.BBS,
-				cookie,
+				cookie: stoken,
 				DS: getDS( undefined, JSON.stringify( body ) )
 			},
 			json: true,
@@ -675,9 +675,9 @@ export async function mihoyoBBSItemSign( mysID: number, gids: number, cookie: st
 			}
 			bot.logger.warn( `[ MysID${ mysID } ][myssign] 查询遇到验证码` );
 			if ( config.verifyEnable && time <= config.verifyRepeat ) {
-				const error = await bypassQueryVerification( cookie );
+				const error = await bypassQueryVerification( ctoken );
 				bot.logger.debug( `[ MysID${ mysID } ][myssign] 第 ${ time + 1 } 次验证码绕过${ error ? "失败：" + error : "成功" }` );
-				return resolve( await mihoyoBBSItemSign( mysID, gids, cookie, ++time ) );
+				return resolve( await mihoyoBBSItemSign( mysID, gids, stoken, ctoken, ++time ) );
 			}
 			reject( config.verifyEnable ? verifyError : verifyMsg );
 		} ).catch( reason => {
@@ -686,7 +686,7 @@ export async function mihoyoBBSItemSign( mysID: number, gids: number, cookie: st
 	} )
 }
 
-export async function mihoyoBBSGetPosts( cookie: string, gids: number, last_id: string = "", time: number = 0 ): Promise<any> {
+export async function mihoyoBBSGetPosts( stoken: string, ctoken: string, gids: number, last_id: string = "", time: number = 0 ): Promise<any> {
 	const forumIds = getBBSItemForumIds( gids );
 	const query: IParams = {
 		forum_id: forumIds[randomInt( 0, forumIds.length - 1 )],
@@ -698,19 +698,19 @@ export async function mihoyoBBSGetPosts( cookie: string, gids: number, last_id: 
 			url: formatGetURL( __API.FETCH_BBS_GET_POST, query ),
 			headers: {
 				...HEADERS.NORMAL,
-				cookie: cookie
+				cookie: stoken
 			},
 			json: true
 		} ).then( async result => {
 			if ( result.retcode !== 1034 ) {
 				return resolve( result );
 			}
-			const MysID = Cookies.checkMysID( cookie );
+			const MysID = Cookies.checkMysID( stoken );
 			bot.logger.warn( `[ MysID${ MysID } ][getPost] 查询遇到验证码` );
 			if ( config.verifyEnable && time <= config.verifyRepeat ) {
-				const error = await bypassQueryVerification( cookie );
+				const error = await bypassQueryVerification( ctoken );
 				bot.logger.debug( `[ MysID${ MysID } ][getPost] 第 ${ time + 1 } 次验证码绕过${ error ? "失败：" + error : "成功" }` );
-				return resolve( await mihoyoBBSGetPosts( cookie, gids, last_id, ++time ) );
+				return resolve( await mihoyoBBSGetPosts( stoken, ctoken, gids, last_id, ++time ) );
 			}
 			reject( config.verifyEnable ? verifyError : verifyMsg );
 		} ).catch( reason => {
@@ -719,7 +719,7 @@ export async function mihoyoBBSGetPosts( cookie: string, gids: number, last_id: 
 	} )
 }
 
-export async function mihoyoBBSGetFullPost( cookie: string, postId: string, time: number = 0 ): Promise<any> {
+export async function mihoyoBBSGetFullPost( stoken: string, ctoken: string, postId: string, time: number = 0 ): Promise<any> {
 	const query: IParams = { post_id: postId };
 	return new Promise( ( resolve, reject ) => {
 		request( {
@@ -727,7 +727,7 @@ export async function mihoyoBBSGetFullPost( cookie: string, postId: string, time
 			url: formatGetURL( __API.FETCH_BBS_FULL_POST, query ),
 			headers: {
 				...HEADERS.BBS,
-				cookie: cookie,
+				cookie: stoken,
 				DS: getDS2()
 			},
 			json: true
@@ -736,12 +736,12 @@ export async function mihoyoBBSGetFullPost( cookie: string, postId: string, time
 				if ( result.retcode !== 1034 ) {
 					return resolve( result );
 				}
-				const MysID = Cookies.checkMysID( cookie );
+				const MysID = Cookies.checkMysID( stoken );
 				bot.logger.warn( `[ MysID${ MysID } ][viewPost] 查询遇到验证码` );
 				if ( config.verifyEnable && time <= config.verifyRepeat ) {
-					const error = await bypassQueryVerification( cookie );
+					const error = await bypassQueryVerification( ctoken );
 					bot.logger.debug( `[ MysID${ MysID } ][viewPost] 第 ${ time + 1 } 次验证码绕过${ error ? "失败：" + error : "成功" }` );
-					return resolve( await mihoyoBBSGetFullPost( cookie, postId, ++time ) );
+					return resolve( await mihoyoBBSGetFullPost( stoken, ctoken, postId, ++time ) );
 				}
 				reject( config.verifyEnable ? verifyError : verifyMsg );
 			} ).catch( reason => {
@@ -750,7 +750,7 @@ export async function mihoyoBBSGetFullPost( cookie: string, postId: string, time
 	} )
 }
 
-export async function mihoyoBBSUpvotePost( cookie: string, post_id: string, time: number = 0 ): Promise<any> {
+export async function mihoyoBBSUpvotePost( stoken: string, ctoken: string, post_id: string, time: number = 0 ): Promise<any> {
 	const body = {
 		post_id: post_id,
 		is_cancel: false
@@ -762,7 +762,7 @@ export async function mihoyoBBSUpvotePost( cookie: string, post_id: string, time
 			url: __API.FETCH_BBS_UPVOTE_POST,
 			headers: {
 				...HEADERS.BBS,
-				cookie: cookie,
+				cookie: stoken,
 				DS: getDS2()
 			},
 			json: true,
@@ -771,12 +771,12 @@ export async function mihoyoBBSUpvotePost( cookie: string, post_id: string, time
 			if ( result.retcode !== 1034 ) {
 				return resolve( result );
 			}
-			const MysID = Cookies.checkMysID( cookie );
+			const MysID = Cookies.checkMysID( stoken );
 			bot.logger.warn( `[ MysID${ MysID } ][upvote] 查询遇到验证码` );
 			if ( config.verifyEnable && time <= config.verifyRepeat ) {
-				const error = await bypassQueryVerification( cookie );
+				const error = await bypassQueryVerification( ctoken );
 				bot.logger.debug( `[ MysID${ MysID } ][upvote] 第 ${ time + 1 } 次验证码绕过${ error ? "失败：" + error : "成功" }` );
-				return resolve( await mihoyoBBSUpvotePost( cookie, post_id, ++time ) );
+				return resolve( await mihoyoBBSUpvotePost( stoken, ctoken, post_id, ++time ) );
 			}
 			reject( config.verifyEnable ? verifyError : verifyMsg );
 		} ).catch( reason => {
@@ -785,7 +785,7 @@ export async function mihoyoBBSUpvotePost( cookie: string, post_id: string, time
 	} )
 }
 
-export async function mihoyoBBSSharePost( cookie: string, post_id: string, time: number = 0 ): Promise<any> {
+export async function mihoyoBBSSharePost( stoken: string, ctoken: string, post_id: string, time: number = 0 ): Promise<any> {
 	const data = {
 		entity_type: 1,
 		entity_id: post_id
@@ -796,7 +796,7 @@ export async function mihoyoBBSSharePost( cookie: string, post_id: string, time:
 			url: formatGetURL( __API.FETCH_BBS_SHARE_POST, data ),
 			headers: {
 				...HEADERS.BBS,
-				cookie: cookie,
+				cookie: stoken,
 				DS: getDS2()
 			},
 			json: true
@@ -805,12 +805,12 @@ export async function mihoyoBBSSharePost( cookie: string, post_id: string, time:
 				if ( result.retcode !== 1034 ) {
 					return resolve( result );
 				}
-				const MysID = Cookies.checkMysID( cookie );
+				const MysID = Cookies.checkMysID( stoken );
 				bot.logger.warn( `[ MysID${ MysID } ][share] 查询遇到验证码` );
 				if ( config.verifyEnable && time <= config.verifyRepeat ) {
-					const error = await bypassQueryVerification( cookie );
+					const error = await bypassQueryVerification( ctoken );
 					bot.logger.debug( `[ MysID${ MysID } ][share] 第 ${ time + 1 } 次验证码绕过${ error ? "失败：" + error : "成功" }` );
-					return resolve( await mihoyoBBSSharePost( cookie, post_id, ++time ) );
+					return resolve( await mihoyoBBSSharePost( stoken, ctoken, post_id, ++time ) );
 				}
 				reject( config.verifyEnable ? verifyError : verifyMsg );
 			} )

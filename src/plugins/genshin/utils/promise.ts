@@ -542,7 +542,7 @@ export async function calendarPromise(): Promise<ApiType.CalendarData[]> {
 }
 
 /* 米游社任务相关 */
-export async function mihoyoBBSTaskPromise( mysID: number, stoken: string ): Promise<string[]> {
+export async function mihoyoBBSTaskPromise( mysID: number, stoken: string, ctoken: string ): Promise<string[]> {
 	const content: string[] = [ `米游社账号：${ mysID }` ];
 	const bbsItems: BBSGameItem[] = await mihoyoGetBBSGameItemPromise();
 	const posts: any[] = [];
@@ -555,10 +555,10 @@ export async function mihoyoBBSTaskPromise( mysID: number, stoken: string ): Pro
 					content.push( `[${ bbsItem.name }] 今日已经签到` );
 					continue;
 				}
-				const result = await mihoyoBBSItemSignPromise( mysID, bbsItem.id, stoken );
+				const result = await mihoyoBBSItemSignPromise( mysID, bbsItem.id, stoken, ctoken );
 				content.push( `[${ bbsItem.name }] ${ result }` );
 				bot.logger.debug( `[MysID ${ mysID }] [${ bbsItem.name }] ${ result }` );
-				const post = await mihoyoGetPostsPromise( stoken, bbsItem.id );
+				const post = await mihoyoGetPostsPromise( stoken, ctoken, bbsItem.id );
 				post.length > 0 ? bot.logger.debug( `[MysID ${ mysID }] 获取 ${ bbsItem.name } 分区帖子成功` ) : "";
 				posts.push( ...post );
 				await randomSleep( 5, 10, true );
@@ -574,9 +574,9 @@ export async function mihoyoBBSTaskPromise( mysID: number, stoken: string ): Pro
 	let scanAck = 0;
 	for ( let post of posts ) {
 		try {
-			await mihoyoGetFullPostPromise( stoken, post.post.post_id );
-			await mihoyoBBSUpvotePostPromise( stoken, post.post.post_id );
-			await mihoyoBBSSharePostPromise( stoken, post.post.post_id );
+			await mihoyoGetFullPostPromise( stoken, ctoken, post.post.post_id );
+			await mihoyoBBSUpvotePostPromise( stoken, ctoken, post.post.post_id );
+			await mihoyoBBSSharePostPromise( stoken, ctoken, post.post.post_id );
 			bot.logger.debug( `[MysID ${ mysID }] 浏览点赞分享帖子：${ post.post.subject }` );
 			scanAck++;
 			await randomSleep( 5, 10, true );
@@ -618,8 +618,8 @@ async function mihoyoBBSItemSignInfoPromise(
 }
 
 async function mihoyoBBSItemSignPromise(
-	mysID: number, gids: number, cookie: string ): Promise<string> {
-	const { retcode, message, data } = await api.mihoyoBBSItemSign( mysID, gids, cookie );
+	mysID: number, gids: number, stoken: string, ctoken: string ): Promise<string> {
+	const { retcode, message, data } = await api.mihoyoBBSItemSign( mysID, gids, stoken, ctoken );
 	return new Promise( ( resolve, reject ) => {
 		if ( retcode === 0 ) {
 			return resolve( '今日签到成功' )
@@ -628,8 +628,8 @@ async function mihoyoBBSItemSignPromise(
 	} )
 }
 
-async function mihoyoGetPostsPromise( cookie: string, gids: number = 26, last_id: string = "" ): Promise<[]> {
-	const { retcode, message, data } = await api.mihoyoBBSGetPosts( cookie, gids, last_id );
+async function mihoyoGetPostsPromise( stoken: string, ctoken: string, gids: number = 26, last_id: string = "" ): Promise<[]> {
+	const { retcode, message, data } = await api.mihoyoBBSGetPosts( stoken, ctoken, gids, last_id );
 	return new Promise( ( resolve, reject ) => {
 		if ( retcode === -100 || retcode !== 0 || !data.list || data.list.length <= 0 ) {
 			return reject( checkCookieInvalidReason( message ) );
@@ -638,8 +638,8 @@ async function mihoyoGetPostsPromise( cookie: string, gids: number = 26, last_id
 	} )
 }
 
-async function mihoyoGetFullPostPromise( cookie: string, post_id: string ): Promise<any> {
-	const { retcode, message, data } = await api.mihoyoBBSGetFullPost( cookie, post_id );
+async function mihoyoGetFullPostPromise( stoken: string, ctoken: string, post_id: string ): Promise<any> {
+	const { retcode, message, data } = await api.mihoyoBBSGetFullPost( stoken, ctoken, post_id );
 	return new Promise( ( resolve, reject ) => {
 		if ( retcode !== 0 ) {
 			return reject( checkCookieInvalidReason( message ) );
@@ -648,8 +648,8 @@ async function mihoyoGetFullPostPromise( cookie: string, post_id: string ): Prom
 	} )
 }
 
-async function mihoyoBBSUpvotePostPromise( cookie: string, post_id: string ) {
-	const { retcode, message, data } = await api.mihoyoBBSUpvotePost( cookie, post_id );
+async function mihoyoBBSUpvotePostPromise( stoken: string, ctoken: string, post_id: string ) {
+	const { retcode, message, data } = await api.mihoyoBBSUpvotePost( stoken, ctoken, post_id );
 	return new Promise( ( resolve, reject ) => {
 		if ( retcode !== 0 ) {
 			return reject( checkCookieInvalidReason( message ) );
@@ -658,8 +658,8 @@ async function mihoyoBBSUpvotePostPromise( cookie: string, post_id: string ) {
 	} )
 }
 
-async function mihoyoBBSSharePostPromise( cookie: string, post_id: string ) {
-	const { retcode, message, data } = await api.mihoyoBBSSharePost( cookie, post_id );
+async function mihoyoBBSSharePostPromise( stoken: string, ctoken: string, post_id: string ) {
+	const { retcode, message, data } = await api.mihoyoBBSSharePost( stoken, ctoken, post_id );
 	return new Promise( ( resolve, reject ) => {
 		if ( retcode !== 0 ) {
 			return reject( checkCookieInvalidReason( message ) );

@@ -35,12 +35,11 @@ async function replaceCookie( userID: string, newCookie: string ) {
 		const { uid, mysID, cookie, stoken } = await checkMysCookieInvalid( newCookie );
 		for ( let account of accounts ) {
 			if ( mysID === account.setting.mysID.toString() ) {
-				await account.replaceCookie( cookie );
-				stoken ? await account.replaceCookie( stoken ) : "";
+				await account.replaceCookie( cookie, stoken );
 				return `[ UID${ uid } ] Cookie 更新成功`;
 			}
 		}
-		return await privateClass.addPrivate( uid, cookie, userID );
+		return await privateClass.addPrivate( uid, cookie, userID, stoken );
 	} catch ( error ) {
 		bot.logger.error( error );
 		return checkCookieInvalidReason( <string>error );

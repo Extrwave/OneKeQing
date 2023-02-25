@@ -123,7 +123,7 @@ export class SignInService implements Service {
 		}
 		try {
 			bot.logger.info( `[MysID ${ mysID }] 执行每日米游社任务，请耐心等待...` );
-			const content = await mihoyoBBSTaskPromise( mysID, stoken );
+			const content = await mihoyoBBSTaskPromise( mysID, stoken, cookie );
 			const mybData = await mihoyoBBSGetMybPromise( cookie );
 			content.push( `今日获取米游币：${ mybData.today_total_points - mybData.can_get_points }` );
 			content.push( `当前米游币数量：${ mybData.total_points }` );

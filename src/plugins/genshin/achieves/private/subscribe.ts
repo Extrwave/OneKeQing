@@ -64,7 +64,7 @@ async function confirm(
 }
 
 export async function main(
-	{ sendMessage, messageData, matchResult, auth, command }: InputParameter
+	{ sendMessage, messageData, matchResult, command }: InputParameter
 ): Promise<void> {
 	const userID: string = messageData.msg.author.id;
 	const data: string = messageData.msg.content;
