@@ -26,6 +26,7 @@ import { trim } from "lodash";
 import { getGuildBaseInfo, getMemberInfo } from "@modules/utils/account";
 import { EmbedMsg } from "@modules/utils/embed";
 import { checkChannelLimit } from "#@management/channel";
+import { Order } from "@modules/command";
 import { Sleep } from "./utils"
 
 export interface BOT {
@@ -383,11 +384,12 @@ export class Adachi {
 		
 		const privateUnionReg: RegExp = this.bot.command.getUnion( AuthLevel.Master, MessageScope.Private );
 		const groupUnionReg: RegExp = this.bot.command.getUnion( AuthLevel.Master, MessageScope.Guild );
-		
+		const APPLY = <Order>this.bot.command.getSingle( "adachi-apply-man", AuthLevel.Master, "guilds" );
+		const NoAuthTips = `您没有权限执行此命令 ~ \n如是频道主或者管理员，请使用 [ ${ APPLY.getCNHeader() } ] 自助申请`;
 		if ( groupUnionReg.test( content ) ) {
-			msg = isPrivate ? `该指令仅限群聊使用 ~ ` : `您没有权限执行此命令 ~ `;
+			msg = isPrivate ? `该指令仅限群聊使用 ~ ` : NoAuthTips;
 		} else if ( privateUnionReg.test( content ) ) {
-			msg = isPrivate ? `您没有权限执行此命令 ~ ` : `该指令仅限私聊使用 ~ `;
+			msg = isPrivate ? `您没有权限执行此命令 ~ ` : NoAuthTips;
 		}
 		return msg;
 	}

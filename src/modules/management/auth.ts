@@ -43,6 +43,11 @@ export default class Authorization implements AuthorizationMethod {
 		if ( level === AuthLevel.Master && target !== this.master ) {
 			level = AuthLevel.User;
 		}
+		/* 如果尝试对Master权限降级 */
+		if ( target === this.master && level !== AuthLevel.Master ) {
+			level = AuthLevel.Master;
+		}
+		
 		/* 仅Master可以设置全局权限 */
 		if ( operator === this.master ) {
 			level === AuthLevel.User ?
