@@ -144,15 +144,26 @@ const restart: OrderConfig = {
 	detail: "用于重启 bot，使用win-start方式启动服务无法使用该指令"
 }
 
+const application: OrderConfig = {
+	type: "order",
+	cmdKey: "adachi-apply-man",
+	desc: [ "申请管理权", "仅频道主绿管可用" ],
+	headers: [ "apply" ],
+	regexps: [ "" ],
+	scope: MessageScope.Guild,
+	main: "apply",
+	detail: "用于频道主没有管理权限向开发者或者全局管理员索取"
+}
+
 export async function init(): Promise<PluginSetting> {
 	return {
 		pluginEName: "@management",
 		pluginCName: "管理",
 		cfgList: [
-			manager, refresh, ban, limit,
-			announce, callMaster,
-			replyUser, setUseChannel, cancelUseChannel,
-			upgrade, restart
+			manager, announce, ban, limit,
+			callMaster, replyUser,
+			setUseChannel, cancelUseChannel,
+			upgrade, restart, refresh, application
 		]
 	}
 }
