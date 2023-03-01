@@ -119,7 +119,7 @@ export class SignInService implements Service {
 	public async bbsSign( reply: boolean = false ) {
 		const { mysID, cookie, stoken } = this.parent.setting;
 		if ( !stoken ) {
-			return reply ? await sendMessage( `[MysID ${ mysID }] 未授权SToken，无法支持此任务`, this.parent.setting.userID ) : "";
+			return reply ? await sendMessage( `[MysID ${ mysID }] 未授权SToken，无法执行米游币任务`, this.parent.setting.userID ) : "";
 		}
 		try {
 			bot.logger.info( `[MysID ${ mysID }] 执行每日米游社任务，请耐心等待...` );

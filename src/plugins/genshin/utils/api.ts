@@ -114,7 +114,7 @@ const HEADERS = {
 };
 
 const verifyMsg = "API请求遭遇验证码拦截 ~";
-const verifyError = "多次尝试解决验证码失败，请重试或者带上截图前往官频反馈 ~"
+const verifyError = "多次尝试解决验证码失败 ~";
 
 /* mihoyo BBS API */
 export async function getBaseInfo( mysID: number, cookie: string, time: number = 0 ): Promise<ResponseBody> {
@@ -905,11 +905,11 @@ export async function bypassQueryVerification( cookie: string, gt?: string, chal
 		analysisCode = JSON.parse( analysisCode );
 	} catch ( error ) {
 		bot.logger.error( analysisCode );
-		return "验证码验证失败，请重试或者等待上游服务商解决";
+		return "验证码验证失败 " + error;
 	}
 	if ( analysisCode.code !== 0 || analysisCode.info !== "success" ) {
 		bot.logger.error( analysisCode );
-		return "验证码验证失败，请重试或者等待上游服务商解决";
+		return "验证码验证失败 " + analysisCode;
 	}
 	const body = {
 		geetest_challenge: analysisCode.data.challenge,
@@ -929,7 +929,7 @@ export async function bypassQueryVerification( cookie: string, gt?: string, chal
 	} );
 	if ( verifyResult.retcode !== 0 || verifyResult.message !== 'OK' ) {
 		bot.logger.error( verifyResult );
-		return "提交验证码已过期，请重试或者等待上游服务商解决";
+		return "提交验证码已过期，请重试 " + verifyResult;
 	}
 }
 
@@ -955,11 +955,11 @@ export async function mihoyoBBSVerifySignIn( uid: string, region: string, cookie
 		analysisCode = JSON.parse( analysisCode );
 	} catch ( error ) {
 		bot.logger.error( analysisCode );
-		throw "验证码验证失败，请重试或者等待上游服务商解决";
+		throw "验证码验证失败 " + analysisCode;
 	}
 	if ( analysisCode.code !== 0 || analysisCode.info !== "success" ) {
 		bot.logger.error( analysisCode );
-		throw "验证码验证失败，请重试或者等待上游服务商解决";
+		throw "验证码验证失败 " + analysisCode;
 	}
 	
 	return new Promise( ( resolve, reject ) => {

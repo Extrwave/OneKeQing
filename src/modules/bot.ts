@@ -385,11 +385,13 @@ export class Adachi {
 		const privateUnionReg: RegExp = this.bot.command.getUnion( AuthLevel.Master, MessageScope.Private );
 		const groupUnionReg: RegExp = this.bot.command.getUnion( AuthLevel.Master, MessageScope.Guild );
 		const APPLY = <Order>this.bot.command.getSingle( "adachi-apply-man", AuthLevel.Master, "guilds" );
-		const NoAuthTips = `您没有权限执行此命令 ~ \n如是频道主或者管理员，请使用 [ ${ APPLY.getCNHeader() } ] 自助申请`;
+		const NoAuthTips = `您没有权限执行此指令 ~ \n` +
+			`如是频道主或者管理员，请使用 [ ${ APPLY.getCNHeader() } ] 自助申请` +
+			"如已经申请，则您的权限不足以支持此指令";
 		if ( groupUnionReg.test( content ) ) {
 			msg = isPrivate ? `该指令仅限群聊使用 ~ ` : NoAuthTips;
 		} else if ( privateUnionReg.test( content ) ) {
-			msg = isPrivate ? `您没有权限执行此命令 ~ ` : NoAuthTips;
+			msg = isPrivate ? `您没有权限执行此指令 ~ ` : NoAuthTips;
 		}
 		return msg;
 	}

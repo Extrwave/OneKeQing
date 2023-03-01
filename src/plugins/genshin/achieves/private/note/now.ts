@@ -1,11 +1,9 @@
 import bot from "ROOT";
-import { AuthLevel } from "@modules/management/auth";
-import { Private } from "#genshin/module/private/main";
-import { NoteService } from "#genshin/module/private/note";
-import { InputParameter, Order } from "@modules/command";
+import { renderer } from "#genshin/init";
 import { RenderResult } from "@modules/renderer";
-import { privateClass, renderer } from "#genshin/init";
-import { getPrivateAccount, sendMessage } from "#genshin/utils/private";
+import { InputParameter } from "@modules/command";
+import { NoteService } from "#genshin/module/private/note";
+import { getPrivateAccount } from "#genshin/utils/private";
 
 
 async function getNowNote( userID: string, sn: string = "1" ): Promise<RenderResult | string> {
@@ -14,7 +12,6 @@ async function getNowNote( userID: string, sn: string = "1" ): Promise<RenderRes
 	if ( typeof account === "string" ) {
 		return account;
 	}
-	
 	const data = await account.services[NoteService.FixedField].toJSON();
 	const uid: string = account.setting.uid;
 	const dbKey: string = `silvery-star.note-temp-${ uid }`;
@@ -28,17 +25,21 @@ async function getNowNote( userID: string, sn: string = "1" ): Promise<RenderRes
 export async function main( { sendMessage, messageData }: InputParameter ): Promise<void> {
 	const userID: string = messageData.msg.author.id;
 	const sn: string = messageData.msg.content;
-	const res: RenderResult | string = await getNowNote( userID, sn );
-	if ( typeof res === 'string' ) {
-		await sendMessage( res );
-		return;
-	}
-	
-	if ( res.code === "base64" ) {
-		await sendMessage( { file_image: res.data } );
-	} else if ( res.code === "url" ) {
-		await sendMessage( { image: res.data } );
-	} else {
-		await sendMessage( res.data );
+	try {
+		const res: RenderResult | string = await getNowNote( userID, sn );
+		if ( typeof res === 'string' ) {
+			await sendMessage( res );
+			return;
+		}
+		
+		if ( res.code === "base64" ) {
+			await sendMessage( { file_image: res.data } );
+		} else if ( res.code === "url" ) {
+			await sendMessage( { image: res.data } );
+		} else {
+			await sendMessage( res.data );
+		}
+	} catch ( error ) {
+		await sendMessage( <string>error );
 	}
 }
