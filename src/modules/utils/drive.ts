@@ -35,7 +35,7 @@ export function getRandomImageUrl( path: string ): Promise<string> {
 				per_page: 200
 			}
 		} ).then( result => {
-			if ( result.data.total !== 0 ) {
+			if ( result.data && result.data.total !== 0 ) {
 				const ran = randomInt( 0, result.data.total );
 				const fileAddr = baseDir + "/" + result.data.content[ran].name;
 				return resolve( baseDown + fileAddr );
