@@ -60,8 +60,8 @@ export class SignInService implements Service {
 		this.enable = status === undefined ? !this.enable : status;
 		if ( this.enable ) {
 			this.setScheduleJob();
-			this.gameSign( true ).catch();
-			this.bbsSign( true ).catch();
+			this.gameSign( false ).catch();
+			this.bbsSign( false ).catch();
 		} else {
 			this.cancelScheduleJob();
 		}
