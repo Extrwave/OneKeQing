@@ -133,7 +133,7 @@ export class Private {
 	}
 	
 	public async replaceCookie( cookie: string, stoken: string = "" ): Promise<void> {
-		this.setting.stoken = stoken;
+		stoken ? this.setting.stoken = stoken : "";
 		this.setting.cookie = cookie;
 		await bot.redis.setString( this.dbKey, this.stringify() );
 	}
