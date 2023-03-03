@@ -46,7 +46,6 @@ export async function main(
 	
 	let url = await redis.getString( `${ DB_KEY.ANALYSIS_URL }-${ uid }` );
 	if ( !url || url.indexOf( "http" ) <= -1 ) {
-		let info: Private | string | undefined;
 		// 从私人服务获取SToken
 		let cookie = account.setting.stoken;
 		let game_uid = account.setting.uid;
