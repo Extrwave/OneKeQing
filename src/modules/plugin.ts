@@ -49,7 +49,7 @@ export default class Plugin {
 				PluginRedisKeys[pluginEName] = redisKeys ? redisKeys : "";
 				PluginCNames[pluginEName] = pluginCName ? pluginCName : pluginEName;
 				registerCmd.push( ...commands );
-				bot.logger.debug( `[ ${ pluginEName } ]插件加载完成` );
+				bot.logger.debug( `[ ${ pluginEName } ] 插件加载完成` );
 			} catch ( error ) {
 				bot.logger.error( `插件加载异常: ${ <string>error }` );
 			}

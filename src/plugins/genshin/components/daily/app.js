@@ -1,5 +1,5 @@
 const template = `<div class="daily-app">
-	<Header :week="week" :show-event="showEvent" :sub-state="subState" :user="user" />
+	<Header :week="week" :show-event="showEvent" :user="user" />
 	<Material v-if="showMaterial" :data="data" />
 	<Event :show-event="showEvent" :show-material="showMaterial" :events="data.event" />
 </div>`;
@@ -21,11 +21,11 @@ export default defineComponent( {
 	},
 	setup() {
 		const urlParams = parseURL( location.search );
-		const user = urlParams.id;
-		const data = request( `/api/daily?id=${ user }` );
+		const id = urlParams.id;
+		const user = decodeURI( urlParams.username );
+		const data = request( `/api/daily?id=${ id }` );
 		
 		const week = urlParams.week;
-		const subState = computed( () => urlParams.type === "sub" );
 		
 		const objHasValue = params => {
 			if ( !data[params] || typeof data[params] !== "object" ) return false;
@@ -42,7 +42,6 @@ export default defineComponent( {
 			data,
 			week,
 			user,
-			subState,
 			showMaterial,
 			showEvent
 		};

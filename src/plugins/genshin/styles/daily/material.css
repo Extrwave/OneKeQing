@@ -74,28 +74,32 @@
 .material .material-item > .thumb-list > .thumb-box {
 	position: relative;
 	width: 80px;
-	height: 80px;
-	filter: drop-shadow(1px 4px 6px rgba(0, 0, 0, 0.2));
+	height: 112px;
+	filter: drop-shadow(5px 5px 2px rgba(0, 0, 0, 0.6));
 	border-radius: 4px;
 	overflow: hidden;
 }
 
 .material .material-item > .thumb-list > .thumb-box > img {
 	width: inherit;
-	height: inherit;
+	height: auto;
 }
 
-.material .material-item > .thumb-list > .thumb-box > p {
+.material .material-item > .thumb-list > .thumb-box > div {
 	position: absolute;
 	left: 0;
 	right: 0;
 	bottom: 0;
-	display: flex;
 	justify-content: center;
 	align-items: center;
-	height: 16px;
+	height: 32px;
 	background-color: rgba(0, 0, 0, 0.5);
 	font-size: 12px;
 	color: #fff;
 	text-align: center;
+}
+
+.material .material-item > .thumb-list > .thumb-box > div > .extra {
+	display: inline-flex;
+	padding-inline: 7px;
 }

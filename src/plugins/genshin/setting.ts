@@ -120,26 +120,12 @@ const alias: SwitchConfig = {
 		"「天帝」会被自动识别为「枫原万叶」"
 };
 
-const daily: SwitchConfig = {
-	type: "switch",
-	mode: "divided",
-	cmdKey: "silvery-star-daily",
-	desc: [ "", "[角色|武器|活动]" ],
-	header: "",
-	regexp: [ "[\\w\\u4e00-\\u9fa5]+" ],
-	main: "achieves/daily",
-	onKey: "添加订阅",
-	offKey: "移除订阅",
-	detail: "为自己添加/删除角色天赋/武器的突破材料以及当前进行中的活动订阅\n" +
-		"每天的 6:00~7:00 随机时间进行推送\n"
-};
-
 const today: OrderConfig = {
 	type: "order",
 	cmdKey: "silvery-star-today",
-	desc: [ "材料", "(星期)" ],
+	desc: [ "材料", "(星期) (序号)" ],
 	headers: [ "today" ],
-	regexps: [ "[1-7]?" ],
+	regexps: [ "[1-7]?", "(\d+)?" ],
 	main: "achieves/today",
 	detail: "跟随数字 1-7 来查询指定日的素材"
 };
@@ -374,6 +360,6 @@ export default <PluginSetting>{
 		privateSubList, privateReorder, privateToggleSign,
 		privateToggleNote, privateNoteEvent, privateNowNote,
 		privateAbyssQuery, privateLedger, privateSign,
-		privateCommit, alias, daily
+		privateCommit, alias
 	]
 };

@@ -1,9 +1,9 @@
 const template = `<header class="header">
 	<div class="container">
-		<span v-if="isToday" class="time">{{ timeStr }}</span>
+		<span class="time">{{ timeStr }}</span>
 		<div class="title">
 			<p>{{ title }}</p>
-			<p v-if="subState">（用户 {{ user }} 的订阅数据）</p>
+			<p v-if="user">用户 [ {{ user }} ] 的材料数据</p>
 		</div>
 		<span v-if="showEvent" class="author">频道BOT:&nbsp;&nbsp;一碗牛杂</span>
 	</div>

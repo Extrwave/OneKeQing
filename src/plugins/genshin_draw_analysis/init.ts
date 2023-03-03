@@ -60,18 +60,7 @@ const del_gacha_log: OrderConfig = {
 };
 
 
-export async function init( { logger, file, renderer: botRender, refresh }: BOT ): Promise<PluginSetting> {
-	
-	logger.debug( "开始检测插件需要的依赖是否已安装..." );
-	const dependencies: string[] = [ "exceljs" ];
-	dependencies.push( "qrcode" );
-	const uninstall_dependencies: string[] = checkDependencies( file, ...dependencies );
-	for ( let uni_dep of uninstall_dependencies ) {
-		logger.warn( `检测到 ${ uni_dep } 依赖尚未安装，将自动安装该依赖...` )
-		const stdout = await execHandle( `npm i ${ uni_dep }` );
-		logger.warn( stdout );
-	}
-	logger.debug( "所有插件需要的依赖已安装" );
+export async function init( { renderer: botRender }: BOT ): Promise<PluginSetting> {
 	
 	/* 实例化渲染器 */
 	const port: number = await findFreePort( 58693, bot.logger );

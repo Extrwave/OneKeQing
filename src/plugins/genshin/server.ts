@@ -18,6 +18,6 @@ export function createServer( port: number, logger: Logger ): void {
 	app.use( "/api/ledger", r.LedgerRouter );
 	
 	app.listen( port, () => {
-		logger.info( `[ genshin ]插件 Express 服务器已启动，端口为 ${ port }` );
+		logger.info( `[ genshin ] 插件 Express 服务已在端口启动:  ${ port }` );
 	} );
 }

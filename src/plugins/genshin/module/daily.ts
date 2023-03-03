@@ -7,7 +7,9 @@ import { getDailyMaterial, getInfo } from "../utils/api";
 import { take } from "lodash";
 import { RenderResult } from "@modules/renderer";
 import { renderer } from "#genshin/init";
-import { calendarPromise } from "#genshin/utils/promise";
+import { calendarPromise, mysInfoPromise } from "#genshin/utils/promise";
+import user from "@web-console/backend/routes/user";
+import { Cookies } from "#genshin/module/cookies";
 
 export interface DailyMaterial {
 	"Mon&Thu": string[];
@@ -15,13 +17,12 @@ export interface DailyMaterial {
 	"Wed&Sat": string[];
 }
 
-export type DailyDataMaterial = {
-	[K in keyof DailyMaterial]: InfoResponse[]
-}
 
-interface DailyInfo {
+type DailyInfo = {
+	type: "character" | "weapon";
 	name: string;
 	rarity: number;
+	extra: number[];
 }
 
 export class DailySet {
@@ -29,23 +30,34 @@ export class DailySet {
 	private readonly characterSet: Record<string, DailyInfo[]>;
 	private readonly eventData: CalendarData[];
 	
-	constructor( data: InfoResponse[], events: CalendarData[] ) {
+	constructor( data: InfoResponse[], events: CalendarData[], sub: Map<string, DailyInfo> ) {
 		this.weaponSet = {};
 		this.characterSet = {};
 		this.eventData = events;
 		
 		for ( let d of data ) {
 			const { name, rarity }: { name: string, rarity: number } = d;
+			const priSubInfo = sub.get( name );
 			if ( isCharacterInfo( d ) ) {
-				this.add( take( d.talentMaterials, 3 ), { name, rarity }, "character" );
+				this.add( take( d.talentMaterials, 3 ), {
+					type: "character",
+					name,
+					rarity,
+					extra: priSubInfo ? priSubInfo.extra : [ 0 ]
+				} );
 			} else if ( isWeaponInfo( d ) ) {
-				this.add( d.ascensionMaterials[0], { name, rarity }, "weapon" );
+				this.add( d.ascensionMaterials[0], {
+					type: "weapon",
+					name,
+					rarity,
+					extra: priSubInfo ? priSubInfo.extra : [ 0 ]
+				} );
 			}
 		}
 	}
 	
-	private add( keyAsArr: string[], value: any, type: string ): void {
-		const name: string = `${ type }Set`;
+	private add( keyAsArr: string[], value: any ): void {
+		const name: string = `${ value.type }Set`;
 		const keys: string[] = Object.keys( this[name] );
 		const key: string = JSON.stringify( keyAsArr );
 		const find: string | undefined = keys.find( el => el === key );
@@ -67,22 +79,22 @@ export class DailySet {
 	}
 }
 
-async function getRenderResult( id: string, subState: boolean, week?: number ): Promise<RenderResult> {
+async function getRenderResult( id: string, username: string, week?: number ): Promise<RenderResult> {
 	return await renderer.asBase64( "/daily.html", {
 		id,
-		type: subState ? "sub" : "all",
+		username,
 		week: week ?? "today"
 	} );
 }
 
 export class DailyClass {
 	private detail: DailyMaterial;
-	private allData: DailyDataMaterial;
+	private allData: InfoResponse[];
 	private eventData: CalendarData[] = [];
 	
 	constructor() {
 		this.detail = { "Mon&Thu": [], "Tue&Fri": [], "Wed&Sat": [] };
-		this.allData = { "Mon&Thu": [], "Tue&Fri": [], "Wed&Sat": [] };
+		this.allData = [];
 		getDailyMaterial().then( ( result: DailyMaterial ) => {
 			this.detail = result;
 		} );
@@ -101,7 +113,7 @@ export class DailyClass {
 			this.detail = await getDailyMaterial();
 		} );
 		
-		scheduleJob( "0 0 7 * * *", async () => {
+		scheduleJob( "6 5 4 * * *", async () => {
 			const date: Date = new Date();
 			
 			/* 获取当日副本对应的角色和武器 */
@@ -110,32 +122,7 @@ export class DailyClass {
 			const todayInfoSet: string[] = this.getDetailSet( week );
 			
 			/* 获取所有角色和武器的信息 */
-			await this.getAllData( week, todayInfoSet, true );
-			
-			/* 私发订阅信息 */
-			const users: string[] = await bot.redis.getKeysByPrefix( "silvery-star.daily-sub-" );
-			
-			for ( let key of users ) {
-				const userID: string = <string>key.split( "-" ).pop();
-				const data: DailySet | undefined = await this.getUserSubList( userID );
-				if ( data === undefined ) {
-					continue;
-				}
-				await data.save( userID ); //保存订阅数据
-				/* 半个小时内随机时间推送 */
-				const randomMinute: number = randomInt( 3, 30 ) * 1000 * 60;
-				scheduleJob( Date.now() + randomMinute, async () => {
-					const res: RenderResult = await getRenderResult( userID, true );
-					const sendToUser = await bot.message.getPostPrivateFunc( userID );
-					if ( res.code === "base64" ) {
-						sendToUser ? await sendToUser( { content: "今日材料如下", file_image: res.data } ) : "";
-					} else if ( res.code === "url" ) {
-						sendToUser ? await sendToUser( { content: "今日材料如下", image: res.data } ) : "";
-					} else {
-						sendToUser ? await sendToUser( "每日素材订阅图片渲染异常\n" + res.data ) : "";
-					}
-				} );
-			}
+			await this.getAllData( todayInfoSet, true );
 		} );
 	}
 	
@@ -151,35 +138,21 @@ export class DailyClass {
 		}
 	}
 	
+	/* 返回每一天的材料，周天返回全部材料 */
 	private getDetailSet( week: number ): string[] {
 		const param = DailyClass.getDateStr( week );
-		return param ? this.detail[param] : [];
-	}
-	
-	private getDataSet( week: number ): InfoResponse[] {
-		const param = DailyClass.getDateStr( week );
-		return param ? this.allData[param] : [];
-	}
-	
-	private async getAllData( week: number, set: string[], clear: boolean ): Promise<void> {
-		if ( clear ) {
-			this.allData = { "Mon&Thu": [], "Tue&Fri": [], "Wed&Sat": [] };
-		}
-		if ( week === 0 ) {
-			return;
-		}
-		for ( let targetName of set ) {
-			try {
-				const data = await getInfo( targetName );
-				if ( typeof data !== "string" ) {
-					this.getDataSet( week ).push( data );
-				}
-			} catch ( e ) {
-				bot.logger.error( `「${ targetName }」信息获取失败: ${ e }` );
+		const allMaterial: string[] = [];
+		if ( param ) {
+			allMaterial.push( ...this.detail[param] );
+		} else {
+			for ( let detailKey in this.detail ) {
+				allMaterial.push( ...this.detail[detailKey] );
 			}
 		}
+		return allMaterial;
 	}
 	
+	/* 0星期天，1-6代表星期1-6 */
 	private static getWeek( initWeek?: number ): number {
 		let week: number;
 		if ( initWeek ) {
@@ -192,84 +165,78 @@ export class DailyClass {
 		return week;
 	}
 	
-	private async getUserSubList( userID: string, initWeek?: number ): Promise<DailySet | undefined> {
-		const dbKey: string = `silvery-star.daily-sub-${ userID }`;
-		const subList: string[] = await bot.redis.getList( dbKey );
-		
-		/* 排除活动日历订阅 */
-		const itemSubList: string[] = subList.filter( s => s !== "活动" );
-		
-		/* 是否存在活动订阅 */
-		const hasEventSub: Boolean = itemSubList.length !== subList.length;
-		
-		const week: number = DailyClass.getWeek( initWeek );
-		if ( this.getDataSet( week ).length === 0 ) {
-			const set: string[] = this.getDetailSet( week );
-			await this.getAllData( week, set, false );
+	/* 获取订阅名称的详细信息 */
+	private async getAllData( set: string[], clear: boolean ): Promise<void> {
+		if ( clear ) {
+			this.allData = [];
 		}
-		
-		if ( initWeek ?? subList.length === 0 ) {
-			return undefined;
-		}
-		
-		const privateSub: InfoResponse[] = [];
-		for ( let item of itemSubList ) {
-			const find: InfoResponse | undefined = this.getDataSet( week ).find( el => el.name === item );
-			if ( find === undefined ) {
-				continue;
+		for ( let targetName of set ) {
+			try {
+				const data = await getInfo( targetName );
+				if ( typeof data !== "string" ) {
+					this.allData.push( data );
+				}
+			} catch ( e ) {
+				bot.logger.error( `「${ targetName }」信息获取失败: ${ e }` );
 			}
-			privateSub.push( find );
 		}
-		if ( privateSub.length === 0 && !hasEventSub ) {
-			return undefined;
-		}
-		
-		return new DailySet( privateSub, hasEventSub ? this.eventData : [] );
 	}
 	
-	public async getUserSubscription( userID: string, initWeek?: number ): Promise<RenderResult> {
-		
-		const week: number = DailyClass.getWeek( initWeek );
-		if ( initWeek === 7 ) {
-			return { code: "error", data: "周日所有材料都可以刷取哦~" };
+	/* 获取授权用户的材料需求详细信息 */
+	private async getUserPrivateInfo( userID: string, cookie: string ): Promise<Map<string, DailyInfo>> {
+		try {
+			const mysID = parseInt( Cookies.checkMysID( cookie ) );
+			await mysInfoPromise( userID, mysID, cookie );
+		} catch ( error ) {
+			if ( error !== "gotten" ) {
+				throw <string>error;
+			}
 		}
 		
-		/* 是否是订阅数据，主动查询不涉及订阅数据 */
-		// const data: DailySet | undefined = await this.getUserSubList( userID, initWeek === undefined ? undefined : week );
-		// const subState = data !== undefined;
-		// const set = data === undefined ? new DailySet( this.getDataSet( week ), this.eventData ) : data;
-		// await set.save( userID );
-		await this.getUserSubList( userID, initWeek === undefined ? undefined : week );
-		await new DailySet( this.getDataSet( week ), this.eventData ).save( userID );
-		return await getRenderResult( userID, false, initWeek === undefined ? undefined : week );
+		const uid: string = await bot.redis.getString( `silvery-star.user-querying-id-${ userID }` );
+		const data: any = await bot.redis.getHash( `silvery-star.card-data-${ uid }` );
+		const avatars = JSON.parse( data.avatars );
+		const allData: Map<string, DailyInfo> = new Map<string, DailyInfo>();
+		
+		avatars.forEach( value => {
+			allData.set( value.name, {
+				type: 'character',
+				name: value.name,
+				rarity: value.rarity,
+				extra: [ value.skills[0].levelCurrent, value.skills[1].levelCurrent, value.skills[2].levelCurrent ]
+			} );
+			allData.set( value.weapon.name, {
+				type: 'weapon',
+				name: value.weapon.name,
+				rarity: value.weapon.rarity,
+				extra: [ value.weapon.level ]
+			} );
+		} );
+		return allData;
 	}
 	
-	public async modifySubscription( userID: string, operation: boolean, name: string ): Promise<string> {
+	
+	/* 主动调用入口 */
+	public async getUserDailyMaterial( userID: string, username: string, cookie?: string, initWeek?: number ): Promise<RenderResult> {
 		
-		/* 是否为活动日历 */
-		const isEvent: Boolean = name === "活动";
+		/* 获取当日材料数据 */
+		const week: number = DailyClass.getWeek( initWeek );
+		let todayInfoSet: string[] = this.getDetailSet( week );
 		
-		/* 添加/删除私聊订阅 */
-		const result: NameResult = getRealName( name );
 		
-		if ( result.definite || isEvent ) {
-			const realName: string = isEvent ? name : <string>result.info;
-			const dbKey: string = `silvery-star.daily-sub-${ userID }`;
-			const exist: boolean = await bot.redis.existListElement( dbKey, realName );
-			
-			if ( exist === operation ) {
-				return `「${ realName }」${ operation ? "已订阅" : "未曾订阅" }`;
-			} else if ( operation ) {
-				await bot.redis.addListElement( dbKey, realName );
-			} else {
-				await bot.redis.delListElement( dbKey, realName );
-			}
-			
-			return `订阅${ operation ? "添加" : "取消" }成功`;
-		} else if ( result.info === "" ) {
-			return `未找到名为「${ name }」的角色或武器，若确认名称输入无误，请前往官方频道进行反馈`;
-		} else {
-			return `未找到相关信息，是否要找：${ [ "", ...<string[]>result.info ].join( "\n  - " ) }`;
+		/* 根据授权信息修改详情需求 */
+		let subData = cookie ? await this.getUserPrivateInfo( userID, cookie ).catch() : new Map<string, DailyInfo>();
+		if ( subData.size > 0 ) {
+			const names = Array.from( subData.keys() );
+			todayInfoSet = todayInfoSet.filter( value => {
+				return names.includes( value );
+			} );
 		}
+		
+		/* 获取所有材料信息填充至 allData */
+		await this.getAllData( todayInfoSet, true );
+		
+		await new DailySet( this.allData, this.eventData, subData ).save( userID );
+		return await getRenderResult( userID, username, initWeek === undefined ? undefined : week );
 	}
 }

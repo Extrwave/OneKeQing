@@ -10,6 +10,6 @@ export function createServer( config: MariPluginConfig, logger: Logger ): void {
 	app.use( "/api/chara", r.CharaRouter );
 	
 	app.listen( config.serverPort, () => {
-		logger.info( "mari-plugin Express服务已启动，port: " + config.serverPort );
+		logger.info( "[ mari-plugin ] 插件 Express 服务已在端口启动: " + config.serverPort );
 	} );
 }

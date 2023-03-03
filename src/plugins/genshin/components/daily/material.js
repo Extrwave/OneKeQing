@@ -13,7 +13,12 @@ const template = `<section class="material">
 					<div class="thumb-list">
 						<div v-for="(t, tKey) of m[type].list" :key="tKey" class="thumb-box" :style="getThumbBg(t.rarity)">
 							<img :src="getThumb(type, t.name)" alt="ERROR">
-							<p>{{ t.name }}</p>
+							<div>
+								<p>{{ t.name }}</p>
+								<p v-if="t.extra[0]!==0" class="extra">{{ t.extra[0] }}</p>
+								<p v-if="t.extra[1]" class="extra">{{ t.extra[1] }}</p>
+								<p v-if="t.extra[2]" class="extra">{{ t.extra[2] }}</p>
+							</div>
 						</div>
 					</div>
 				</template>
