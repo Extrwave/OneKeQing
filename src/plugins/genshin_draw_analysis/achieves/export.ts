@@ -302,11 +302,11 @@ export async function main( i: InputParameter ): Promise<void> {
 	const info: Standard_Gacha_Info = {
 		uid,
 		lang,
-		export_app: '-',
+		export_app: '一碗牛杂',
 		export_app_version: '1.0.0',
 		export_time: moment().format( "yy-MM-DD HH:mm:ss" ),
 		export_timestamp: Date.now() / 1000 | 0,
-		uigf_version: '2.2'
+		uigf_version: 'v2.2'
 	}
 	const export_data: Standard_Gacha = {
 		info,
@@ -329,7 +329,7 @@ export async function main( i: InputParameter ): Promise<void> {
 					light: '#FFF',
 				}
 			}
-			QRCode.toDataURL( url, options, async ( err: any, image: string ) => {
+			QRCode.toDataURL( "链接地址: " + url, options, async ( err: any, image: string ) => {
 				if ( err || !image ) {
 					logger.error( "二维码生成失败：", err );
 					await sendMessage( `二维码生成失败：${ err }` );
@@ -337,7 +337,7 @@ export async function main( i: InputParameter ): Promise<void> {
 				}
 				//发送二维码
 				image = image.replace( "data:image/png;base64,", "" );
-				await sendMessage( { content: "请扫描二维码获取链接", file_image: image } );
+				await sendMessage( { content: "请扫描二维码获取链接，可用于其他软件分析统计", file_image: image } );
 			} );
 		} else {
 			await sendMessage( "链接已经过期，请重新使用抽卡分析指令获取" );

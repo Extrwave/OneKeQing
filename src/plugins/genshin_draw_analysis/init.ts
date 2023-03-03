@@ -24,7 +24,7 @@ const draw_analysis: OrderConfig = {
 	cmdKey: "genshin-draw-analysis",
 	desc: [ "抽卡分析", "(序号) (样式)" ],
 	headers: [ "drawa" ],
-	detail: "使用设置的抽卡记录URL重新拉取数据并合并历史数据分析, 1: phone样式,2: pc样式，如果只传一个参数优先匹配服务序号。",
+	detail: "使用授权SToken拉取数据并合并历史数据分析, 1: phone样式,2: pc样式，如果只传一个参数优先匹配服务序号。",
 	regexps: [ "(\\d+)?", "(\\d+)?" ],
 	main: "achieves/draw_analysis"
 };

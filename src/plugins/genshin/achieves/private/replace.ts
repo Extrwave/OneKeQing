@@ -26,6 +26,7 @@ async function replaceCookie( userID: string, newCookie: string ) {
 				message.push( `[ UID${ uid } ] Cookie 更新成功` );
 			} catch ( error ) {
 				message.push( `[ UID ${ account.setting.uid } ] ${ <string>error }` );
+				message.push( `通过login_ticket授权的SToken只能用于抽卡查询，无法用于刷新CToken` );
 			}
 		}
 		return message.join( "\n" );

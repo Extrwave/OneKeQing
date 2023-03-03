@@ -389,9 +389,9 @@ export class Adachi {
 			`如是频道主或者管理员，请使用 [ ${ APPLY.getCNHeader() } ] 自助申请\n` +
 			"如已经申请，则您的权限不足以支持此指令";
 		if ( groupUnionReg.test( content ) ) {
-			msg = isPrivate ? `该指令仅限群聊使用 ~ ` : NoAuthTips;
+			msg = isPrivate ? `该指令仅限频道使用 ~ ` : NoAuthTips;
 		} else if ( privateUnionReg.test( content ) ) {
-			msg = isPrivate ? `您没有权限执行此指令 ~ ` : NoAuthTips;
+			msg = !isPrivate ? `该指令仅限私信使用 ~ ` : NoAuthTips;
 		}
 		return msg;
 	}
