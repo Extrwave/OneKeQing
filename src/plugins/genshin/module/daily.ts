@@ -22,7 +22,7 @@ type DailyInfo = {
 	type: "character" | "weapon";
 	name: string;
 	rarity: number;
-	extra: number[];
+	extra: number[] | string;
 }
 
 export class DailySet {
@@ -35,6 +35,14 @@ export class DailySet {
 		this.characterSet = {};
 		this.eventData = events;
 		
+		/* 根据用户授权情况更改材料列表 */
+		if ( sub.size > 0 ) {
+			const names = Array.from( sub.keys() );
+			data = data.filter( value => {
+				return names.includes( value.name );
+			} );
+		}
+		
 		for ( let d of data ) {
 			const { name, rarity }: { name: string, rarity: number } = d;
 			const priSubInfo = sub.get( name );
@@ -43,14 +51,14 @@ export class DailySet {
 					type: "character",
 					name,
 					rarity,
-					extra: priSubInfo ? priSubInfo.extra : [ 0 ]
+					extra: priSubInfo ? priSubInfo.extra : "未授权"
 				} );
 			} else if ( isWeaponInfo( d ) ) {
 				this.add( d.ascensionMaterials[0], {
 					type: "weapon",
 					name,
 					rarity,
-					extra: priSubInfo ? priSubInfo.extra : [ 0 ]
+					extra: priSubInfo ? priSubInfo.extra : "未授权"
 				} );
 			}
 		}
@@ -172,9 +180,14 @@ export class DailyClass {
 		}
 		for ( let targetName of set ) {
 			try {
-				const data = await getInfo( targetName );
-				if ( typeof data !== "string" ) {
-					this.allData.push( data );
+				const exist = this.allData.some( value => {
+					return value.name === targetName
+				} );
+				if ( !exist ) {
+					const data = await getInfo( targetName );
+					if ( typeof data !== "string" ) {
+						this.allData.push( data );
+					}
 				}
 			} catch ( e ) {
 				bot.logger.error( `「${ targetName }」信息获取失败: ${ e }` );
@@ -225,16 +238,11 @@ export class DailyClass {
 		
 		
 		/* 根据授权信息修改详情需求 */
-		let subData = cookie ? await this.getUserPrivateInfo( userID, cookie ).catch() : new Map<string, DailyInfo>();
-		if ( subData.size > 0 ) {
-			const names = Array.from( subData.keys() );
-			todayInfoSet = todayInfoSet.filter( value => {
-				return names.includes( value );
-			} );
-		}
+		let subData = new Map<string, DailyInfo>();
+		cookie ? subData = await this.getUserPrivateInfo( userID, cookie ).catch() : "";
 		
 		/* 获取所有材料信息填充至 allData */
-		await this.getAllData( todayInfoSet, true );
+		await this.getAllData( todayInfoSet, false );
 		
 		await new DailySet( this.allData, this.eventData, subData ).save( userID );
 		return await getRenderResult( userID, username, initWeek === undefined ? undefined : week );

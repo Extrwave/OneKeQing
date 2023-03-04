@@ -15,9 +15,10 @@ const template = `<section class="material">
 							<img :src="getThumb(type, t.name)" alt="ERROR">
 							<div>
 								<p>{{ t.name }}</p>
-								<p v-if="t.extra[0]!==0" class="extra">{{ t.extra[0] }}</p>
-								<p v-if="t.extra[1]" class="extra">{{ t.extra[1] }}</p>
-								<p v-if="t.extra[2]" class="extra">{{ t.extra[2] }}</p>
+								<p v-if="typeof t.extra === 'string'" class="extra">{{ t.extra }}</p>
+								<p v-if="typeof t.extra !== 'string' && t.extra[0]" class="extra">{{ t.extra[0] }}</p>
+								<p v-if="typeof t.extra !== 'string' && t.extra[1]" class="extra">{{ t.extra[1] }}</p>
+								<p v-if="typeof t.extra !== 'string' && t.extra[2]" class="extra">{{ t.extra[2] }}</p>
 							</div>
 						</div>
 					</div>
