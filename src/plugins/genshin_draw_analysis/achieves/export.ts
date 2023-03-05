@@ -329,7 +329,7 @@ export async function main( i: InputParameter ): Promise<void> {
 					light: '#FFF',
 				}
 			}
-			QRCode.toDataURL( "链接地址: " + url, options, async ( err: any, image: string ) => {
+			QRCode.toDataURL( url, options, async ( err: any, image: string ) => {
 				if ( err || !image ) {
 					logger.error( "二维码生成失败：", err );
 					await sendMessage( `二维码生成失败：${ err }` );
