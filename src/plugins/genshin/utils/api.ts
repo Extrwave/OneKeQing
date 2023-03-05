@@ -53,6 +53,8 @@ const __API = {
 	FETCH_BBS_UPVOTE_POST: "https://bbs-api.miyoushe.com/apihub/sapi/upvotePost",
 	FETCH_BBS_SHARE_POST: "https://bbs-api.miyoushe.com/apihub/api/getShareConf",
 	FETCH_BBS_GET_TASK: "https://api-takumi.mihoyo.com/apihub/wapi/getUserMissionsState",
+	/* 云原神服务相关 */
+	FETCH_CLOUD_WALLET: 'https://api-cloudgame.mihoyo.com/hk4e_cg_cn/wallet/wallet/get',
 	/* 验证码服务相关 */
 	FETCH_GET_VERIFY: "http://challenge.minigg.co/geetest",
 	FETCH_GEETEST: "https://api.geetest.com/gettype.php",
@@ -108,9 +110,23 @@ const HEADERS = {
 		"user-agent": "Mozilla/5.0 (iPhone; CPU iPhone OS 13_2_3 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) miHoYoBBS/2.34.1",
 		"DS": "",
 		"Cookie": ""
+	},
+	CLOUD: {
+		'x-rpc-client_type': 2,  //默认安卓
+		'x-rpc-app_version': "3.4.0", //当前云原神版本
+		'x-rpc-sys_version': 12.0, //当前安卓版本
+		'x-rpc-channel': 'mihoyo',
+		'x-rpc-app_id': "1953439974",
+		'Referer': 'https://app.mihoyo.com',
+		'Host': 'api-cloudgame.mihoyo.com',
+		'Connection': 'Keep-Alive',
+		'Accept-Encoding': 'gzip',
+		'User-Agent': 'okhttp/4.9.0',
+		'x-rpc-device_id': guid(),
+		'x-rpc-device_name': randomString( 5 ),
+		'x-rpc-device_model': "Realme x7 Pro",
+		'x-rpc-combo_token': "",
 	}
-	
-	
 };
 
 const verifyMsg = "API请求遭遇验证码拦截 ~";
@@ -943,6 +959,28 @@ export async function mihoyoBBSGetMyb( cookie: string, time: number = 0, verifyR
 	} )
 }
 
+/* 云原神签到API */
+export async function cloudGameSign( token: string ): Promise<any> {
+	return new Promise( ( resolve, reject ) => {
+		request( {
+			method: "GET",
+			url: __API.FETCH_CLOUD_WALLET,
+			headers: {
+				...HEADERS.CLOUD,
+				'x-rpc-combo_token': token
+			},
+			json: true
+		} )
+			.then( ( result ) => {
+				resolve( result );
+			} )
+			.catch( ( reason ) => {
+				reject( reason );
+			} );
+	} );
+}
+
+
 /* 验证码相关解决方案 */
 export async function bypassQueryVerification( cookie: string, gt?: string, challenge?: string ): Promise<string> {
 	const data = {
@@ -963,7 +1001,7 @@ export async function bypassQueryVerification( cookie: string, gt?: string, chal
 			}
 		} ) );
 		if ( !createVerify.data ) {
-			bot.logger.error( createVerify );
+			bot.logger.error( "[create]", createVerify );
 			return "获取验证码失败";
 		}
 		data.gt = createVerify.data.gt;
@@ -992,12 +1030,12 @@ export async function bypassQueryVerification( cookie: string, gt?: string, chal
 	} );
 	try {
 		analysisCode = JSON.parse( analysisCode );
-	} catch ( error ) {
-		bot.logger.error( analysisCode );
-		return JSON.stringify( error );
+	} catch ( error: any ) {
+		bot.logger.error( "[verify]", analysisCode );
+		return typeof error === 'object' ? JSON.stringify( error ) : <string>error;
 	}
 	if ( analysisCode.code !== 0 || analysisCode.info !== "success" ) {
-		bot.logger.error( analysisCode );
+		bot.logger.error( "[verify]", analysisCode );
 		return JSON.stringify( analysisCode );
 	}
 	const body = {
@@ -1005,10 +1043,9 @@ export async function bypassQueryVerification( cookie: string, gt?: string, chal
 		geetest_validate: analysisCode.data.validate,
 		geetest_seccode: `${ analysisCode.data.validate }|jordan`
 	}
-	const verifyResult = await request( {
+	let verifyResult = await request( {
 		method: "POST",
 		url: __API.FETCH_VERIFY_VERIFICATION,
-		json: true,
 		body,
 		headers: {
 			...HEADERS.NORMAL,
@@ -1016,10 +1053,17 @@ export async function bypassQueryVerification( cookie: string, gt?: string, chal
 			"Cookie": cookie
 		}
 	} );
-	/* 验证码过期 */
-	if ( verifyResult.retcode !== 0 || verifyResult.message !== 'OK' ) {
-		bot.logger.error( verifyResult );
-		return JSON.stringify( verifyResult );
+	
+	try {
+		/* 验证码过期 */
+		verifyResult = JSON.parse( verifyResult );
+		if ( verifyResult.retcode !== 0 || verifyResult.message !== 'OK' ) {
+			bot.logger.error( "[submit]", verifyResult );
+			return JSON.stringify( verifyResult );
+		}
+	} catch ( error ) {
+		bot.logger.error( "[submit]", error );
+		return typeof error === 'object' ? JSON.stringify( error ) : <string>error;
 	}
 	return "";
 }

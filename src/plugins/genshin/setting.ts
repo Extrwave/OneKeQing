@@ -349,6 +349,68 @@ const privateCommit: OrderConfig = {
 	detail: "贡献授权到BOT的公共查询Cookie列表，不会泄露任何信息"
 };
 
+const cloudEnable: OrderConfig = {
+	type: "order",
+	cmdKey: "extr-wave-cloud-game-enable",
+	desc: [ "添加云原神授权", "" ],
+	headers: [ "onyys" ],
+	regexps: [],
+	main: "achieves/private/cloud/sub",
+	scope: MessageScope.Private,
+};
+
+const cloudConfirm: OrderConfig = {
+	type: "order",
+	cmdKey: "extr-wave-cloud-game-confirm",
+	desc: [ "验证云原神授权", "" ],
+	headers: [ "conyys" ],
+	regexps: [ ".+" ],
+	main: "achieves/private/cloud/sub",
+	scope: MessageScope.Private,
+	display: false,
+	ignoreCase: false
+}
+
+const cloudDisable: OrderConfig = {
+	type: "order",
+	cmdKey: "extr-wave-cloud-game-disable",
+	desc: [ "取消云原神授权", "(序号)" ],
+	headers: [ "offyys" ],
+	regexps: [ "(\\d+)?" ],
+	main: "achieves/private/cloud/cancel",
+	scope: MessageScope.Private,
+};
+
+const cloudSwitch: OrderConfig = {
+	type: "order",
+	cmdKey: "extr-wave-cloud-game-switch",
+	desc: [ "开关云原神签到", "(序号)" ],
+	headers: [ "swiyys" ],
+	regexps: [ "(\\d+)?" ],
+	main: "achieves/private/cloud/switch",
+	scope: MessageScope.Private,
+};
+
+const cloudSign: OrderConfig = {
+	type: "order",
+	cmdKey: "extr-wave-cloud-game-sign",
+	desc: [ "云原神签到", "(序号)" ],
+	headers: [ "yysign" ],
+	regexps: [ "(\\d+)?" ],
+	main: "achieves/private/cloud/main",
+	scope: MessageScope.Private,
+};
+
+const cloudUpdate: OrderConfig = {
+	type: "order",
+	cmdKey: "extr-wave-cloud-game-update",
+	desc: [ "更新云原神授权", "[Token]" ],
+	headers: [ "updyys" ],
+	regexps: [ ".+" ],
+	main: "achieves/private/cloud/replace",
+	scope: MessageScope.Private,
+};
+
 export default <PluginSetting>{
 	pluginEName: "genshin",
 	pluginCName: "原神主体",
@@ -361,6 +423,9 @@ export default <PluginSetting>{
 		privateSubList, privateReorder, privateToggleSign,
 		privateToggleNote, privateNoteEvent, privateNowNote,
 		privateAbyssQuery, privateLedger, privateSign,
-		privateCommit, alias
+		privateCommit, alias,
+		cloudEnable, cloudConfirm, cloudDisable,
+		cloudUpdate, cloudSign, cloudSwitch,
 	]
-};
+}
+;

@@ -678,6 +678,18 @@ export async function mihoyoBBSGetMybPromise( cookie: string ): Promise<any> {
 	} )
 }
 
+/* 云原神相关API */
+export async function cloudGameSignPromise( uid: string, token: string ): Promise<any> {
+	const { retcode, message, data } = await api.cloudGameSign( token );
+	
+	return new Promise( ( resolve, reject ) => {
+		if ( retcode === -100 || retcode !== 0 ) {
+			return reject( message );
+		}
+		resolve( data );
+	} );
+}
+
 /* Token转换相关API */
 export async function getCookieTokenBySToken(
 	stoken: string,

@@ -11,6 +11,7 @@ import { pull } from "lodash";
 import { scheduleJob } from "node-schedule";
 import { getRegion } from "#genshin/utils/region";
 import { refreshTokenBySToken } from "#genshin/utils/cookie";
+import { CloudService } from "#genshin/module/private/cloud";
 
 export interface Service {
 	parent: Private;
@@ -38,7 +39,7 @@ type ExpandedService<T extends any[], E extends BasicExpand = {}> = T extends []
 /* 定义扩展私有服务 */
 type ServiceTuple = [
 	NoteService, SignInService, MysQueryService,
-	AbyQueryService, CharQueryService
+	AbyQueryService, CharQueryService, CloudService
 ];
 /* 获取扩展授权服务类型 */
 type Services = ExpandedService<ServiceTuple>;
@@ -50,11 +51,13 @@ export class UserInfo {
 	public readonly mysID: number;
 	public cookie: string;
 	public stoken: string;
+	public ytoken: string;
 	
-	constructor( uid: string, cookie: string, userID: string, mysID: number, stoken: string = "" ) {
+	constructor( uid: string, cookie: string, userID: string, mysID: number, stoken: string = "", ytoken: string = "" ) {
 		this.uid = uid;
 		this.cookie = cookie;
 		this.stoken = stoken;
+		this.ytoken = ytoken;
 		this.userID = userID;
 		this.mysID = mysID;
 		this.server = getRegion( uid[0] );
@@ -83,7 +86,8 @@ export class Private {
 		return new Private(
 			data.setting.uid, data.setting.cookie,
 			data.setting.userID, data.setting.mysID,
-			data.id, data.options, data.setting.stoken
+			data.id, data.options, data.setting.stoken,
+			data.setting.ytoken
 		);
 	}
 	
@@ -91,10 +95,10 @@ export class Private {
 		uid: string, cookie: string,
 		userID: string, mysID: number,
 		id: number, options?: Record<string, any>,
-		stoken: string = ""
+		stoken: string = "", ytoken: string = ""
 	) {
 		this.options = options || {};
-		this.setting = new UserInfo( uid, cookie, userID, mysID, stoken );
+		this.setting = new UserInfo( uid, cookie, userID, mysID, stoken, ytoken );
 		
 		const md5: string = Md5.init( `${ userID }-${ uid }` );
 		this.id = id;
@@ -104,7 +108,8 @@ export class Private {
 			[SignInService.FixedField]: new SignInService( this ),
 			[MysQueryService.FixedField]: new MysQueryService( this ),
 			[AbyQueryService.FixedField]: new AbyQueryService( this ),
-			[CharQueryService.FixedField]: new CharQueryService( this )
+			[CharQueryService.FixedField]: new CharQueryService( this ),
+			[CloudService.FixedField]: new CloudService( this )
 		};
 		this.options = this.globalOptions();
 	}
@@ -135,6 +140,16 @@ export class Private {
 	public async replaceCookie( cookie: string, stoken: string = "" ): Promise<void> {
 		stoken ? this.setting.stoken = stoken : "";
 		this.setting.cookie = cookie;
+		await bot.redis.setString( this.dbKey, this.stringify() );
+	}
+	
+	public async replaceCloudGameToken( ytoken: string ): Promise<void> {
+		this.setting.ytoken = ytoken;
+		await bot.redis.setString( this.dbKey, this.stringify() );
+	}
+	
+	public async cancelCloudGameToken(): Promise<void> {
+		this.setting.ytoken = "";
 		await bot.redis.setString( this.dbKey, this.stringify() );
 	}
 	
