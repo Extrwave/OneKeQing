@@ -52,7 +52,7 @@ export class SignInService implements Service {
 	
 	public async initTest(): Promise<string> {
 		const TOGGLE_SIGN = <Order>bot.command.getSingle( "silvery-star-private-toggle-sign" );
-		const content = await this.toggleEnableStatus( true );
+		const content = await this.toggleEnableStatus( false );
 		return `${ content }\n[ ${ TOGGLE_SIGN.getCNHeader() }+序号 ] 开关签到功能`;
 	}
 	
@@ -125,7 +125,7 @@ export class SignInService implements Service {
 			bot.logger.info( `[MysID ${ mysID }] 执行每日米游社任务，请耐心等待...` );
 			const content = await mihoyoBBSTaskPromise( mysID, stoken, cookie );
 			const mybData = await mihoyoBBSGetMybPromise( cookie );
-			content.push( `今日获取米游币：${ mybData.today_total_points - mybData.can_get_points }` );
+			content.push( `今日获取米游币：${ mybData.already_received_points }` );
 			content.push( `当前米游币数量：${ mybData.total_points }` );
 			const embedMsg = new EmbedMsg(
 				`今日米游社任务结果`,

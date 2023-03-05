@@ -301,6 +301,7 @@ const privateToggleSign: OrderConfig = {
 	cmdKey: "silvery-star-private-toggle-sign",
 	desc: [ "开关签到", "[序号]" ],
 	headers: [ "signin" ],
+	auth: AuthLevel.Manager,
 	regexps: [ "(\\d+)?" ],
 	main: "achieves/private/sign/switch",
 	detail: "该指令用于切换米游社签到的开/关状态"
