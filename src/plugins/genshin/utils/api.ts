@@ -1019,6 +1019,7 @@ export async function bypassQueryVerification( cookie: string, gt?: string, chal
 	//验证验证码
 	let analysisCode = await request( {
 		method: "GET",
+		json: true,
 		url: formatGetURL( __API.FETCH_GET_VERIFY, {
 			"token": config.verifyToken,
 			"gt": data.gt,
@@ -1028,15 +1029,9 @@ export async function bypassQueryVerification( cookie: string, gt?: string, chal
 			"User-Agent": "Adachi-GBOT"
 		}
 	} );
-	try {
-		analysisCode = JSON.parse( analysisCode );
-	} catch ( error: any ) {
-		bot.logger.error( "[verify]", analysisCode );
-		return typeof error === 'object' ? JSON.stringify( error ) : <string>error;
-	}
 	if ( analysisCode.code !== 0 || analysisCode.info !== "success" ) {
 		bot.logger.error( "[verify]", analysisCode );
-		return JSON.stringify( analysisCode );
+		return analysisCode;
 	}
 	const body = {
 		geetest_challenge: analysisCode.data.challenge,
@@ -1047,6 +1042,7 @@ export async function bypassQueryVerification( cookie: string, gt?: string, chal
 		method: "POST",
 		url: __API.FETCH_VERIFY_VERIFICATION,
 		body,
+		json: true,
 		headers: {
 			...HEADERS.NORMAL,
 			"DS": getDS( undefined, JSON.stringify( body ) ),
@@ -1056,14 +1052,13 @@ export async function bypassQueryVerification( cookie: string, gt?: string, chal
 	
 	try {
 		/* 验证码过期 */
-		verifyResult = JSON.parse( verifyResult );
 		if ( verifyResult.retcode !== 0 || verifyResult.message !== 'OK' ) {
 			bot.logger.error( "[submit]", verifyResult );
-			return JSON.stringify( verifyResult );
+			return verifyResult;
 		}
 	} catch ( error ) {
 		bot.logger.error( "[submit]", error );
-		return typeof error === 'object' ? JSON.stringify( error ) : <string>error;
+		return <string>error;
 	}
 	return "";
 }
