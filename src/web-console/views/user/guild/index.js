@@ -18,8 +18,8 @@ const template = `<div class="table-container user">
 			</el-table-column>
 			<el-table-column prop="guildAuth" label="频道权限" align="center" min-width="100px">
 				<template #default="{row}">
-					<div class="lighter-block" :style="{ 'background-color': authLevel[row.guildAuth - 1].color }">
-						<span>{{ authLevel[row.guildAuth -1]?.label }}</span>
+					<div class="lighter-block" :style="{ 'background-color': authLevel[1].color }">
+						<span>{{ authLevel[1]?.label }}</span>
 					</div>
 				</template>
 			</el-table-column>
@@ -72,7 +72,6 @@ export default defineComponent( {
 	setup() {
 		const state = reactive( {
 			guildList: [],
-			cmdKeys: [],
 			currentPage: 1,
 			pageSize: 14,
 			totalGuild: 0,
@@ -129,7 +128,6 @@ export default defineComponent( {
 				...listQuery
 			}, "GET" ).then( resp => {
 				state.guildList = resp.data.guildInfos;
-				state.cmdKeys = resp.data.cmdKeys;
 				state.totalGuild = resp.total;
 				state.tableLoading = false;
 			} ).catch( error => {

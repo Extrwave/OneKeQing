@@ -18,8 +18,8 @@ const template = `<div class="table-container user">
 			</el-table-column>
 			<el-table-column prop="botAuth" label="权限" align="center" min-width="100px">
 				<template #default="{row}">
-					<div class="lighter-block" :style="{ 'background-color': authLevel[row.botAuth].color }">
-						<span>{{ authLevel[row.botAuth].label }}</span>
+					<div class="lighter-block" :style="{ 'background-color': authLevel[1].color }">
+						<span>{{ authLevel[1].label }}</span>
 					</div>
 				</template>
 			</el-table-column>
@@ -123,13 +123,9 @@ export default defineComponent( {
 			color: "#6f73f0",
 			value: 3
 		}, {
-			label: "Manager",
-			color: "#f17a16",
-			value: 4
-		}, {
 			label: "Master",
 			color: "#e94e49",
-			value: 5
+			value: 4
 		} ];
 		
 		const tableHeight = computed( () => {

@@ -83,7 +83,7 @@ export class Adachi {
 		} );
 		
 		const redis = new Redis( setting.dbPort, setting.dbPassword, logger, file );
-		const auth = new Authorization( setting, redis );
+		const auth = new Authorization( setting, client );
 		const message = new MsgManager( setting, client, redis );
 		const command = new Command( file );
 		const refresh = new RefreshConfig( file, command );
@@ -175,7 +175,6 @@ export class Adachi {
 		messageData: Message,
 		sendMessage: Msg.SendFunc,
 		cmdSet: BasicConfig[],
-		limits: string[],
 		unionRegExp: RegExp,
 		isPrivate: boolean,
 		isAt: boolean
@@ -194,18 +193,11 @@ export class Adachi {
 		
 		const userID = messageData.msg.author.id;
 		const guildID: string = isPrivate ? "-1" : messageData.msg.guild_id; // -1 代表私聊使用
-		const channelID = messageData.msg.channel_id;
-		
-		/* 适配Ban掉的频道 */
-		if ( !isPrivate && await this.bot.redis.existSetMember( __RedisKey.GUILD_BAN, guildID ) ) {
-			return isAt ? await sendMessage( "此频道已被禁用，请点击BOT头像前往官方频道反馈" ) : undefined;
-		}
 		
 		/* 对设置可用子频道做出适配 */
-		const { status, msg } = await checkChannelLimit( guildID, channelID, userID );
-		if ( status ) {
-			await sendMessage( msg );
-			return;
+		const limit = await checkChannelLimit( messageData );
+		if ( limit ) {
+			return await sendMessage( limit );
 		}
 		
 		/* 首先排除有些憨憨带上的 [] () |, 模糊匹配可能会出现这种情况但成功 */
@@ -216,9 +208,7 @@ export class Adachi {
 		/* 人工智障聊天, 匹配不到任何指令触发，对私域进行优化，@BOT才能触发自动回复 */
 		if ( !unionRegExp.test( content ) || unionRegExp.source === /()/i.source ) {
 			/* 未识别指令匹配 */
-			const srcGuildId = messageData.msg.src_guild_id ? messageData.msg.src_guild_id : messageData.msg.guild_id;
-			const auth = await this.bot.auth.get( userID, srcGuildId );
-			const check = this.cmdLimitCheck( content, isPrivate, isAt, auth );
+			const check = this.cmdLimitCheck( messageData );
 			if ( check ) {
 				await sendMessage( check );
 				return;
@@ -239,10 +229,9 @@ export class Adachi {
 		}
 		
 		/* 获取匹配指令对应的处理方法 */
-		const usable: BasicConfig[] = cmdSet.filter( el => !limits.includes( el.cmdKey ) );
 		const matchList: { matchResult: MatchResult; cmd: BasicConfig }[] = [];
 		
-		for ( let cmd of usable ) {
+		for ( let cmd of cmdSet ) {
 			const res: MatchResult = cmd.match( content );
 			if ( res.type === "unmatch" ) {
 				if ( res.missParam && res.header ) {
@@ -311,14 +300,14 @@ export class Adachi {
 			const content = messageData.msg.content;
 			const guildId: string = messageData.msg.guild_id;
 			const srcGuildId = messageData.msg.src_guild_id ? messageData.msg.src_guild_id : guildId;
-			const auth: AuthLevel = await bot.auth.get( userID, srcGuildId );
+			const auth: AuthLevel = await bot.auth.getByMessage( messageData );
 			const guildInfo = <IGuild>await getGuildBaseInfo( srcGuildId );
 			const guildName = guildInfo ? guildInfo.name : "神秘频道";
 			const sendMessage: Msg.SendFunc = await bot.message.getSendPrivateFunc( userID, srcGuildId, msgID );
 			const cmdSet: BasicConfig[] = bot.command.get( auth, MessageScope.Private );
 			const unionReg: RegExp = bot.command.getUnion( auth, MessageScope.Private );
 			bot.logger.info( `[Recv] [Private] [A: ${ authorName }] [G: ${ guildName }]: ${ content }` );
-			await that.execute( messageData, sendMessage, cmdSet, [], unionReg, true, true );
+			await that.execute( messageData, sendMessage, cmdSet, unionReg, true, true );
 		}
 	}
 	
@@ -336,8 +325,7 @@ export class Adachi {
 			
 			const guildInfo = <IGuild>await getGuildBaseInfo( guildId );
 			const guildName = guildInfo ? guildInfo.name : "神秘频道";
-			const auth: AuthLevel = await bot.auth.get( userID, guildId );
-			const uLim: string[] = await bot.redis.getSet( `${ __RedisKey.COMMAND_LIMIT_USER }-${ userID }-${ guildId }` );
+			const auth: AuthLevel = await bot.auth.getByMessage( messageData );
 			const sendMessage: Msg.SendFunc = await bot.message.getSendGuildFunc( userID, guildId, channelID, msgID );
 			const cmdSet: BasicConfig[] = bot.command.get( auth, MessageScope.Guild );
 			const unionReg: RegExp = bot.command.getUnion( auth, MessageScope.Guild );
@@ -345,7 +333,7 @@ export class Adachi {
 			await bot.redis.setHashField( __RedisKey.GUILD_USED_CHANNEL, guildId, channelID ); //记录可以推送消息的频道
 			// await bot.redis.setString( `adachi.msgId-temp-${ guild }-${ channelID }`, msgID, 290 ); //记录推送消息引用的msgID，被动
 			await bot.logger.info( `[Recv] [Guild] [A: ${ authorName }] [G: ${ guildName }]: ${ content }` );
-			await that.execute( messageData, sendMessage, cmdSet, [ ...uLim ], unionReg, false, isAt );
+			await that.execute( messageData, sendMessage, cmdSet, unionReg, false, isAt );
 		}
 	}
 	
@@ -373,27 +361,22 @@ export class Adachi {
 	}
 	
 	/* 判断缺少权限或者频道/私聊指令限制 */
-	private cmdLimitCheck( content: string, isPrivate: boolean, isAt: boolean, auth: AuthLevel ): string | undefined {
+	private cmdLimitCheck( messageData: Message ): string {
 		
-		let msg: string | undefined;
-		
-		/* 对封禁用户做出提示，私域有问题 */
-		if ( auth === AuthLevel.Banned && isAt ) {
-			return `你在当前频道已成为封禁用户，请与管理员协商 ~ `;
-		}
+		let reply: string = "";
+		const content = messageData.msg.content;
+		const isPrivate = messageData.msg.direct_message;
 		
 		const privateUnionReg: RegExp = this.bot.command.getUnion( AuthLevel.Master, MessageScope.Private );
 		const groupUnionReg: RegExp = this.bot.command.getUnion( AuthLevel.Master, MessageScope.Guild );
-		const APPLY = <Order>this.bot.command.getSingle( "adachi-apply-man", AuthLevel.Master, "guilds" );
 		const NoAuthTips = `您没有权限执行此指令 ~ \n` +
-			`如是频道主或者管理员，请使用 [ ${ APPLY.getCNHeader() } ] 自助申请\n` +
-			"如已经申请，则您的权限不足以支持此指令";
+			`如是频道主或者管理员，请前往官频反馈`;
 		if ( groupUnionReg.test( content ) ) {
-			msg = isPrivate ? `该指令仅限频道使用 ~ ` : NoAuthTips;
+			reply = isPrivate ? `该指令仅限频道使用 ~ ` : NoAuthTips;
 		} else if ( privateUnionReg.test( content ) ) {
-			msg = !isPrivate ? `该指令仅限私信使用 ~ ` : NoAuthTips;
+			reply = !isPrivate ? `该指令仅限私信使用 ~ ` : NoAuthTips;
 		}
-		return msg;
+		return reply;
 	}
 	
 	/* WebConsole 指令使用数据统计 */
@@ -546,7 +529,6 @@ export class Adachi {
 				await bot.redis.setString( __RedisKey.GUILD_MASTER, guild.id ); //当前BOT主人所在频道
 				ackMaster = true;
 			}
-			await bot.auth.set( "system", guild.owner_id, guild.id, AuthLevel.GuildOwner );
 		}
 		if ( !ackMaster ) {
 			bot.logger.error( "MasterID设置错误，部分功能会受到影响" );

@@ -132,7 +132,7 @@ export default class Command {
 		return {
 			[AuthLevel.Banned]: [], [AuthLevel.User]: [],
 			[AuthLevel.GuildManager]: [], [AuthLevel.GuildOwner]: [],
-			[AuthLevel.Manager]: [], [AuthLevel.Master]: []
+			[AuthLevel.Master]: []
 		};
 	}
 	

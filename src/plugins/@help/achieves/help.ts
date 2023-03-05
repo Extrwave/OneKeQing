@@ -125,7 +125,7 @@ export async function main( i: InputParameter ): Promise<void> {
 	
 	const userId = i.messageData.msg.author.id;
 	const guilId = i.messageData.msg.src_guild_id ? i.messageData.msg.src_guild_id : i.messageData.msg.guild_id;
-	const auth = await i.auth.get( userId, guilId );
+	const auth = await i.auth.getByMessage( i.messageData );
 	const scope = i.messageData.msg.direct_message ? MessageScope.Private : MessageScope.Guild;
 	
 	/* 使用图片帮助,默认获取全部指令 */

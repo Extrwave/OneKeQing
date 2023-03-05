@@ -10,9 +10,7 @@ type UserInfo = {
 	userID: string;
 	avatar: string;
 	nickname: string;
-	botAuth: AuthLevel;
 	guildUsed: string[];
-	limits: { key: string, guild: string }[];
 	groupInfoList: ( string | MemberInGuildInfo )[];
 	subInfo?: string[]
 }
@@ -54,8 +52,6 @@ export default express.Router()
 			let userData: string[] = await bot.redis.getKeysByPrefix( __RedisKey.USER_USED_GUILD );
 			userData = userData.map( ( userKey: string ) => <string>userKey.split( "-" ).pop() )
 			
-			const cmdKeys: string[] = bot.command.cmdKeys;
-			
 			// 过滤条件：id
 			if ( userId ) {
 				userData = userData.filter( ( userKey: string ) => userKey.includes( userId ) );
@@ -75,12 +71,9 @@ export default express.Router()
 			for ( const userKey of filterUserKeys ) {
 				const userInfo: UserInfo = await getUserInfo( userKey );
 				userInfos.push( { ...userInfo, subInfo: userSubData[userKey] || [] } );
-				
 			}
 			
-			userInfos = userInfos.sort( ( prev, next ) => next.botAuth - prev.botAuth );
-			
-			res.status( 200 ).send( { code: 200, data: { userInfos, cmdKeys }, total: userData.length } );
+			res.status( 200 ).send( { code: 200, data: { userInfos }, total: userData.length } );
 		} catch ( error ) {
 			res.status( 500 ).send( { code: 500, data: {}, msg: "Server Error" } );
 		}
@@ -94,26 +87,7 @@ export default express.Router()
 		}
 		
 		const userInfo = await getUserInfo( userID );
-		
 		res.status( 200 ).send( JSON.stringify( userInfo ) );
-	} )
-	.post( "/set", async ( req, res ) => {
-		const operator: string = bot.setting.master;
-		const target: string = <string>req.body.target;
-		const auth = <AuthLevel>parseInt( <string>req.body.auth );
-		const limits: { key: string, guild: string }[] = JSON.parse( <string>req.body.limits );
-		
-		await bot.auth.set( operator, target, "-1", auth );
-		
-		//删除原有的限制
-		const dbKey: string[] = await bot.redis.getKeysByPrefix( `${ __RedisKey.COMMAND_LIMIT_USER }-${ target }*` );
-		await bot.redis.deleteKey( ...dbKey );
-		//设置改变后的限制
-		for ( let limit of limits ) {
-			const dbKey: string = `${ __RedisKey.COMMAND_LIMIT_USER }-${ target }-${ limit.guild }`;
-			await bot.redis.addSetMember( dbKey, limit.key );
-		}
-		res.status( 200 ).send( "success" );
 	} )
 	.delete( "/sub/remove", async ( req, res ) => {
 		const userId = <string>req.query.userId;
@@ -150,37 +124,22 @@ export default express.Router()
 		}
 	} );
 
-/* 获取用户信息，暂时只显示Master所在频道的用户 */
+/* 获取用户信息 */
 async function getUserInfo( userID: string ): Promise<UserInfo> {
 	
-	/* 此处获取用户信息逻辑已更改 */
-	const groupInfoList: Array<MemberInGuildInfo | string> = [];
-	const limits: { key: string, guild: string }[] = [];
-	const guilds = ( await bot.redis.getKeysByPrefix( `${ __RedisKey.COMMAND_LIMIT_USER }-${ userID }*` ) );
-	const guildIds = guilds.map( value => {
-		return value.split( "-" )[4];
-	} )
-	
-	for ( let guild of guildIds ) {
-		const keys = await bot.redis.getSet( `${ __RedisKey.COMMAND_LIMIT_USER }-${ userID }-${ guild }` );
-		keys.forEach( value => {
-			limits.push( { key: value, guild: guild } );
-		} )
-	}
-	
-	/* 如果为全局管理员，则在首页上显示，否则只在详情页展示 */
-	const botAuth: AuthLevel = await bot.auth.get( userID, "-1" );
-	//获取用户使用过的频道ID
-	const usedGuilds: string[] = await bot.redis.getSet( `${ __RedisKey.USER_USED_GUILD }-${ userID }` );
 	let avatar;
 	let nickname;
+	/* 此处获取用户信息逻辑已更改 */
+	const groupInfoList: Array<MemberInGuildInfo | string> = [];
+	//获取用户使用过的频道ID
+	const usedGuilds: string[] = await bot.redis.getSet( `${ __RedisKey.USER_USED_GUILD }-${ userID }` );
 	
 	for ( let el of usedGuilds ) {
 		if ( el === "-1" ) {
 			groupInfoList.push( "私聊方式使用" );
 			continue;
 		}
-		const memberAuth = await bot.auth.get( userID, el );
+		const memberAuth = await bot.auth.getById( userID, el );
 		const guildBaseInfo = await getGuildBaseInfo( el );
 		const guildMemberInfo = await getMemberInfo( userID, el );
 		const gName = guildBaseInfo ? guildBaseInfo.name : "神秘频道";
@@ -198,6 +157,7 @@ async function getUserInfo( userID: string ): Promise<UserInfo> {
 			} );
 		}
 	}
+	
 	if ( !avatar )
 		avatar = "https://docs.adachi.top/images/adachi.png";
 	if ( !nickname )
@@ -207,11 +167,9 @@ async function getUserInfo( userID: string ): Promise<UserInfo> {
 		userID,
 		avatar,
 		nickname,
-		botAuth,
 		guildUsed: usedGuilds.filter( value => {
 			return value !== "-1";
 		} ),
-		limits,
 		groupInfoList
 	}
 }

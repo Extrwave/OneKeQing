@@ -111,7 +111,7 @@ const alias: SwitchConfig = {
 	header: "",
 	regexp: [ "[\\u4e00-\\u9fa5]+", "[\\w\\u4e00-\\u9fa5]+" ],
 	main: "achieves/alias",
-	auth: AuthLevel.Manager,
+	auth: AuthLevel.GuildOwner,
 	onKey: "添加别名",
 	offKey: "删除别名",
 	detail: "本指令用于修改角色或武器名的别名\n" +
@@ -301,7 +301,7 @@ const privateToggleSign: OrderConfig = {
 	cmdKey: "silvery-star-private-toggle-sign",
 	desc: [ "开关签到", "[序号]" ],
 	headers: [ "signin" ],
-	auth: AuthLevel.Manager,
+	auth: AuthLevel.GuildOwner,
 	regexps: [ "(\\d+)?" ],
 	main: "achieves/private/sign/switch",
 	detail: "该指令用于切换米游社签到的开/关状态"
@@ -377,8 +377,7 @@ const cloudDisable: OrderConfig = {
 	desc: [ "取消云原神授权", "(序号)" ],
 	headers: [ "offyys" ],
 	regexps: [ "(\\d+)?" ],
-	main: "achieves/private/cloud/cancel",
-	scope: MessageScope.Private,
+	main: "achieves/private/cloud/cancel"
 };
 
 const cloudSwitch: OrderConfig = {
@@ -387,8 +386,7 @@ const cloudSwitch: OrderConfig = {
 	desc: [ "开关云原神签到", "(序号)" ],
 	headers: [ "swiyys" ],
 	regexps: [ "(\\d+)?" ],
-	main: "achieves/private/cloud/switch",
-	scope: MessageScope.Private,
+	main: "achieves/private/cloud/switch"
 };
 
 const cloudSign: OrderConfig = {
@@ -398,7 +396,6 @@ const cloudSign: OrderConfig = {
 	headers: [ "yysign" ],
 	regexps: [ "(\\d+)?" ],
 	main: "achieves/private/cloud/main",
-	scope: MessageScope.Private,
 };
 
 const cloudUpdate: OrderConfig = {

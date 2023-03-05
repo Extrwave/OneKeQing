@@ -1,53 +1,7 @@
 import { AuthLevel } from "@modules/management/auth";
 import { OrderConfig, SwitchConfig } from "@modules/command";
 import { PluginSetting } from "@modules/plugin";
-import { MessageScope } from "@modules/utils/message";
 
-const manager: SwitchConfig = {
-	type: "switch",
-	mode: "divided",
-	cmdKey: "adachi-manager",
-	desc: [ "管理相关", "[@用户]" ],
-	header: "",
-	regexp: [ "<@!\\d+>" ],
-	onKey: "设置管理",
-	offKey: "取消管理",
-	scope: MessageScope.Guild,
-	auth: AuthLevel.GuildOwner,
-	main: "manager",
-	detail: "设置成员对BOT的管理权限，非QQ频道管理\n" +
-		"后续可能同步实现频道管理（挖坑"
-};
-
-const ban: SwitchConfig = {
-	type: "switch",
-	mode: "divided",
-	cmdKey: "adachi-ban",
-	desc: [ "封禁用户", "[@用户]" ],
-	header: "",
-	regexp: [ "<@!\\d+>" ],
-	onKey: "封禁用户",
-	offKey: "解禁用户",
-	scope: MessageScope.Guild,
-	auth: AuthLevel.GuildManager,
-	main: "ban",
-	detail: "封禁或者解禁某人对BOT的使用权"
-};
-
-const limit: SwitchConfig = {
-	type: "switch",
-	mode: "divided",
-	cmdKey: "adachi-limit",
-	desc: [ "指令权限", "@用户 [key]" ],
-	header: "limit",
-	onKey: "解禁指令",
-	offKey: "封禁指令",
-	regexp: [ "<@!\\d+>?", "[-\\w]+" ],
-	scope: MessageScope.Guild,
-	auth: AuthLevel.GuildManager,
-	main: "limit",
-	detail: "封禁或者解禁某人对BOT的具体某一指令使用权"
-};
 
 const refresh: OrderConfig = {
 	type: "order",
@@ -100,7 +54,7 @@ const setUseChannel: SwitchConfig = {
 	header: "channel",
 	regexp: [ "(#.+)?" ],
 	onKey: "添加子频道",
-	offKey: "移初子频道",
+	offKey: "移除子频道",
 	auth: AuthLevel.GuildManager,
 	main: "channel",
 	detail: "设置BOT专属可用子频道，即不会再其他地方响应指令\n" +
@@ -144,26 +98,28 @@ const restart: OrderConfig = {
 	detail: "用于重启 bot，使用win-start方式启动服务无法使用该指令"
 }
 
-const application: OrderConfig = {
+const deleteKey: OrderConfig = {
 	type: "order",
-	cmdKey: "adachi-apply-man",
-	desc: [ "申请管理权", "仅频道主绿管可用" ],
-	headers: [ "apply" ],
-	regexps: [ "" ],
-	scope: MessageScope.Guild,
-	main: "apply",
-	detail: "用于频道主没有管理权限向开发者或者全局管理员索取"
+	cmdKey: "adachi-delete-key",
+	desc: [ "删除数据", "[Key]" ],
+	headers: [ "del_key" ],
+	regexps: [ ".+" ],
+	auth: AuthLevel.Master,
+	main: "del-key",
+	display: false,
+	detail: "用于数据存储更新后，按需删除旧数据"
 }
+
 
 export async function init(): Promise<PluginSetting> {
 	return {
 		pluginEName: "@management",
 		pluginCName: "管理",
 		cfgList: [
-			manager, announce, ban, limit,
+			announce, upgrade,
 			callMaster, replyUser,
 			setUseChannel, cancelUseChannel,
-			upgrade, restart, refresh, application
+			restart, refresh, deleteKey
 		]
 	}
 }

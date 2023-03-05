@@ -11,13 +11,12 @@ async function getLimited( id: string, isGuild: boolean, redis: Redis ): Promise
 
 export async function filterUserUsableCommand( i: InputParameter ): Promise<BasicConfig[]> {
 	const userID: string = i.messageData.msg.author.id;
-	const guildID: string = i.messageData.msg.src_guild_id ? i.messageData.msg.src_guild_id : i.messageData.msg.guild_id;
 	const type: MessageType = getMessageType( i.messageData );
 	if ( type === MessageType.Unknown ) {
 		return [];
 	}
 	
-	const auth: AuthLevel = await i.auth.get( userID, guildID );
+	const auth: AuthLevel = await i.auth.getByMessage( i.messageData );
 	let commands: BasicConfig[] = i.command
 		.get( auth, type === MessageType.Guild
 			? MessageScope.Guild : MessageScope.Private )

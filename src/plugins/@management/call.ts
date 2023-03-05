@@ -14,12 +14,10 @@ CreateTime: 2022/7/25
 export async function main(
 	{ sendMessage, messageData, command, message, redis, matchResult, auth }: InputParameter ) {
 	
-	const userID: string = messageData.msg.author.id;
-	const guildId: string = messageData.msg.guild_id;
 	const attachments = messageData.msg.attachments;
 	
 	const header = ( <OrderMatchResult>matchResult ).header;
-	const au: AuthLevel = await auth.get( userID, guildId );
+	const au: AuthLevel = await auth.getByMessage( messageData );
 	
 	const CALL_MASTER = <Order>command.getSingle( "adachi-leave-message-call", au );
 	const REPLY_USER = <Order>command.getSingle( "adachi-leave-message-reply", au );

@@ -51,19 +51,6 @@ const template = `<div class="table-container config">
 				@change="updateConfig('master')"
 				@open="activeSpreadItem"
 			/>
-<!--			<form-item label="登录平台">-->
-<!--				<el-radio-group v-model="setting.platform" :disabled="pageLoading" @change="updateConfig('platform')" >-->
-<!--					<el-radio v-for="(p, pKey) of platformList" :key="pKey" :label="pKey + 1">{{ p }}</el-radio>-->
-<!--				</el-radio-group>-->
-<!--			</form-item>-->
-<!--			<form-item label="邀请入群权限" desc="邀请 BOT 入群时，BOT 自动接受入群邀请的权限等级。">-->
-<!--				<el-radio-group v-model="setting.inviteAuth" :disabled="pageLoading" @change="updateConfig('inviteAuth')" >-->
-<!--					<el-radio v-for="(a, aKey) of authList" :key="aKey" :label="a">{{ a }}</el-radio>-->
-<!--				</el-radio-group>-->
-<!--			</form-item>-->
-<!--			<form-item label="at用户" desc="BOT 在响应指令时，是否需要 at 用户，(仅对私域机器人生效)">-->
-<!--				<el-switch v-model="setting.atUser" :disabled="pageLoading" @change="updateConfig('atUser')" />-->
-<!--			</form-item>-->
 			<form-item label="atBOT" desc="是否需要在使用指令时 @BOT 账号。(仅对私域机器人生效)">
 				<el-switch v-model="setting.atBOT" :disabled="pageLoading" @change="updateConfig('atBOT')" />
 			</form-item>
@@ -72,25 +59,9 @@ const template = `<div class="table-container config">
 					<el-option v-for="(l, lKey) of logLevel" :key="lKey" :label="l" :value="l"/>
 				</el-select>
 			</form-item>
-			<spread-form-item
-				v-model="setting.countThreshold"
-				:active-spread="activeSpread"
-				:disabled="pageLoading"
-				label="使用次数阈值"
-				type="number"
-				desc="如果用户在过去一小时内使用指令的次数超过了该值，BOT将向主人发送私聊提示信息。"
-				@change="updateConfig('countThreshold')"
-				@open="activeSpreadItem"
-			/>
 		</div>
 		<div class="config-section">
 		<section-title title="指令设置" />
-<!--			<form-item label="模糊匹配" desc="开启	后BOT会对中文指令以及指令名称进行模糊匹配，要求必须以header开头且中文指令不得拆开。">-->
-<!--				<el-switch v-model="setting.fuzzyMatch" :disabled="pageLoading" @change="updateConfig('fuzzyMatch')" />-->
-<!--			</form-item>-->
-<!--			<form-item label="参数校验" desc="开启后若指令参数错误，BOT 将会给予提示。">-->
-<!--				<el-switch v-model="setting.matchPrompt" :disabled="pageLoading" @change="updateConfig('matchPrompt')" />-->
-<!--			</form-item>-->
 			<spread-form-item
 				v-model="setting.header"
 				:active-spread="activeSpread"
@@ -99,26 +70,6 @@ const template = `<div class="table-container config">
 				placeholder="请输入指令起始符"
 				desc='例：设置为 # 时，需使用 #help 来触发帮助指令。如果不想在指令前添加特殊符号，请置空。'
 				@change="updateConfig('header')"
-				@open="activeSpreadItem"
-			/>
-			<spread-form-item
-				v-model="setting.groupIntervalTime"
-				:active-spread="activeSpread"
-				:disabled="pageLoading"
-				label="群聊指令CD"
-				type="number"
-				desc="群聊中指令操作冷却时间，单位为毫秒(ms)。"
-				@change="updateConfig('groupIntervalTime')"
-				@open="activeSpreadItem"
-			/>
-			<spread-form-item
-				v-model="setting.privateIntervalTime"
-				:active-spread="activeSpread"
-				:disabled="pageLoading"
-				label="私聊指令CD"
-				type="number"
-				desc="私聊中指令操作冷却时间，单位为毫秒(ms)。"
-				@change="updateConfig('privateIntervalTime')"
 				@open="activeSpreadItem"
 			/>
 			<form-item label="帮助信息样式" desc="指令help响应信息所展示的样式。（ark私域可用，公域需要申请）">
@@ -136,14 +87,6 @@ const template = `<div class="table-container config">
 				@change="updateConfig('helpPort')"
 				@open="activeSpreadItem"
 			/>
-<!--			<spread-form-item-->
-<!--				v-model="setting.callTimes"-->
-<!--				:disabled="pageLoading"-->
-<!--				label="call次数限制"-->
-<!--				type="number"-->
-<!--				desc="指令 联系bot持有者 每个用户一天内可使用的最大次数。"-->
-<!--				@change="updateConfig('callTimes')"-->
-<!--			/>-->
 		</div>
 		<div class="config-section">
 			<section-title title="数据库设置" />
@@ -221,7 +164,7 @@ const template = `<div class="table-container config">
 		</div>
 		<div class="config-section">
 			<section-title title="自动聊天设置" />
-			<form-item label="启用自动聊天" desc="开启后可通过群聊 @BOT 或私聊发送非指令语句来触发智能对话（当开启 atBOT 时，群聊 @ 无效）。">
+			<form-item label="启用自动聊天" desc="开启后可通过群聊 @BOT 触发智能对话（当开启 atBOT 时，群聊 @ 无效）。">
 				<el-switch v-model="setting.autoChat" :disabled="pageLoading" @change="updateConfig('autoChat')" />
 			</form-item>
 		</div>

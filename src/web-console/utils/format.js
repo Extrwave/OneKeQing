@@ -70,10 +70,6 @@ export function formatRole( str ) {
 			label: "频道主",
 			color: "#6f73f0",
 		},
-		"4": {
-			label: "全局管理",
-			color: "#f17a16"
-		},
 		"5": {
 			label: "开发者",
 			color: "#e94e49"

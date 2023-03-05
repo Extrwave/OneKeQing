@@ -71,9 +71,13 @@ export async function main(
 	}
 }
 
-export async function checkChannelLimit( guildId: string, channelId: string, userId: string ): Promise<{ status: boolean, msg: string }> {
+export async function checkChannelLimit( messageData: Message ): Promise<string> {
 	//取消此项设置对于管理员的限制，避免无法取消子频道限制的现象
-	if ( guildId !== "-1" && await bot.auth.get( userId, guildId ) <= AuthLevel.GuildManager ) {
+	const isPrivate = messageData.msg.direct_message;
+	const guildId = messageData.msg.guild_id;
+	const channelId = messageData.msg.channel_id;
+	
+	if ( !isPrivate && await bot.auth.getByMessage( messageData ) <= AuthLevel.GuildManager ) {
 		const dbKey = `${ __RedisKey.CHANNEL_LIMIT }-${ guildId }`;
 		const num = await bot.redis.getSetMemberNum( dbKey );
 		if ( num > 0 ) {
@@ -84,9 +88,9 @@ export async function checkChannelLimit( guildId: string, channelId: string, use
 				channel.forEach( value => {
 					msg += `<#${ value }>\n`;
 				} );
-				return { status: true, msg: msg };
+				return msg;
 			}
 		}
 	}
-	return { status: false, msg: "" };
+	return "";
 }
