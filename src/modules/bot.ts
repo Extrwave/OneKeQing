@@ -191,8 +191,8 @@ export class Adachi {
 			return;
 		}
 		
-		const userID = messageData.msg.author.id;
-		const guildID: string = isPrivate ? "-1" : messageData.msg.guild_id; // -1 代表私聊使用
+		const userId = messageData.msg.author.id;
+		const guildId: string = messageData.msg.src_guild_id ? messageData.msg.src_guild_id : messageData.msg.guild_id;
 		
 		/* 对设置可用子频道做出适配 */
 		const limit = await checkChannelLimit( messageData );
@@ -222,11 +222,7 @@ export class Adachi {
 		}
 		
 		/* 用户数据统计与收集，当用户使用了指令之后才统计 */
-		await this.bot.redis.addSetMember( `${ __RedisKey.USER_USED_GUILD }-${ userID }`, guildID ); //使用过的用户包括使用过的频道
-		/* 私聊源频道也记录，修复未在频道使用用户信息读取问题 */
-		if ( isPrivate && messageData.msg.src_guild_id ) {
-			await this.bot.redis.addSetMember( `${ __RedisKey.USER_USED_GUILD }-${ userID }`, messageData.msg.src_guild_id );
-		}
+		await this.bot.redis.addSetMember( `${ __RedisKey.USER_USED_GUILD }-${ userId }`, guildId ); //使用过的用户包括使用过的频道
 		
 		/* 获取匹配指令对应的处理方法 */
 		const matchList: { matchResult: MatchResult; cmd: BasicConfig }[] = [];
@@ -300,13 +296,12 @@ export class Adachi {
 			const content = messageData.msg.content;
 			const guildId: string = messageData.msg.guild_id;
 			const srcGuildId = messageData.msg.src_guild_id ? messageData.msg.src_guild_id : guildId;
-			const auth: AuthLevel = await bot.auth.getByMessage( messageData );
+			const auth: AuthLevel = await bot.auth.getById( userID, srcGuildId );
 			const guildInfo = <IGuild>await getGuildBaseInfo( srcGuildId );
-			const guildName = guildInfo ? guildInfo.name : "神秘频道";
-			const sendMessage: Msg.SendFunc = await bot.message.getSendPrivateFunc( userID, srcGuildId, msgID );
+			const sendMessage: Msg.SendFunc = await bot.message.getReplyPrivateFunc( userID, guildId, authorName, guildInfo.name, msgID );
 			const cmdSet: BasicConfig[] = bot.command.get( auth, MessageScope.Private );
 			const unionReg: RegExp = bot.command.getUnion( auth, MessageScope.Private );
-			bot.logger.info( `[Recv] [Private] [A: ${ authorName }] [G: ${ guildName }]: ${ content }` );
+			bot.logger.info( `[Recv] [Private] [A: ${ authorName }] [G: ${ guildInfo.name }]: ${ content }` );
 			await that.execute( messageData, sendMessage, cmdSet, unionReg, true, true );
 		}
 	}
@@ -322,7 +317,6 @@ export class Adachi {
 			const userID = messageData.msg.author.id;
 			const msgID = messageData.msg.id;
 			const content = messageData.msg.content;
-			
 			const guildInfo = <IGuild>await getGuildBaseInfo( guildId );
 			const guildName = guildInfo ? guildInfo.name : "神秘频道";
 			const auth: AuthLevel = await bot.auth.getByMessage( messageData );
@@ -371,7 +365,9 @@ export class Adachi {
 		const groupUnionReg: RegExp = this.bot.command.getUnion( AuthLevel.Master, MessageScope.Guild );
 		const NoAuthTips = `您没有权限执行此指令 ~ \n` +
 			`如是频道主或者管理员，请前往官频反馈`;
-		if ( groupUnionReg.test( content ) ) {
+		if ( groupUnionReg.test( content ) && privateUnionReg.test( content ) ) {
+			reply = NoAuthTips;
+		} else if ( groupUnionReg.test( content ) ) {
 			reply = isPrivate ? `该指令仅限频道使用 ~ ` : NoAuthTips;
 		} else if ( privateUnionReg.test( content ) ) {
 			reply = !isPrivate ? `该指令仅限私信使用 ~ ` : NoAuthTips;

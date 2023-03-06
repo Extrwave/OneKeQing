@@ -29,14 +29,10 @@ async function subscribe( userID: string, send: SendFunc, a: AuthLevel, CONFIRM:
 		}
 	} );
 	
-	const info: Account | undefined = await getMemberInfo( userID );
-	let title: string = `『${ userID }』您好 \n`;
-	if ( info ) {
-		title = `『 ${ info.account.nick } 』您好 \n`
-	}
+	const info: Account = await getMemberInfo( userID );
+	let title: string = info ? `[ ${ info.account.nick } ] 您好 \n` : `[ ${ userID }] 您好 \n`;
 	
 	return title +
-		"请务必确保 BOT 持有者可信任\n" +
 		`BOT承诺保护您的账户信息安全\n` +
 		`确定开启授权功能请使用此指令\n ` +
 		`[ ${ CONFIRM.getCNHeader() } cookie ] 来继续\n` +

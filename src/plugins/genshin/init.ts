@@ -122,7 +122,7 @@ export async function init( { file, logger }: BOT ): Promise<PluginSetting> {
 	
 	bot.refresh.registerRefreshableFile( "genshin", config );
 	bot.refresh.registerRefreshableFile( "cookies", cookies );
-
+	
 	privateClass.createRefreshCookieJob();
 	
 	return pluginSetting;

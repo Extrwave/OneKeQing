@@ -1,7 +1,7 @@
 import BotSetting from "@modules/config";
-import Redis from "@modules/redis";
 import { Message } from "@modules/utils/message";
 import { IOpenAPI } from "qq-guild-bot";
+import { getMemberInfo } from "@modules/utils/account";
 
 /**
  * 新版权限管理设计
@@ -48,8 +48,8 @@ export default class Authorization {
 	
 	public async getById( userId: string, guildId: string ) {
 		try {
-			const { data } = await this.client.guildApi.guildMember( guildId, userId );
-			const roles: string[] = data.roles;
+			const { account } = await getMemberInfo( userId, guildId );
+			const roles: string[] = account.roles;
 			return this.get( roles, userId );
 		} catch ( error ) {
 			return AuthLevel.User;

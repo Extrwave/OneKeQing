@@ -60,10 +60,16 @@ export default class MsgManager implements MsgManagementMethod {
 		msgId = msgId ? msgId : "1000";//随时都可能失效，失效后删掉此行
 		const { guild_id } = await this.getPrivateSendParam( guildId, userId );
 		const guildInfo = <IGuild>await getGuildBaseInfo( guildId );
-		const guildName = guildInfo ? guildInfo.name : "神秘频道";
 		const userInfo = <Account>await getMemberInfo( userId, guildId );
-		const userName = userInfo ? userInfo.account.nick : "神秘用户";
+		const guildName = guildInfo.name;
+		const userName = userInfo.account.nick;
 		return this.sendMessageEntity( userId, userName, guildName, guild_id, true, msgId );
+	}
+	
+	/*私信回复发送方法*/
+	public async getReplyPrivateFunc( userId: string, guildId: string, userName: string, guildName: string, msgId?: string ): Promise<SendFunc> {
+		msgId = msgId ? msgId : "1000";//随时都可能失效，失效后删掉此行
+		return this.sendMessageEntity( userId, userName, guildName, guildId, true, msgId );
 	}
 	
 	/* 回复频道消息方法，主动、被动*/
@@ -90,11 +96,6 @@ export default class MsgManager implements MsgManagementMethod {
 		const guilds: string[] = await bot.redis.getSet( `${ __RedisKey.USER_USED_GUILD }-${ userId }` );
 		
 		for ( let guildId of guilds ) {
-			/* 排除私聊使用场景 */
-			if ( guildId === "-1" ) {
-				continue;
-			}
-			
 			/* 判断用户是否退出频道 */
 			const userInfo = await getMemberInfo( userId, guildId );
 			if ( !userInfo ) {

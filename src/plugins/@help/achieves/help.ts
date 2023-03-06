@@ -123,17 +123,9 @@ export async function main( i: InputParameter ): Promise<void> {
 		return;
 	}
 	
-	const userId = i.messageData.msg.author.id;
-	const guilId = i.messageData.msg.src_guild_id ? i.messageData.msg.src_guild_id : i.messageData.msg.guild_id;
-	const auth = await i.auth.getByMessage( i.messageData );
-	const scope = i.messageData.msg.direct_message ? MessageScope.Private : MessageScope.Guild;
-	
 	/* 使用图片帮助,默认获取全部指令 */
 	if ( i.config.helpMessageStyle === "card" ) {
-		const allCommands: BasicConfig[] = i.command
-			.get( auth, scope )
-			.filter( el => el.display );
-		const res = await cardStyle( i, allCommands, version );
+		const res = await cardStyle( i, commands, version );
 		if ( res.code === "base64" ) {
 			await i.sendMessage( { file_image: res.data } );
 			return;

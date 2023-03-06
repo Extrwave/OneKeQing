@@ -22,8 +22,8 @@ export interface Message {
 
 /* 此处是SDK摆烂没更新的部分 */
 export interface Msg extends IMessage {
-	direct_message?: boolean,
-	src_guild_id?: string,
+	direct_message: boolean,
+	src_guild_id: string,
 	message_reference?: MessageReference
 }
 

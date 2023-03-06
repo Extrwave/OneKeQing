@@ -17,12 +17,10 @@ async function removePrivate( userID: string ): Promise<string> {
 async function sendMessageToUser( userID: string ) {
 	//此处私发逻辑已更改
 	const info = await getMemberInfo( userID );
-	if ( !info ) {
-		bot.logger.error( "获取成员信息失败，检查成员是否退出频道 ID：" + userID )
-		return;
+	if ( info ) {
+		const sendMessage = await bot.message.getSendPrivateFunc( userID, info.guildId );
+		await sendMessage( "你的授权服务已被管理员取消" );
 	}
-	const sendMessage = await bot.message.getSendPrivateFunc( userID, info.guildId );
-	await sendMessage( "你的授权服务已被管理员取消" );
 }
 
 export async function main( { sendMessage, matchResult, logger }: InputParameter ): Promise<void> {
