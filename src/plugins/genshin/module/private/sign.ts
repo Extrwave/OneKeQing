@@ -111,8 +111,7 @@ export class SignInService implements Service {
 				await this.toggleEnableStatus( false );
 				return await sendMessage( error + "\n自动签到已关闭，请更新 Cookie 后重新开启", this.parent.setting.userID );
 			}
-			bot.logger.error( error );
-			await sendMessage( <string>error, this.parent.setting.userID );
+			reply ? await sendMessage( "原神签到失败\n" + <string>error, this.parent.setting.userID ) : "";
 		}
 	}
 	
@@ -136,7 +135,6 @@ export class SignInService implements Service {
 				`期待明天与你再次相见` );
 			reply ? await sendMessage( { embed: embedMsg }, this.parent.setting.userID ) : "";
 		} catch ( error ) {
-			bot.logger.error( <string>error );
 			reply ? await sendMessage( `今日米游社任务执行失败\n${ <string>error }`, this.parent.setting.userID ) : "";
 		}
 	}

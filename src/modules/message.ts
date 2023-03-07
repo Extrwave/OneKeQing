@@ -16,7 +16,7 @@ import Redis, { __RedisKey } from "@modules/redis";
 import { ErrorMsg, Message, MessageEntity, MessageToSend, MessageType } from "@modules/utils/message";
 import { Account, getGuildBaseInfo, getMemberInfo } from "@modules/utils/account";
 
-export type SendFunc = ( content: MessageToSend | string, atUser?: boolean ) => Promise<IMessage | void>;
+export type SendFunc = ( content: MessageToSend | string, atUser?: boolean ) => Promise<IMessage>;
 
 interface MsgManagementMethod {
 	/* 已知频道私信发送方法 */

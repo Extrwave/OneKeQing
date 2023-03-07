@@ -1031,7 +1031,7 @@ export async function bypassQueryVerification( cookie: string, gt?: string, chal
 	} );
 	if ( analysisCode.code !== 0 || analysisCode.info !== "success" ) {
 		bot.logger.error( "[verify]", analysisCode );
-		return analysisCode;
+		return `原因：${ analysisCode.info }`;
 	}
 	const body = {
 		geetest_challenge: analysisCode.data.challenge,
@@ -1079,17 +1079,13 @@ export async function mihoyoBBSVerifySignIn( uid: string, region: string, cookie
 		} ),
 		headers: {
 			"User-Agent": "Adachi-GBOT"
-		}
+		},
+		json: true
 	} );
-	try {
-		analysisCode = JSON.parse( analysisCode );
-	} catch ( error ) {
-		bot.logger.error( analysisCode );
-		throw <string>analysisCode;
-	}
+	
 	if ( analysisCode.code !== 0 || analysisCode.info !== "success" ) {
 		bot.logger.error( analysisCode );
-		throw <string>analysisCode;
+		throw `验证失败原因：${ analysisCode.info }`;
 	}
 	
 	return new Promise( ( resolve, reject ) => {
