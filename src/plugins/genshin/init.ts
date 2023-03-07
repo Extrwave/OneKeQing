@@ -86,17 +86,9 @@ async function decreaseFriend( userId: string, { redis }: BOT ) {
 }
 
 export async function subs( { redis }: BOT ): Promise<SubInfo[]> {
-	const dailySub: string[] = await redis.getKeysByPrefix( "silvery-star-daily-sub-" );
-	const dailySubUsers: string[] = dailySub.map( el => {
-		return <string>el.split( "-" ).pop();
-	} );
-	
 	return [ {
 		name: "授权服务",
 		users: privateClass.getUserIDList()
-	}, {
-		name: "素材订阅",
-		users: dailySubUsers
 	} ]
 }
 

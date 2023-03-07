@@ -8,7 +8,6 @@ export const __RedisKey = {
 	GUILD_USED_CHANNEL: "adachi.guild-used-channel", //频道主动消息子频道
 	GUILD_MASTER: "adachi.guild-master", //BOT主人所在的检测到的第一个频道
 	GUILD_INFO: "adachi.guild-info", //频道详细信息
-	GUILD_TEMP_MSG_ID: "adachi.msgId-temp", //频道暂存主动推送使用msgId，减少主动次数
 	
 	/* USER */
 	USER_BOT_ID: "adachi.user-bot-id", //BOT ID
@@ -25,9 +24,6 @@ export const __RedisKey = {
 	/* Function */
 	RESTART_PARAM: "adachi.restart-param", //指令重启后保存启动回复消息参数
 	HELP_DATA: "adachi.help-data",
-	MESSAGE_CALL_PASSIVE: "adachi.message-call-passive",
-	MESSAGE_CALL_INITIATIVE: "adachi.message-call-initiative",
-	PLUGIN_UPDATE_TIME: "adachi.plugin-update-time",
 	BOT_UPDATE_TIME: "adachi.bot-update-time"
 	
 }

@@ -17,18 +17,22 @@ export async function main( { messageData, redis, message, sendMessage, logger }
 	
 	const guildIds: string[] = await redis.getSet( __RedisKey.GUILD_USED );
 	for ( const guild of guildIds ) {
-		try {
-			const channelId = await redis.getHashField( __RedisKey.GUILD_USED_CHANNEL, guild );
-			const sendMessage = await message.getSendGuildFunc( userId, guild, channelId, msgId );
-			await sendMessage( content );
-			if ( attachments ) {
-				for ( const value of attachments ) {
-					await sendMessage( { image: "https://" + value.url } );
+		
+		const channelIds: string[] = await redis.getSet( __RedisKey.CHANNEL_LIMIT + guild );
+		for ( const channelId of channelIds ) {
+			try {
+				/* 仅向设置了专属子频道进行推送 */
+				const sendMessage = await message.getSendGuildFunc( userId, guild, channelId, msgId );
+				await sendMessage( content );
+				if ( attachments ) {
+					for ( const value of attachments ) {
+						await sendMessage( { image: "https://" + value.url } );
+					}
 				}
+				await Sleep( 3000 );
+			} catch ( error ) {
+				logger.error( error );
 			}
-			await Sleep( 3000 );
-		} catch ( error ) {
-			logger.error( error );
 		}
 	}
 	await sendMessage( "完成向所有频道发送公告" );

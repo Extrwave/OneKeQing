@@ -1031,7 +1031,7 @@ export async function bypassQueryVerification( cookie: string, gt?: string, chal
 	} );
 	if ( analysisCode.code !== 0 || analysisCode.info !== "success" ) {
 		bot.logger.error( "[verify]", analysisCode );
-		return analysisCode;
+		return `原因：${ analysisCode.info }`;
 	}
 	const body = {
 		geetest_challenge: analysisCode.data.challenge,

@@ -23,10 +23,9 @@ import MsgManagement, * as Msg from "@modules/message";
 import { ErrorMsg, MemberMessage, Message, MessageScope } from "@modules/utils/message";
 import { JobCallback, scheduleJob } from "node-schedule";
 import { trim } from "lodash";
-import { getGuildBaseInfo, getMemberInfo } from "@modules/utils/account";
+import { getGuildBaseInfo } from "@modules/utils/account";
 import { EmbedMsg } from "@modules/utils/embed";
 import { checkChannelLimit } from "#@management/channel";
-import { Order } from "@modules/command";
 import { Sleep } from "./utils"
 
 export interface BOT {
@@ -148,15 +147,14 @@ export class Adachi {
 		/* Created by http://patorjk.com/software/taag  */
 		/* Font Name: Big                               */
 		const greet =
-			`====================================================================
-                _            _     _        ____   ____ _______
-       /\\      | |          | |   (_)      |  _ \\ / __ \\__   __|
-      /  \\   __| | __ _  ___| |__  _ ______| |_) | |  | | | |
-     / /\\ \\ / _\` |/ _\` |/ __| '_ \\| |______|  _ <| |  | | | |
-    / ____ \\ (_| | (_| | (__| | | | |      | |_) | |__| | | |
-   /_/    \\_\\__,_|\\__,_|\\___|_| |_|_|      |____/ \\____/  |_|
- 
-====================================================================`
+			`========================================================
+	   ____             __ __     ____    _
+	  / __ \\____  ___  / //_/__  / __ \\  (_)___  ____ _
+	 / / / / __ \\/ _ \\/ ,< / _ \\/ / / / / / __ \\/ __ \`/
+	/ /_/ / / / /  __/ /| /  __/ /_/ / / / / / / /_/ /
+	\\____/_/ /_/\\___/_/ |_\\___/\\___\\_\\/_/_/ /_/\\__, /
+	                                          /____/
+========================================================`
 		console.log( greet );
 		
 		file.createDir( "database", "root" );
@@ -180,7 +178,7 @@ export class Adachi {
 		isAt: boolean
 	): Promise<void | IMessage> {
 		
-		/* bot正在重载指令配置 */
+		/* 正在重载指令配置 */
 		if ( this.bot.refresh.isRefreshing ) {
 			await sendMessage( "BOT重载配置中，请稍后..." );
 			return;
@@ -210,14 +208,12 @@ export class Adachi {
 			/* 未识别指令匹配 */
 			const check = this.cmdLimitCheck( messageData );
 			if ( check ) {
-				await sendMessage( check );
-				return;
+				return await sendMessage( check );
 			}
 			/* 只支持简单聊天，仅允许频道支持聊天 */
 			if ( isAt && !isPrivate ) {
 				const { autoReply } = require( "@modules/chat" );
-				await autoReply( messageData, sendMessage, this.bot.config );
-				return;
+				return await autoReply( messageData, sendMessage, this.bot.config.autoChat.enable );
 			}
 		}
 		
@@ -226,7 +222,6 @@ export class Adachi {
 		
 		/* 获取匹配指令对应的处理方法 */
 		const matchList: { matchResult: MatchResult; cmd: BasicConfig }[] = [];
-		
 		for ( let cmd of cmdSet ) {
 			const res: MatchResult = cmd.match( content );
 			if ( res.type === "unmatch" ) {
@@ -253,7 +248,7 @@ export class Adachi {
 				return length;
 			}
 			return getHeaderLength( next ) - getHeaderLength( prev );
-		} )[0]
+		} )[0];
 		
 		if ( res.type === "unmatch" ) {
 			const embedMsg = new EmbedMsg( `指令参数缺失或者错误`,
@@ -264,8 +259,7 @@ export class Adachi {
 				`参数格式：${ cmd.desc[1] }`,
 				`参数说明：${ cmd.detail }`,
 				`\n[ ] 必填, ( ) 选填, | 选择` );
-			await sendMessage( { embed: embedMsg } );
-			return;
+			return await sendMessage( { embed: embedMsg } );
 		}
 		if ( res.type === "order" ) {
 			const text: string = cmd.ignoreCase
@@ -290,18 +284,18 @@ export class Adachi {
 	private parsePrivateMsg( that: Adachi ) {
 		const bot = that.bot;
 		return async function ( messageData: Message ) {
-			const authorName = messageData.msg.author.username;
-			const userID = messageData.msg.author.id;
-			const msgID = messageData.msg.id;
+			const username = messageData.msg.author.username;
+			const userId = messageData.msg.author.id;
+			const msgId = messageData.msg.id;
 			const content = messageData.msg.content;
 			const guildId: string = messageData.msg.guild_id;
 			const srcGuildId = messageData.msg.src_guild_id ? messageData.msg.src_guild_id : guildId;
-			const auth: AuthLevel = await bot.auth.getById( userID, srcGuildId );
+			const auth: AuthLevel = await bot.auth.getById( userId, srcGuildId );
 			const guildInfo = <IGuild>await getGuildBaseInfo( srcGuildId );
-			const sendMessage: Msg.SendFunc = await bot.message.getReplyPrivateFunc( userID, guildId, authorName, guildInfo.name, msgID );
+			const sendMessage: Msg.SendFunc = await bot.message.getReplyPrivateFunc( userId, guildId, username, guildInfo.name, msgId );
 			const cmdSet: BasicConfig[] = bot.command.get( auth, MessageScope.Private );
 			const unionReg: RegExp = bot.command.getUnion( auth, MessageScope.Private );
-			bot.logger.info( `[Recv] [Private] [A: ${ authorName }] [G: ${ guildInfo.name }]: ${ content }` );
+			bot.logger.info( `[Recv] [Private] [A: ${ username }] [G: ${ guildInfo.name }]: ${ content }` );
 			await that.execute( messageData, sendMessage, cmdSet, unionReg, true, true );
 		}
 	}
@@ -311,22 +305,18 @@ export class Adachi {
 		const bot = that.bot;
 		return async function ( messageData: Message ) {
 			const isAt = await that.checkAtBOT( messageData );
-			const authorName = messageData.msg.author.username;
+			const username = messageData.msg.author.username;
 			const guildId = messageData.msg.guild_id;
-			const channelID = messageData.msg.channel_id;
-			const userID = messageData.msg.author.id;
-			const msgID = messageData.msg.id;
+			const channelId = messageData.msg.channel_id;
+			const userId = messageData.msg.author.id;
+			const msgId = messageData.msg.id;
 			const content = messageData.msg.content;
 			const guildInfo = <IGuild>await getGuildBaseInfo( guildId );
-			const guildName = guildInfo ? guildInfo.name : "神秘频道";
 			const auth: AuthLevel = await bot.auth.getByMessage( messageData );
-			const sendMessage: Msg.SendFunc = await bot.message.getSendGuildFunc( userID, guildId, channelID, msgID );
+			const sendMessage: Msg.SendFunc = await bot.message.getSendGuildFunc( userId, guildId, channelId, msgId );
 			const cmdSet: BasicConfig[] = bot.command.get( auth, MessageScope.Guild );
 			const unionReg: RegExp = bot.command.getUnion( auth, MessageScope.Guild );
-			//暂存一下msg_id, guildId, channelId 供推送消息使用
-			await bot.redis.setHashField( __RedisKey.GUILD_USED_CHANNEL, guildId, channelID ); //记录可以推送消息的频道
-			// await bot.redis.setString( `adachi.msgId-temp-${ guild }-${ channelID }`, msgID, 290 ); //记录推送消息引用的msgID，被动
-			await bot.logger.info( `[Recv] [Guild] [A: ${ authorName }] [G: ${ guildName }]: ${ content }` );
+			await bot.logger.info( `[Recv] [Guild] [A: ${ username }] [G: ${ guildInfo.name }]: ${ content }` );
 			await that.execute( messageData, sendMessage, cmdSet, unionReg, false, isAt );
 		}
 	}
@@ -438,6 +428,11 @@ export class Adachi {
 		return async function ( guildId: string, userId: string ) {
 			const dbKey = `${ __RedisKey.USER_USED_GUILD }-${ userId }`;
 			await bot.redis.delSetMember( dbKey, guildId );
+			const guilds = await bot.redis.getSet( dbKey );
+			if ( guilds.length <= 0 ) {
+				const keys = await bot.redis.getKeysByPrefix( `*${ userId }*` );
+				await bot.redis.deleteKey( ...keys );
+			}
 		}
 	}
 	
@@ -446,11 +441,10 @@ export class Adachi {
 		const bot = that.bot
 		return async function ( userId: string ) {
 			
-			const userInfo = await getMemberInfo( userId );
 			const guilds = await bot.redis.getSet( `${ __RedisKey.USER_USED_GUILD }-${ userId }` );
 			
-			/* 与机器人还有共同频道就不清除数据，或者只是信息获取失败，暂时不处理 */
-			if ( userInfo || guilds.length > 1 ) {
+			/* 与机器人还有共同频道就不清除数据 */
+			if ( guilds.length > 0 ) {
 				return;
 			}
 			
