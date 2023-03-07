@@ -267,7 +267,6 @@ export class EnKa {
 				subAttr: sub ? sub.map( s => this.getArtInfo( s ) ) : [],
 				score: getAttrScore( sub ? sub.map( s => this.getArtInfo( s ) ) : [] )
 			}
-			console.log( ret );
 		}
 		
 		return { list: ret };

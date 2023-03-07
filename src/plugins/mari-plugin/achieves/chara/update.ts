@@ -19,7 +19,7 @@ export async function main
 	const orderQuery: boolean = !!( !isClear && msg && msg.length !== 9 && !atID );
 	
 	if ( !config.uidQuery && !orderQuery ) {
-		sendMessage( "bot 持有者已关闭 uid 和 @ 更新功能" );
+		await sendMessage( "bot 持有者已关闭 uid 和 @ 更新功能" );
 		return;
 	}
 	//判断是否序号查询
@@ -55,7 +55,7 @@ export async function main
 		detail = await charaDetailPromise( uid, self, sendMessage, true );
 	} catch ( error ) {
 		if ( typeof error === "string" ) {
-			await sendMessage( <string>error );
+			await sendMessage( error );
 		} else {
 			logger.error( error );
 		}

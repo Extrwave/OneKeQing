@@ -1,5 +1,5 @@
-import express from "express";
 import bot from "ROOT";
+import express from "express";
 import { DB_KEY } from "#genshin_draw_analysis/util/types";
 
 const router = express.Router();
@@ -25,7 +25,7 @@ router.get( "/result", async ( req, res ) => {
 				data: records
 			} );
 		} catch ( error ) {
-			console.log( el + error );
+			bot.logger.error( el + error );
 		}
 	}
 	res.send( { data: JSON.stringify( dataRes ) } );
