@@ -130,7 +130,6 @@ const HEADERS = {
 };
 
 const verifyMsg = "API请求遭遇验证码拦截 ~";
-const verifyError = "多次尝试解决验证码失败 ~";
 
 /* mihoyo BBS API */
 export async function getBaseInfo(
@@ -165,7 +164,7 @@ export async function getBaseInfo(
 					bot.logger.debug( `[ MysID${ mysID } ][base] 第 ${ time + 1 } 次验证码绕过${ verifyResult ? "失败：" + verifyResult : "成功" }` );
 					return resolve( await getBaseInfo( mysID, cookie, ++time, verifyResult ) );
 				}
-				reject( config.verifyEnable ? "[base] " + verifyError + "\n" + verifyResult : verifyMsg );
+				reject( config.verifyEnable ? "[base] " + verifyResult : verifyMsg );
 			} )
 			.catch( ( reason ) => {
 				reject( reason );
@@ -209,7 +208,7 @@ export async function getDetailInfo(
 					bot.logger.debug( `[ UID${ uid } ][detail] 第 ${ time + 1 } 次验证码绕过${ verifyResult ? "失败：" + verifyResult : "成功" }` );
 					return resolve( await getDetailInfo( uid, server, cookie, ++time, verifyResult ) );
 				}
-				reject( config.verifyEnable ? "[detail] " + verifyError + "\n" + verifyResult : verifyMsg );
+				reject( config.verifyEnable ? "[detail] " + verifyResult : verifyMsg );
 			} )
 			.catch( ( reason ) => {
 				reject( reason );
@@ -257,7 +256,7 @@ export async function getCharactersInfo(
 					bot.logger.debug( `[ UID${ roleID } ][char] 第 ${ time + 1 } 次验证码绕过${ verifyResult ? "失败：" + verifyResult : "成功" }` );
 					return resolve( await getCharactersInfo( roleID, server, charIDs, cookie, ++time, verifyResult ) );
 				}
-				reject( config.verifyEnable ? "[char] " + verifyError + "\n" + verifyResult : verifyMsg );
+				reject( config.verifyEnable ? "[char] " + verifyResult : verifyMsg );
 			} )
 			.catch( ( reason ) => {
 				reject( reason );
@@ -301,7 +300,7 @@ export async function getDailyNoteInfo(
 					bot.logger.debug( `[ UID${ uid } ][note] 第 ${ time + 1 } 次验证码绕过${ verifyResult ? "失败：" + verifyResult : "成功" }` );
 					return resolve( await getDailyNoteInfo( uid, server, cookie, ++time, verifyResult ) );
 				}
-				reject( config.verifyEnable ? "[note] " + verifyError + "\n" + verifyResult : verifyMsg );
+				reject( config.verifyEnable ? "[note] " + verifyResult : verifyMsg );
 			} )
 			.catch( ( reason ) => {
 				reject( reason );
@@ -347,7 +346,7 @@ export async function getAvatarDetailInfo(
 					bot.logger.debug( `[ UID${ uid } ][avatar] 第 ${ time + 1 } 次验证码绕过${ verifyResult ? "失败：" + verifyResult : "成功" }` );
 					return resolve( await getAvatarDetailInfo( uid, avatarID, server, cookie, ++time, verifyResult ) );
 				}
-				reject( config.verifyEnable ? "[avatar] " + verifyError + "\n" + verifyResult : verifyMsg );
+				reject( config.verifyEnable ? "[avatar] " + verifyResult : verifyMsg );
 			} )
 			.catch( ( reason ) => {
 				reject( reason );
@@ -395,7 +394,7 @@ export async function getSpiralAbyssInfo(
 					bot.logger.debug( `[ UID${ roleID } ][abyss] 第 ${ time + 1 } 次验证码绕过${ verifyResult ? "失败：" + verifyResult : "成功" }` );
 					return resolve( await getSpiralAbyssInfo( roleID, server, period, cookie, ++time, verifyResult ) );
 				}
-				reject( config.verifyEnable ? "[abyss] " + verifyError + "\n" + verifyResult : verifyMsg );
+				reject( config.verifyEnable ? "[abyss] " + verifyResult : verifyMsg );
 			} )
 			.catch( ( reason ) => {
 				reject( reason );
@@ -441,7 +440,7 @@ export async function getLedger(
 					bot.logger.debug( `[ UID${ uid } ][ledger] 第 ${ time + 1 } 次验证码绕过${ verifyResult ? "失败：" + verifyResult : "成功" }` );
 					return resolve( await getLedger( uid, server, mon, cookie, ++time, verifyResult ) );
 				}
-				reject( config.verifyEnable ? "[ledger] " + verifyError + "\n" + verifyResult : verifyMsg );
+				reject( config.verifyEnable ? "[ledger] " + verifyResult : verifyMsg );
 			} )
 			.catch( ( reason ) => {
 				reject( reason );
@@ -619,6 +618,7 @@ export async function getUidHome(): Promise<any> {
 
 /* 参考 https://github.com/DGP-Studio/DGP.Genshin.MiHoYoAPI/blob/main/Sign/SignInProvider.cs */
 export async function mihoyoGenshinSignIn( uid: string, region: string, cookie: string ): Promise<ResponseBody> {
+	const deviceId = guid();
 	const body = {
 		act_id: genshinActivityID,
 		uid, region
@@ -635,7 +635,7 @@ export async function mihoyoGenshinSignIn( uid: string, region: string, cookie: 
 				"content-type": "application/json",
 				"Cookie": cookie,
 				"DS": getDS2(),
-				"x-rpc-device_id": guid()
+				"x-rpc-device_id": deviceId
 			}
 		} )
 			.then( async ( result ) => {
@@ -647,10 +647,10 @@ export async function mihoyoGenshinSignIn( uid: string, region: string, cookie: 
 				//遇到验证码
 				bot.logger.warn( `[ UID${ uid } ][sign] 签到遇到验证码` );
 				if ( ApiType.isSignInResult( data.data ) && data.data.gt && data.data.challenge && config.verifyEnable ) {
-					bot.logger.debug( `[ UID${ uid } ][sign] 遇到验证码，正在尝试绕过` );
-					return resolve( mihoyoBBSVerifySignIn( uid, region, cookie, data.data.gt, data.data.challenge ) );
+					bot.logger.debug( `[ UID${ uid } ][sign] 遇到验证码，正在尝试解决` );
+					return resolve( mihoyoBBSVerifySignIn( uid, region, cookie, data.data.gt, data.data.challenge, deviceId ) );
 				}
-				reject( config.verifyEnable ? verifyError : verifyMsg );
+				reject( config.verifyEnable ? "解决签到验证码失败" : verifyMsg );
 			} )
 			.catch( ( reason ) => {
 				reject( reason );
@@ -755,7 +755,7 @@ export async function mihoyoBBSItemSign(
 				bot.logger.debug( `[ MysID${ mysID } ][myssign] 第 ${ time + 1 } 次验证码绕过${ verifyResult ? "失败：" + verifyResult : "成功" }` );
 				return resolve( await mihoyoBBSItemSign( mysID, gids, stoken, ctoken, ++time, verifyResult ) );
 			}
-			reject( config.verifyEnable ? "[myssign] " + verifyError + "\n" + verifyResult : verifyMsg );
+			reject( config.verifyEnable ? "[myssign] " + verifyResult : verifyMsg );
 		} ).catch( reason => {
 			reject( reason );
 		} )
@@ -796,7 +796,7 @@ export async function mihoyoBBSGetPosts(
 				bot.logger.debug( `[ MysID${ MysID } ][getPost] 第 ${ time + 1 } 次验证码绕过${ verifyResult ? "失败：" + verifyResult : "成功" }` );
 				return resolve( await mihoyoBBSGetPosts( stoken, ctoken, gids, last_id, ++time, verifyResult ) );
 			}
-			reject( config.verifyEnable ? "[getPost] " + verifyError + "\n" + verifyResult : verifyMsg );
+			reject( config.verifyEnable ? "[getPost] " + verifyResult : verifyMsg );
 		} ).catch( reason => {
 			reject( reason );
 		} )
@@ -834,7 +834,7 @@ export async function mihoyoBBSGetFullPost(
 					bot.logger.debug( `[ MysID${ MysID } ][viewPost] 第 ${ time + 1 } 次验证码绕过${ verifyResult ? "失败：" + verifyResult : "成功" }` );
 					return resolve( await mihoyoBBSGetFullPost( stoken, ctoken, postId, ++time, verifyResult ) );
 				}
-				reject( config.verifyEnable ? "[viewPost] " + verifyError + "\n" + verifyResult : verifyMsg );
+				reject( config.verifyEnable ? "[viewPost] " + verifyResult : verifyMsg );
 			} ).catch( reason => {
 			reject( reason );
 		} );
@@ -876,7 +876,7 @@ export async function mihoyoBBSUpvotePost(
 				bot.logger.debug( `[ MysID${ MysID } ][upvote] 第 ${ time + 1 } 次验证码绕过${ verifyResult ? "失败：" + verifyResult : "成功" }` );
 				return resolve( await mihoyoBBSUpvotePost( stoken, ctoken, post_id, ++time, verifyResult ) );
 			}
-			reject( config.verifyEnable ? "[upvote] " + verifyError + "\n" + verifyResult : verifyMsg );
+			reject( config.verifyEnable ? "[upvote] " + verifyResult : verifyMsg );
 		} ).catch( reason => {
 			reject( reason );
 		} )
@@ -917,7 +917,7 @@ export async function mihoyoBBSSharePost(
 					bot.logger.debug( `[ MysID${ MysID } ][share] 第 ${ time + 1 } 次验证码绕过${ verifyResult ? "失败：" + verifyResult : "成功" }` );
 					return resolve( await mihoyoBBSSharePost( stoken, ctoken, post_id, ++time, verifyResult ) );
 				}
-				reject( config.verifyEnable ? "[share] " + verifyError + "\n" + verifyResult : verifyMsg );
+				reject( config.verifyEnable ? "[share] " + verifyResult : verifyMsg );
 			} )
 			.catch( reason => {
 				reject( reason );
@@ -951,7 +951,7 @@ export async function mihoyoBBSGetMyb( cookie: string, time: number = 0, verifyR
 					bot.logger.debug( `[ MysID${ MysID } ][getMyb] 第 ${ time + 1 } 次验证码绕过${ verifyResult ? "失败：" + verifyResult : "成功" }` );
 					return resolve( await mihoyoBBSGetMyb( cookie, ++time, verifyResult ) );
 				}
-				reject( config.verifyEnable ? "[getMyb] " + verifyError + "\n" + verifyResult : verifyMsg );
+				reject( config.verifyEnable ? "[getMyb] " + verifyResult : verifyMsg );
 			} )
 			.catch( reason => {
 				reject( reason );
@@ -1002,7 +1002,7 @@ export async function bypassQueryVerification( cookie: string, gt?: string, chal
 		} ) );
 		if ( !createVerify.data ) {
 			bot.logger.error( "[create]", createVerify );
-			return "获取验证码失败";
+			return "[create] 获取验证码失败";
 		}
 		data.gt = createVerify.data.gt;
 		data.challenge = createVerify.data.challenge;
@@ -1031,7 +1031,7 @@ export async function bypassQueryVerification( cookie: string, gt?: string, chal
 	} );
 	if ( analysisCode.code !== 0 || analysisCode.info !== "success" ) {
 		bot.logger.error( "[verify]", analysisCode );
-		return `原因：${ analysisCode.info }`;
+		return `[verify] 验证失败：${ analysisCode.info }`;
 	}
 	const body = {
 		geetest_challenge: analysisCode.data.challenge,
@@ -1054,7 +1054,7 @@ export async function bypassQueryVerification( cookie: string, gt?: string, chal
 		/* 验证码过期 */
 		if ( verifyResult.retcode !== 0 || verifyResult.message !== 'OK' ) {
 			bot.logger.error( "[submit]", verifyResult );
-			return verifyResult;
+			return "[submit] 验证提交失败\n" + verifyResult;
 		}
 	} catch ( error ) {
 		bot.logger.error( "[submit]", error );
@@ -1063,7 +1063,7 @@ export async function bypassQueryVerification( cookie: string, gt?: string, chal
 	return "";
 }
 
-export async function mihoyoBBSVerifySignIn( uid: string, region: string, cookie: string, gt: string, challenge: string ): Promise<ResponseBody> {
+export async function mihoyoBBSVerifySignIn( uid: string, region: string, cookie: string, gt: string, challenge: string, deviceId: string ): Promise<ResponseBody> {
 	const body = {
 		act_id: genshinActivityID,
 		uid, region
@@ -1085,7 +1085,7 @@ export async function mihoyoBBSVerifySignIn( uid: string, region: string, cookie
 	
 	if ( analysisCode.code !== 0 || analysisCode.info !== "success" ) {
 		bot.logger.error( analysisCode );
-		throw `验证失败原因：${ analysisCode.info }`;
+		throw `[verify] 验证失败：${ analysisCode.info }`;
 	}
 	
 	return new Promise( ( resolve, reject ) => {
@@ -1099,6 +1099,7 @@ export async function mihoyoBBSVerifySignIn( uid: string, region: string, cookie
 				"content-type": "application/json",
 				"Cookie": cookie,
 				"DS": getDS2(),
+				"x-rpc-device_id": deviceId,
 				"x-rpc-challenge": analysisCode.data.challenge,
 				"x-rpc-validate": analysisCode.data.validate,
 				"x-rpc-seccode": `${ analysisCode.data.validate }|jordan`
@@ -1112,7 +1113,7 @@ export async function mihoyoBBSVerifySignIn( uid: string, region: string, cookie
 					return resolve( data );
 				}
 				//遇到验证码
-				reject( verifyError );
+				reject( "解决签到验证码失败" );
 			} )
 			.catch( ( reason ) => {
 				reject( reason );
