@@ -49,7 +49,6 @@ export class NoteService implements Service {
 		if ( this.enable ) {
 			this.scheduleJobOn();
 		}
-		
 	}
 	
 	public getOptions(): any {
