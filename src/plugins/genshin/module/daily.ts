@@ -23,6 +23,7 @@ type DailyInfo = {
 	name: string;
 	rarity: number;
 	extra: number[] | string;
+	char: string;
 }
 
 export class DailySet {
@@ -51,14 +52,16 @@ export class DailySet {
 					type: "character",
 					name,
 					rarity,
-					extra: priSubInfo ? priSubInfo.extra : "未授权"
+					extra: priSubInfo ? priSubInfo.extra : "未授权",
+					char: ""
 				} );
 			} else if ( isWeaponInfo( d ) ) {
 				this.add( d.ascensionMaterials[0], {
 					type: "weapon",
 					name,
 					rarity,
-					extra: priSubInfo ? priSubInfo.extra : "未授权"
+					extra: priSubInfo ? priSubInfo.extra : "未授权",
+					char: priSubInfo ? priSubInfo.char : ""
 				} );
 			}
 		}
@@ -216,13 +219,15 @@ export class DailyClass {
 				type: 'character',
 				name: value.name,
 				rarity: value.rarity,
-				extra: [ value.skills[0].levelCurrent, value.skills[1].levelCurrent, value.skills[2].levelCurrent ]
+				extra: [ value.skills[0].levelCurrent, value.skills[1].levelCurrent, value.skills[2].levelCurrent ],
+				char: ""
 			} );
 			allData.set( value.weapon.name, {
 				type: 'weapon',
 				name: value.weapon.name,
 				rarity: value.weapon.rarity,
-				extra: [ value.weapon.level ]
+				extra: [ value.weapon.level ],
+				char: value.name
 			} );
 		} );
 		return allData;
@@ -239,7 +244,10 @@ export class DailyClass {
 		
 		/* 根据授权信息修改详情需求 */
 		let subData = new Map<string, DailyInfo>();
-		cookie ? subData = await this.getUserPrivateInfo( userID, cookie ).catch() : "";
+		try {
+			cookie ? subData = await this.getUserPrivateInfo( userID, cookie ) : "";
+		} catch ( error ) {
+		}
 		
 		/* 获取所有材料信息填充至 allData */
 		await this.getAllData( todayInfoSet, false );

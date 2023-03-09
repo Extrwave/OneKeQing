@@ -80,9 +80,18 @@
 	overflow: hidden;
 }
 
-.material .material-item > .thumb-list > .thumb-box > img {
+.material .material-item > .thumb-list > .thumb-box > .material-thumb {
 	width: inherit;
 	height: auto;
+}
+
+.material .material-item > .thumb-list > .thumb-box > .avatar-thumb {
+	width: 30px;
+	height: 30px;
+	z-index: 1000;
+	position: relative;
+	top: -80px;
+	border-radius: 50px;
 }
 
 .material .material-item > .thumb-list > .thumb-box > div {
@@ -101,5 +110,5 @@
 
 .material .material-item > .thumb-list > .thumb-box > div > .extra {
 	display: inline-flex;
-	padding-inline: 7px;
+	padding-inline: 6px;
 }

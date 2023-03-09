@@ -12,7 +12,8 @@ const template = `<section class="material">
 					<div class="br"></div>
 					<div class="thumb-list">
 						<div v-for="(t, tKey) of m[type].list" :key="tKey" class="thumb-box" :style="getThumbBg(t.rarity)">
-							<img :src="getThumb(type, t.name)" alt="ERROR">
+							<img class="material-thumb" :src="getThumb(type, t.name)" alt="ERROR">
+							<img class="avatar-thumb" v-if="t.char" :src="getThumb('character',t.char)" alt="ERROR">
 							<div>
 								<p>{{ t.name }}</p>
 								<p v-if="typeof t.extra === 'string'" class="extra">{{ t.extra }}</p>
