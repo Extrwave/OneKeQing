@@ -139,7 +139,7 @@ export class NoteService implements Service {
 			);
 		} catch ( error ) {
 			this.globalData = <string>error;
-			if ( /Cookie已失效/.test( <string>error ) ) {
+			if ( /Cookie/i.test( <string>error ) ) {
 				await this.toggleEnableStatus( false, false );
 				this.globalData += "\n自动提醒已停止，请更新 Cookie 后重新开启"
 			}
@@ -214,9 +214,7 @@ export class NoteService implements Service {
 			const time = new Date( now + remaining * 1000 );
 			
 			const job: Job = scheduleJob( time, async () => {
-				const pushInfo = await this.refreshPushInfo().catch( () => {
-					return;
-				} );
+				const pushInfo = await this.refreshPushInfo().catch( this.feedbackCatch );
 				/* 树脂量一小时内已使用，当前树脂与预期差距大于 20 时不推送 */
 				if ( pushInfo && Math.abs( pushInfo.currentResin - t ) <= 20 ) {
 					const embedMsg = new EmbedMsg(
@@ -238,10 +236,7 @@ export class NoteService implements Service {
 			const time = new Date( now + recovery * 1000 );
 			
 			const job: Job = scheduleJob( time, async () => {
-				const pushInfo = await this.refreshPushInfo()
-					.catch( async () => {
-						await sendMessage( `洞天宝钱已经满啦 ~`, this.parent.setting.userID )
-					} );
+				const pushInfo = await this.refreshPushInfo().catch( this.feedbackCatch );
 				if ( pushInfo ) {
 					const embedMsg = new EmbedMsg(
 						`洞天宝钱已经满啦 ~`,
@@ -264,10 +259,7 @@ export class NoteService implements Service {
 				const time = new Date( now + recovery * 1000 );
 				
 				const job: Job = scheduleJob( time, async () => {
-					const pushInfo = await this.refreshPushInfo()
-						.catch( async () => {
-							await sendMessage( `参量质变仪已就绪啦 ~`, this.parent.setting.userID )
-						} );
+					const pushInfo = await this.refreshPushInfo().catch( this.feedbackCatch );
 					if ( pushInfo ) {
 						const embedMsg = new EmbedMsg(
 							`参量质变仪已就绪啦 ~`,
@@ -310,10 +302,7 @@ export class NoteService implements Service {
 		for ( let c of compressed ) {
 			const time = new Date( now + parseInt( c.remainedTime ) * 1000 );
 			const job: Job = scheduleJob( time, async () => {
-				const pushInfo = await this.refreshPushInfo()
-					.catch( async () => {
-						await sendMessage( `已有 ${ c.num } 个探索派遣任务完成啦 ~`, this.parent.setting.userID )
-					} );
+				const pushInfo = await this.refreshPushInfo().catch( this.feedbackCatch );
 				if ( pushInfo ) {
 					const embedMsg = new EmbedMsg(
 						`已有 ${ c.num } 个探索派遣任务完成啦 ~`,
