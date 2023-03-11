@@ -45,7 +45,7 @@ export class CloudService implements Service {
 	public async initTest(): Promise<string> {
 		const CLOUD_SIGN = <Order>bot.command.getSingle( "extr-wave-cloud-game-enable" );
 		const content = await this.toggleEnableStatus( true );
-		return `${ content }\n[ ${ CLOUD_SIGN.getCNHeader() } ] 开启云原神签到功能`;
+		return `\n${ content }\n[ ${ CLOUD_SIGN.getCNHeader() } ] 开启云原神签到功能`;
 	}
 	
 	public async toggleEnableStatus( status?: boolean ): Promise<string> {

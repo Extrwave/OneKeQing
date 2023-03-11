@@ -31,35 +31,30 @@ export class DailySet {
 	private readonly characterSet: Record<string, DailyInfo[]>;
 	private readonly eventData: CalendarData[];
 	
-	constructor( data: InfoResponse[], events: CalendarData[], sub: Map<string, DailyInfo> ) {
+	constructor( data: Map<string, InfoResponse>, events: CalendarData[], sub: Map<string, DailyInfo> ) {
 		this.weaponSet = {};
 		this.characterSet = {};
 		this.eventData = events;
 		
 		/* 根据用户授权情况更改材料列表 */
-		if ( sub.size > 0 ) {
-			const names = Array.from( sub.keys() );
-			data = data.filter( value => {
-				return names.includes( value.name );
-			} );
-		}
-		
-		for ( let d of data ) {
-			const { name, rarity }: { name: string, rarity: number } = d;
+		const names = sub.keys();
+		for ( let name of names ) {
+			const dataInfo = data.get( name );
 			const priSubInfo = sub.get( name );
-			if ( isCharacterInfo( d ) ) {
-				this.add( take( d.talentMaterials, 3 ), {
+			if ( !dataInfo || !priSubInfo ) continue;
+			if ( isCharacterInfo( dataInfo ) ) {
+				this.add( take( dataInfo.talentMaterials, 3 ), {
 					type: "character",
-					name,
-					rarity,
+					name: dataInfo.name,
+					rarity: dataInfo.rarity,
 					extra: priSubInfo ? priSubInfo.extra : "未授权",
 					char: ""
 				} );
-			} else if ( isWeaponInfo( d ) ) {
-				this.add( d.ascensionMaterials[0], {
+			} else if ( isWeaponInfo( dataInfo ) ) {
+				this.add( dataInfo.ascensionMaterials[0], {
 					type: "weapon",
-					name,
-					rarity,
+					name: dataInfo.name,
+					rarity: dataInfo.rarity,
 					extra: priSubInfo ? priSubInfo.extra : "未授权",
 					char: priSubInfo ? priSubInfo.char : ""
 				} );
@@ -100,12 +95,12 @@ async function getRenderResult( id: string, username: string, week?: number ): P
 
 export class DailyClass {
 	private detail: DailyMaterial;
-	private allData: InfoResponse[];
+	private allData: Map<string, InfoResponse>;
 	private eventData: CalendarData[] = [];
 	
 	constructor() {
 		this.detail = { "Mon&Thu": [], "Tue&Fri": [], "Wed&Sat": [] };
-		this.allData = [];
+		this.allData = new Map<string, InfoResponse>();
 		getDailyMaterial().then( ( result: DailyMaterial ) => {
 			this.detail = result;
 		} );
@@ -179,21 +174,18 @@ export class DailyClass {
 	/* 获取订阅名称的详细信息 */
 	private async getAllData( set: string[], clear: boolean ): Promise<void> {
 		if ( clear ) {
-			this.allData = [];
+			this.allData.clear();
 		}
 		for ( let targetName of set ) {
 			try {
-				const exist = this.allData.some( value => {
-					return value.name === targetName
-				} );
-				if ( !exist ) {
+				if ( !this.allData.has( targetName ) ) {
 					const data = await getInfo( targetName );
 					if ( typeof data !== "string" ) {
-						this.allData.push( data );
+						this.allData.set( data.name, data );
 					}
 				}
 			} catch ( e ) {
-				bot.logger.error( `「${ targetName }」信息获取失败: ${ e }` );
+				bot.logger.error( `[ ${ targetName } ] 信息获取失败: ${ e }` );
 			}
 		}
 	}
