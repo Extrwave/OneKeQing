@@ -51,9 +51,8 @@ export class SignInService implements Service {
 	}
 	
 	public async initTest(): Promise<string> {
-		const TOGGLE_SIGN = <Order>bot.command.getSingle( "silvery-star-private-toggle-sign" );
 		const content = await this.toggleEnableStatus( false );
-		return `${ content }\n[ ${ TOGGLE_SIGN.getCNHeader() }+序号 ] 开关签到功能`;
+		return `${ content }, 请手动签到`;
 	}
 	
 	public async toggleEnableStatus( status?: boolean ): Promise<string> {
