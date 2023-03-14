@@ -56,7 +56,7 @@ const __API = {
 	/* 云原神服务相关 */
 	FETCH_CLOUD_WALLET: 'https://api-cloudgame.mihoyo.com/hk4e_cg_cn/wallet/wallet/get',
 	/* 验证码服务相关 */
-	FETCH_GET_VERIFY: "http://challenge.minigg.co/geetest",
+	FETCH_GET_VERIFY: "https://challenge.minigg.cn",
 	FETCH_GEETEST: "https://api.geetest.com/gettype.php",
 	FETCH_CREATE_VERIFICATION: "https://api-takumi-record.mihoyo.com/game_record/app/card/wapi/createVerification",
 	FETCH_VERIFY_VERIFICATION: "https://api-takumi-record.mihoyo.com/game_record/app/card/wapi/verifyVerification",
