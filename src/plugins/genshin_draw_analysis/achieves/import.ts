@@ -3,7 +3,7 @@ import { InputParameter } from "@modules/command";
 import { DB_KEY, Gacha_Info, Standard_Gacha } from "#genshin_draw_analysis/util/types";
 import { fakeIdFn } from "#genshin_draw_analysis/util/util";
 
-async function importFromUIGFJson( file_url, { redis, sendMessage, config }: InputParameter ): Promise<void> {
+async function importFromUIGFJson( file_url, { redis, sendMessage, otherConfig }: InputParameter ): Promise<void> {
 	const response: Response = await fetch( file_url );
 	let rawString = await response.text();
 	//将ID转为字符串避免精度丢失
@@ -25,7 +25,7 @@ async function importFromUIGFJson( file_url, { redis, sendMessage, config }: Inp
 		await sendMessage( `[ UID${ info.uid } ] 的 ${ list.length } 条抽卡记录数据已导入。` );
 	} else {
 		await sendMessage( "文件不存在或者不支持的格式\n" +
-			`请前往上传: ${ config.alistDrive.baseUrl }${ config.alistDrive.baseDir }/WishAbout/Upload` );
+			`请前往上传: ${ otherConfig.alistDrive.baseUrl }${ otherConfig.alistDrive.baseDir }/WishAbout/Upload` );
 	}
 }
 
@@ -62,7 +62,7 @@ async function importFromUIGFExcel( file_url: string, { redis, sendMessage }: In
 }
 
 export async function main( bot: InputParameter ): Promise<void> {
-	let download_url = bot.config.alistDrive.baseUrl + "/d" + bot.config.alistDrive.baseDir + "/WishAbout/Upload";
+	let download_url = bot.otherConfig.alistDrive.baseUrl + "/d" + bot.otherConfig.alistDrive.baseDir + "/WishAbout/Upload";
 	const { sendMessage, messageData } = bot;
 	let content = messageData.msg.content;
 	const reg = new RegExp( /(?<fileName>[A-Za-z0-9-]+\.)\s*(?<importType>json|excel$)/ );
@@ -80,6 +80,6 @@ export async function main( bot: InputParameter ): Promise<void> {
 		}
 	} catch ( error ) {
 		await sendMessage( "文件获取失败，请前往上传\n" +
-			`${ bot.config.alistDrive.baseUrl }${ bot.config.alistDrive.baseDir }/WishAbout/Upload` );
+			`${ bot.otherConfig.alistDrive.baseUrl }${ bot.otherConfig.alistDrive.baseDir }/WishAbout/Upload` );
 	}
 }

@@ -39,8 +39,8 @@ export let renderer: Renderer;
 
 export async function init( bot: BOT ): Promise<PluginSetting> {
 	/* 未启用卡片帮助时不启动服务 */
-	if ( bot.config.helpMessageStyle === "card" ) {
-		const serverPort: number = await findFreePort( bot.config.helpPort, bot.logger );
+	if ( bot.otherConfig.helpMessageStyle === "card" ) {
+		const serverPort: number = await findFreePort( bot.otherConfig.helpPort, bot.logger );
 		/* 实例化渲染器 */
 		renderer = bot.renderer.register(
 			"@help", "/view",

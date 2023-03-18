@@ -95,7 +95,7 @@ async function getHelpMessage(
 	i: InputParameter
 ): Promise<void> {
 	let style;
-	switch ( i.config.helpMessageStyle ) {
+	switch ( i.otherConfig.helpMessageStyle ) {
 		case "message":
 			style = messageStyle( title, list );
 			await i.sendMessage( style );
@@ -124,7 +124,7 @@ export async function main( i: InputParameter ): Promise<void> {
 	}
 	
 	/* 使用图片帮助,默认获取全部指令 */
-	if ( i.config.helpMessageStyle === "card" ) {
+	if ( i.otherConfig.helpMessageStyle === "card" ) {
 		const res = await cardStyle( i, commands, version );
 		if ( res.code === "base64" ) {
 			await i.sendMessage( { file_image: res.data } );
