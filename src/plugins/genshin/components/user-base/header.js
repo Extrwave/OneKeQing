@@ -85,14 +85,7 @@ export default defineComponent( {
 		} );
 		
 		const topBgStyle = {
-			position: "relative",
-			display: "flex",
-			justifyContent: "space-between",
-			alignItems: "flex-end",
-			padding: "80px 80px 50px",
-			borderRadius: "24px 24px 0 0",
-			background: `url(${ props.data.bg })`,
-			backgroundSize: "cover"
+			backgroundImage: `url(${ props.data.bg })`,
 		}
 		
 		return {

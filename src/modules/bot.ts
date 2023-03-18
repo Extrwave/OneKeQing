@@ -8,7 +8,7 @@ import {
 } from "qq-guild-bot";
 import * as log from "log4js";
 import moment from "moment";
-import BotSetting, { OtherConfig } from "@modules/config";
+import BotSetting, { ChatConfig, OtherConfig } from "@modules/config";
 import Redis, { __RedisKey } from "@modules/redis";
 import FileManagement from "@modules/file";
 import Plugin, { PluginReSubs } from "@modules/plugin";
@@ -27,6 +27,7 @@ import { getGuildBaseInfo } from "@modules/utils/account";
 import { EmbedMsg } from "@modules/utils/embed";
 import { checkChannelLimit } from "#@management/channel";
 import { Sleep } from "./utils"
+import { autoReply } from "@modules/chat";
 
 export interface BOT {
 	readonly redis: Redis;
@@ -40,7 +41,8 @@ export interface BOT {
 	readonly command: Command;
 	readonly refresh: RefreshConfig;
 	readonly renderer: BasicRenderer;
-	config: OtherConfig;
+	otherConfig: OtherConfig;
+	chatConfig: ChatConfig;
 }
 
 export class Adachi {
@@ -87,16 +89,18 @@ export class Adachi {
 		const command = new Command( file );
 		const refresh = new RefreshConfig( file, command );
 		const renderer = new BasicRenderer();
-		const config = new OtherConfig( file );
+		const otherConfig = new OtherConfig( file );
+		const chatConfig = new ChatConfig( file );
 		
 		this.bot = {
 			client, ws, file, redis,
 			logger, message, auth, command,
-			setting, refresh, renderer, config
+			setting, refresh, renderer, otherConfig: otherConfig, chatConfig
 		};
 		
 		refresh.registerRefreshableFunc( renderer );
-		refresh.registerRefreshableFile( "config", config )
+		refresh.registerRefreshableFile( "other", otherConfig );
+		refresh.registerRefreshableFile( "chat", chatConfig );
 	}
 	
 	public run(): BOT {
@@ -185,7 +189,7 @@ export class Adachi {
 		}
 		
 		/* 针对私域机器人的 @消息识别开关 */
-		if ( this.bot.setting.area === "private" && this.bot.config.atBot && !isAt && !isPrivate ) {
+		if ( this.bot.setting.area === "private" && !isPrivate && this.bot.otherConfig.atBot && !isAt ) {
 			return;
 		}
 		
@@ -210,10 +214,9 @@ export class Adachi {
 			if ( check ) {
 				return await sendMessage( check );
 			}
-			/* 只支持简单聊天，仅允许频道支持聊天 */
-			if ( isAt && !isPrivate ) {
-				const { autoReply } = require( "@modules/chat" );
-				return await autoReply( messageData, sendMessage, this.bot.config.autoChat.enable );
+			/* 支持问答和表情包 */
+			if ( !isPrivate ) {
+				return await autoReply( messageData, sendMessage, this.bot.chatConfig, isAt );
 			}
 		}
 		

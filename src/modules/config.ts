@@ -1,6 +1,7 @@
 import FileManagement from "@modules/file";
 import { randomSecret } from "./utils";
 import { RefreshCatch } from "@modules/management/refresh";
+import { randomInt } from "crypto";
 
 export default class BotSetting {
 	public readonly appID: string;
@@ -96,12 +97,6 @@ export class OtherConfig {
 	public atUser: boolean;
 	public helpPort: number;
 	public helpMessageStyle: string;
-	public autoChat: {
-		enable: boolean;
-		type: number;
-		secretId: string;
-		secretKey: string;
-	}
 	
 	public alistDrive: {
 		auth: string;
@@ -114,13 +109,6 @@ export class OtherConfig {
 		atUser: false,
 		helpPort: 54919,
 		helpMessageStyle: "message",
-		autoChat: {
-			tip1: "type参数说明：1为青云客，2为腾讯NLP（需要secret）",
-			enable: false,
-			type: 1,
-			secretId: "xxxxx",
-			secretKey: "xxxxx"
-		},
 		alistDrive: {
 			tip: "Alist 挂载云盘作为存储，其中allDirs为具体的某些文件夹",
 			auth: "xxx",
@@ -132,16 +120,15 @@ export class OtherConfig {
 	constructor( file: FileManagement ) {
 		
 		const initCfg = OtherConfig.initObject;
-		const path: string = file.getFilePath( "config.yml" );
+		const path: string = file.getFilePath( "other.yml" );
 		const isExist: boolean = file.isExist( path );
 		if ( !isExist ) {
-			file.createYAML( "config", initCfg );
+			file.createYAML( "other", initCfg );
 		}
 		
-		const config: any = file.loadYAML( "config" );
+		const config: any = file.loadYAML( "other" );
 		const checkFields: Array<keyof OtherConfig> = [
-			"autoChat", 'alistDrive', 'atUser',
-			'atBot', 'helpMessageStyle', 'helpPort'
+			'alistDrive', 'atUser', 'atBot'
 		];
 		
 		for ( let key of checkFields ) {
@@ -149,7 +136,7 @@ export class OtherConfig {
 				config[key] = OtherConfig.initObject[key];
 			}
 		}
-		file.writeYAML( "config", config );
+		file.writeYAML( "other", config );
 		
 		this.atBot = config.atBot;
 		this.atUser = config.atUser;
@@ -158,13 +145,6 @@ export class OtherConfig {
 		const helpList: string[] = [ "message", "embed", "ark", "card" ];
 		this.helpMessageStyle = helpList.includes( config.helpMessageStyle )
 			? config.helpMessageStyle : "message";
-		
-		this.autoChat = {
-			enable: config.autoChat.enable,
-			type: config.autoChat.type,
-			secretId: config.autoChat.secretId,
-			secretKey: config.autoChat.secretKey,
-		}
 		
 		this.alistDrive = {
 			auth: config.alistDrive.auth,
@@ -179,13 +159,104 @@ export class OtherConfig {
 			this.atUser = config.atUser;
 			this.helpPort = config.helpPort;
 			this.helpMessageStyle = config.helpMessageStyle;
-			this.autoChat = config.autoChat;
 			this.alistDrive = config.alistDrive;
-			return "config.yml 重新加载完毕";
+			return "other.yml 重新加载完毕";
 		} catch ( error ) {
 			throw <RefreshCatch>{
 				log: ( <Error>error ).stack,
-				msg: "config.yml 重新加载失败，请前往控制台查看日志"
+				msg: "other.yml 重新加载失败，请前往控制台查看日志"
+			};
+		}
+	}
+}
+
+/**
+ * Emoji配置文件
+ * */
+export class ChatConfig {
+	private emojiEnable: boolean;
+	private chatEnable: boolean;
+	private headers: string[];
+	private list: string[];
+	private regExp: RegExp;
+	
+	
+	public static init = {
+		tips: "ikun表情包链接",
+		emojiEnable: false,
+		chatEnable: false,
+		headers: [ "你干嘛", "哎哟", "素质", "树枝" ],
+		list: [ "https://img.ethreal.cn/i/2023/03/64081f02b7e69.png",
+			"https://img.ethreal.cn/i/2023/03/64081f1c526a7.png",
+			"https://img.ethreal.cn/i/2023/03/64081f97644db.png",
+			"https://img.ethreal.cn/i/2023/03/64081fc016d93.png",
+			"https://img.ethreal.cn/i/2023/03/640878ed4cc20.png" ]
+	}
+	
+	constructor( file: FileManagement ) {
+		const initCfg = ChatConfig.init;
+		
+		const path: string = file.getFilePath( "chat.yml" );
+		const isExist: boolean = file.isExist( path );
+		if ( !isExist ) {
+			file.createYAML( "chat", initCfg );
+		}
+		
+		const config: any = file.loadYAML( "chat" );
+		const keysNum = o => Object.keys( o ).length;
+		
+		/* 检查 defaultConfig 是否更新 */
+		if ( keysNum( config ) !== keysNum( initCfg ) ) {
+			const c: any = {};
+			const keys: string[] = Object.keys( initCfg );
+			for ( let k of keys ) {
+				c[k] = config[k] ? config[k] : initCfg[k];
+			}
+			file.writeYAML( "chat", c );
+		}
+		
+		this.chatEnable = config.chatEnable;
+		this.emojiEnable = config.emojiEnable;
+		this.headers = config.headers;
+		this.list = config.list;
+		this.regExp = this.buildRegExp( config.headers );
+	}
+	
+	public buildRegExp( headers: string[] ): RegExp {
+		if ( headers.length <= 0 ) {
+			headers.push( "你干嘛" );
+		}
+		return new RegExp( `(${ headers.join( "|" ) })`, "i" );
+	}
+	
+	public chatOn() {
+		return this.chatEnable;
+	}
+	
+	public emojiOn() {
+		return this.emojiEnable;
+	}
+	
+	public get(): string {
+		return this.list[randomInt( 0, this.list.length )];
+	}
+	
+	public match( content: string ): boolean {
+		return this.regExp.test( content );
+	}
+	
+	public async refresh( config ): Promise<string> {
+		try {
+			this.emojiEnable = config.emojiEnable;
+			this.chatEnable = config.chatEnable;
+			this.headers = config.headers;
+			this.list = config.list;
+			this.regExp = this.buildRegExp( this.headers );
+			return "chat 重新加载完毕";
+		} catch ( error ) {
+			throw <RefreshCatch>{
+				log: ( <Error>error ).stack,
+				msg: "chat 重新加载失败，请前往控制台查看日志"
 			};
 		}
 	}

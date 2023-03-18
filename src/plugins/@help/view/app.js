@@ -52,9 +52,6 @@ export default defineComponent( {
 		const getListTitle = pluginName => pluginNameMap[pluginName] || `${ pluginName } 插件指令`;
 		
 		const topImageStyle = {
-			position: "absolute",
-			left: 0,
-			top: 0,
 			width: "100%",
 			height: "100%",
 			backgroundSize: "cover",

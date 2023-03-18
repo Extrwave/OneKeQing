@@ -25,7 +25,7 @@ const gacha_types = [ "301", "400", "302", "100", "200" ];
 async function export2JSON( export_data: Standard_Gacha, {
 	sendMessage,
 	logger,
-	config
+	otherConfig
 }: InputParameter ) {
 	if ( export_data.list.length === 0 ) {
 		await sendMessage( `当前账号${ export_data.info || "" }无历史抽卡数据.` );
@@ -50,7 +50,7 @@ async function export2JSON( export_data: Standard_Gacha, {
 		const result = await uploadToAlist( "/WishAbout/Export", file_name, buffer );
 		if ( result.code === 200 ) {
 			await sendMessage( `上传云存储成功，获取地址为:\n` +
-				`${ config.alistDrive.baseUrl }${ config.alistDrive.baseDir }/WishAbout/Export/${ file_name }` );
+				`${ otherConfig.alistDrive.baseUrl }${ otherConfig.alistDrive.baseDir }/WishAbout/Export/${ file_name }` );
 			return sendMessage( "如文件不显示，请点击右下角刷新按钮刷新缓存即可" );
 		}
 		logger.error( "抽卡记录导出成功，上传云存储失败！", result );
@@ -119,7 +119,7 @@ async function export2Excel( {
 	                             list
                              }: Standard_Gacha, {
 	                             sendMessage,
-	                             config,
+	                             otherConfig,
 	                             logger,
                              }: InputParameter ) {
 	if ( list.length === 0 ) {
@@ -248,7 +248,7 @@ async function export2Excel( {
 		const result = await uploadToAlist( "/WishAbout/Export", file_name, buffer );
 		if ( result.code === 200 ) {
 			await sendMessage( `上传Alist成功，获取地址为:
-			${ config.alistDrive.baseUrl }${ config.alistDrive.baseDir }/WishAbout/Export/${ file_name }` );
+			${ otherConfig.alistDrive.baseUrl }${ otherConfig.alistDrive.baseDir }/WishAbout/Export/${ file_name }` );
 			return sendMessage( "如文件不显示，请点击右下角刷新按钮刷新缓存即可" );
 		}
 		logger.error( "抽卡记录导出成功，上传 Alist 失败！", result );

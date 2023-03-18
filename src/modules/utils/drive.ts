@@ -18,9 +18,9 @@ import { Buffer } from "buffer";
  * @param type
  */
 export function getRandomImageUrl( path: string ): Promise<string> {
-	const baseUrl = bot.config.alistDrive.baseUrl;
+	const baseUrl = bot.otherConfig.alistDrive.baseUrl;
 	const baseDown = baseUrl + "/d";
-	const baseDir = bot.config.alistDrive.baseDir + path;
+	const baseDir = bot.otherConfig.alistDrive.baseDir + path;
 	
 	return new Promise( ( resolve, reject ) => {
 		requests( {
@@ -28,7 +28,7 @@ export function getRandomImageUrl( path: string ): Promise<string> {
 			url: baseUrl + "/api/fs/list",
 			json: true,
 			headers: {
-				authorization: bot.config.alistDrive.auth
+				authorization: bot.otherConfig.alistDrive.auth
 			},
 			body: {
 				path: baseDir,
@@ -53,14 +53,14 @@ export async function uploadToAlist( path: string, fileName: string, buffer: Buf
 	message: string,
 	data: any
 }> {
-	const baseUrl = bot.config.alistDrive.baseUrl;
-	const baseDir = bot.config.alistDrive.baseDir + path;
+	const baseUrl = bot.otherConfig.alistDrive.baseUrl;
+	const baseDir = bot.otherConfig.alistDrive.baseDir + path;
 	return new Promise( ( resolve, reject ) => {
 		requests( {
 			method: "PUT",
 			url: baseUrl + "/api/fs/put",
 			headers: {
-				'authorization': bot.config.alistDrive.auth,
+				'authorization': bot.otherConfig.alistDrive.auth,
 				'file-path': baseDir + "/" + fileName
 			},
 			body: buffer
