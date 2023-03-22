@@ -13,6 +13,7 @@ import {
 	signInResultPromise,
 	SinInAwardPromise
 } from "#genshin/utils/promise";
+import { config } from "#genshin/init";
 
 scheduleJob( "0 5 0 * * *", async () => {
 	await SinInAwardPromise();
@@ -47,16 +48,22 @@ export class SignInService implements Service {
 	}
 	
 	public getOptions(): any {
-		return { enable: this.enable };
+		return { enable: config.autoSign ? this.enable : false };
 	}
 	
 	public async initTest(): Promise<string> {
-		const content = await this.toggleEnableStatus( false );
-		return `${ content }, 请手动签到`;
+		const TOGGLE_SIGN = <Order>bot.command.getSingle( "silvery-star.private-toggle-sign" );
+		const appendMsg = TOGGLE_SIGN ? `，请使用「${ TOGGLE_SIGN.getHeaders()[0] }+账户序号」开启本功能` : "";
+		return config.autoSign ? `米游社签到功能已放行${ appendMsg }` : `米游社自动签到功能暂未开放`;
 	}
 	
 	public async toggleEnableStatus( status?: boolean ): Promise<string> {
 		this.enable = status === undefined ? !this.enable : status;
+		if ( !config.autoSign ) {
+			this.enable = false;
+			await this.parent.refreshDBContent( SignInService.FixedField );
+			return "米游社自动签到功能暂未开放";
+		}
 		if ( this.enable ) {
 			this.setScheduleJob();
 			this.gameSign( false ).catch();
@@ -140,8 +147,8 @@ export class SignInService implements Service {
 	
 	private setScheduleJob(): void {
 		this.gameJob = scheduleJob( "0 5 6 * * *", () => {
-			/* 每日签到一小时内内随机进行 */
-			const sec: number = randomInt( 0, 360 );
+			/* 每日签到三小时内内随机进行 */
+			const sec: number = randomInt( 0, 360 * 3 );
 			const time = new Date().setSeconds( sec * 10 );
 			const job: Job = scheduleJob( time, async () => {
 				await this.gameSign( true );
@@ -149,9 +156,9 @@ export class SignInService implements Service {
 			} );
 		} );
 		
-		this.bbsJob = scheduleJob( "0 7 8 * * *", () => {
-			/* 每日签到两小时内内随机进行 */
-			const sec: number = randomInt( 0, 360 * 2 );
+		this.bbsJob = scheduleJob( "0 9 10 * * *", () => {
+			/* 每日签到三小时内内随机进行 */
+			const sec: number = randomInt( 0, 360 * 3 );
 			const time = new Date().setSeconds( sec * 10 );
 			const job: Job = scheduleJob( time, async () => {
 				await this.bbsSign( true );

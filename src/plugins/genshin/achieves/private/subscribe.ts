@@ -34,12 +34,11 @@ async function subscribe( userID: string, send: SendFunc, a: AuthLevel, CONFIRM:
 	
 	return title +
 		`BOT承诺保护您的账户信息安全\n` +
-		`确定开启授权功能请使用此指令\n ` +
-		`[ ${ CONFIRM.getCNHeader() } cookie ] 来继续\n` +
-		"cookie是需要按照教程获取并替换\n" +
-		"请在 3 分钟内进行超时会自动取消\n" +
-		"频道发送 [ @BOT 教程 ] 获取教程";
-	
+		`确定开启授权功能请使用此指令\n` +
+		`[ /扫码登陆 ] 来继续扫码登陆\n` +
+		"[ /我的stoken ] 获取登陆stoken\n" +
+		"[ /更新授权+获取的stoken ] 来绑定原有牛杂\n" +
+		`如果扫码不可用，则按照原教程操作\n`;
 }
 
 async function confirm(

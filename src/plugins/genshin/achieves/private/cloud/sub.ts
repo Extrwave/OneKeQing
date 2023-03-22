@@ -68,7 +68,7 @@ async function confirm( userID: string, token: string, SUBSCRIBE: Order, APPLY: 
 			`请先使用 [ ${ APPLY.getCNHeader() } ] 完成米游社授权`;
 	}
 	
-	await single.replaceCloudGameToken( token );
+	await single.setCloudGameToken( token );
 	pull( tempSubscriptionList, userID );
 	//进行操作
 	return await single.services.cloud.toggleEnableStatus( true );

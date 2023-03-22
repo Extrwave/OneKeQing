@@ -19,7 +19,7 @@ export async function autoReply( messageData: Message, sendMessage: msg.SendFunc
 			"基本使用教程：https://drive.ethreal.cn/189Cloud/Markdown/bothelp.md\n" +
 			"cookie获取教程: https://drive.ethreal.cn/189Cloud/Markdown/cookies.md\n" +
 			"云原神签到教程: https://drive.ethreal.cn/189Cloud/Markdown/yystoken.md";
-		return await sendMessage( message );
+		return await sendMessage( { content: message, image: "https://img.ethreal.cn/i/2023/03/6417ee5f0c85b.png" } );
 	}
 	
 	if ( chatConfig.emojiOn() && chatConfig.match( content ) ) {

@@ -10,6 +10,8 @@ export default class GenshinConfig {
 	public verifyEnable: boolean;
 	public verifyRepeat: number;
 	public verifyToken: string;
+	public noteNotify: boolean;
+	public autoSign: boolean;
 	
 	public static init = {
 		cardWeaponStyle: "normal",
@@ -19,7 +21,9 @@ export default class GenshinConfig {
 		wishLimitNum: 99,
 		verifyEnable: false,
 		verifyRepeat: 1,
-		verifyToken: randomString( 8 )
+		verifyToken: randomString( 8 ),
+		noteNotify: false,
+		autoSign: false
 	};
 	
 	constructor( config: any ) {
@@ -31,6 +35,8 @@ export default class GenshinConfig {
 		this.verifyEnable = config.verifyEnable;
 		this.verifyRepeat = config.verifyRepeat;
 		this.verifyToken = config.verifyToken;
+		this.noteNotify = config.noteNotify;
+		this.autoSign = config.autoSign;
 	}
 	
 	public async refresh( config ): Promise<string> {
@@ -42,6 +48,8 @@ export default class GenshinConfig {
 			this.verifyEnable = config.verifyEnable;
 			this.verifyRepeat = config.verifyRepeat;
 			this.verifyToken = config.verifyToken;
+			this.noteNotify = config.noteNotify;
+			this.autoSign = config.autoSign;
 			return "genshin.yml 重新加载完毕";
 		} catch ( error ) {
 			throw <RefreshCatch>{

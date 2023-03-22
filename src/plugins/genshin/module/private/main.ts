@@ -53,7 +53,11 @@ export class UserInfo {
 	public stoken: string;
 	public ytoken: string;
 	
-	constructor( uid: string, cookie: string, userID: string, mysID: number, stoken: string = "", ytoken: string = "" ) {
+	constructor(
+		uid: string, cookie: string,
+		userID: string, mysID: number,
+		stoken: string = "", ytoken: string = ""
+	) {
 		this.uid = uid;
 		this.cookie = cookie;
 		this.stoken = stoken;
@@ -143,7 +147,7 @@ export class Private {
 		await bot.redis.setString( this.dbKey, this.stringify() );
 	}
 	
-	public async replaceCloudGameToken( ytoken: string ): Promise<void> {
+	public async setCloudGameToken( ytoken: string ): Promise<void> {
 		this.setting.ytoken = ytoken;
 		await bot.redis.setString( this.dbKey, this.stringify() );
 	}
@@ -296,4 +300,5 @@ export class PrivateClass {
 			}
 		} );
 	}
+	
 }

@@ -422,7 +422,7 @@ export default <PluginSetting>{
 		privateAbyssQuery, privateLedger, privateSign,
 		privateCommit, alias,
 		cloudEnable, cloudConfirm, cloudDisable,
-		cloudUpdate, cloudSign, cloudSwitch,
+		cloudUpdate, cloudSign, cloudSwitch
 	]
 }
 ;

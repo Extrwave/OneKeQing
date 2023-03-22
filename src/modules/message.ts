@@ -147,7 +147,7 @@ export default class MsgManager implements MsgManagementMethod {
 			if ( !message || typeof message === 'string' ) {
 				message = message ?
 					atUser ? `<@!${ atUser }> ${ message }` : message
-					: atUser ? `<@!${ atUser }>` : "" + `BOT尝试发送一条空消息，一般是没有正确返回错误信息，请记录时间点向开发者反馈 ~`;
+					: atUser ? `<@!${ atUser }>` : "" + `BOT尝试发送一条空消息，一般是没有正确返回错误信息，忽略或者反馈给开发者 ~`;
 				formData.append( "content", message );
 				logInfo.push( message );
 			} else if ( message.embed || message.ark || message.markdown || message.keyboard ) {
@@ -213,7 +213,7 @@ export default class MsgManager implements MsgManagementMethod {
 			}
 			
 			if ( message.type === "formData" ) {
-				const res = await requests( {
+				const data = await requests( {
 					url: url,
 					method: "POST",
 					headers: {
@@ -222,14 +222,14 @@ export default class MsgManager implements MsgManagementMethod {
 					},
 					body: message.data
 				} );
-				return res.data;
+				return JSON.parse( data );
 			} else {
 				if ( isDirect ) {
-					const res = await client.directMessageApi.postDirectMessage( targetId, message.data );
-					return res.data;
+					const data = await client.directMessageApi.postDirectMessage( targetId, message.data );
+					return data.data;
 				} else {
-					const res = await client.messageApi.postMessage( targetId, message.data );
-					return res.data;
+					const data = await client.messageApi.postMessage( targetId, message.data );
+					return data.data;
 				}
 			}
 		}

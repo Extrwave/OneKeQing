@@ -35,6 +35,17 @@ const callMaster: OrderConfig = {
 	detail: "通过BOT与机器人开发者联系 ~ "
 }
 
+const replyUser: OrderConfig = {
+	type: "order",
+	cmdKey: "adachi-leave-message-reply",
+	desc: [ "回复", "(内容)" ],
+	headers: [ "reply" ],
+	regexps: [ "(.+\\s?)*" ],
+	auth: AuthLevel.Master,
+	main: "reply",
+	detail: "回复用户的留言信息 ~ "
+}
+
 const setUseChannel: SwitchConfig = {
 	type: "switch",
 	mode: "divided",
@@ -105,7 +116,7 @@ export async function init(): Promise<PluginSetting> {
 		pluginEName: "@management",
 		pluginCName: "管理",
 		cfgList: [
-			announce, upgrade, callMaster,
+			announce, upgrade, callMaster, replyUser,
 			setUseChannel, cancelUseChannel,
 			restart, refresh, deleteKey
 		]

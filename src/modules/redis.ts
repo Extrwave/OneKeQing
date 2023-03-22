@@ -20,6 +20,7 @@ export const __RedisKey = {
 	
 	/* Management */
 	CHANNEL_LIMIT: "adachi.channel-limit", //设置可用子频道
+	CALL_MESSAGE_REPLY: "adachi.call-message-reply-", //反馈消息回复
 	
 	/* Function */
 	RESTART_PARAM: "adachi.restart-param", //指令重启后保存启动回复消息参数

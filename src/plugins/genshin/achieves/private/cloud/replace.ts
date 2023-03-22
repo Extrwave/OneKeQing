@@ -37,6 +37,6 @@ export async function main(
 		return;
 	}
 	
-	await single.replaceCloudGameToken( newToken );
+	await single.setCloudGameToken( newToken );
 	await sendMessage( "云原神授权已成功更新" );
 }

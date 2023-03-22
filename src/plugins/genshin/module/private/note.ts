@@ -7,6 +7,7 @@ import { Job, scheduleJob } from "node-schedule";
 import { dailyNotePromise } from "#genshin/utils/promise";
 import { sendMessage } from "#genshin/utils/private";
 import { EmbedMsg } from "@modules/utils/embed";
+import { config } from "#genshin/init";
 
 interface PushEvent {
 	type: "resin" | "homeCoin" | "transformer" | "expedition";
@@ -54,7 +55,7 @@ export class NoteService implements Service {
 	public getOptions(): any {
 		return {
 			timePoint: this.timePoint,
-			enable: this.enable
+			enable: config.noteNotify ? this.enable : false
 		};
 	}
 	
@@ -71,16 +72,23 @@ export class NoteService implements Service {
 			const appendSetTime = SET_TIME ? `[ ${ SET_TIME.getCNHeader() }+账户序号+树脂量 ] 调整推送条件\n` : "";
 			const appendToggleNote = TOGGLE_NOTE ? `[ ${ TOGGLE_NOTE.getCNHeader() }+账户序号 ] 关闭上述推送\n` : "";
 			
-			return "\n实时便笺功能已开启：\n" +
+			return config.noteNotify ?
+				"\n实时便笺功能已开启：\n" +
 				"树脂数量达到 120 和 155 时会私聊推送\n" +
 				appendSetTime +
 				"宝钱、质变仪、派遣提醒功能已开启\n" +
-				appendToggleNote;
+				appendToggleNote :
+				"\n实时便笺功能暂未开放";
 		}
 	}
 	
 	public async toggleEnableStatus( status?: boolean, message: boolean = true ): Promise<string> {
 		this.enable = status === undefined ? !this.enable : status;
+		if ( !config.noteNotify ) {
+			this.enable = false;
+			await this.parent.refreshDBContent( NoteService.FixedField );
+			return "实时便笺功能暂未开放";
+		}
 		if ( this.enable ) {
 			this.scheduleJobOn();
 		} else {
