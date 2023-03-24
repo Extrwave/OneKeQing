@@ -144,10 +144,10 @@ export default class MsgManager implements MsgManagementMethod {
 				`[A: ${ userName }]`, `[G: ${ guildName }]`, ":" ];
 			/* 添加msg_id */
 			msgId ? formData.append( "msg_id", msgId ) : "";
-			if ( !message || typeof message === 'string' ) {
-				message = message ?
-					atUser ? `<@!${ atUser }> ${ message }` : message
-					: atUser ? `<@!${ atUser }>` : "" + `BOT尝试发送一条空消息，一般是没有正确返回错误信息，忽略或者反馈给开发者 ~`;
+			if ( !message ) {
+				throw "Send Empty Msg";
+			} else if ( typeof message === 'string' ) {
+				message = atUser ? `<@!${ atUser }> ${ message }` : message;
 				formData.append( "content", message );
 				logInfo.push( message );
 			} else if ( message.embed || message.ark || message.markdown || message.keyboard ) {
