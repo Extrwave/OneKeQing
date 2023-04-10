@@ -86,8 +86,6 @@ export class NoteService implements Service {
 		this.enable = status === undefined ? !this.enable : status;
 		if ( !config.noteNotify ) {
 			this.enable = false;
-			await this.parent.refreshDBContent( NoteService.FixedField );
-			return "实时便笺功能暂未开放";
 		}
 		if ( this.enable ) {
 			this.scheduleJobOn();
@@ -97,7 +95,7 @@ export class NoteService implements Service {
 		}
 		/* 回传进行数据库更新 */
 		await this.parent.refreshDBContent( NoteService.FixedField );
-		return `实时便筏提醒功能已${ this.enable ? "开启" : "关闭" }`;
+		return config.noteNotify ? `实时便筏提醒功能已${ this.enable ? "开启" : "关闭" }` : `实时便签功能未开放`;
 	}
 	
 	private scheduleJobOn(): void {

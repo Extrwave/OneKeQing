@@ -61,8 +61,6 @@ export class SignInService implements Service {
 		this.enable = status === undefined ? !this.enable : status;
 		if ( !config.autoSign ) {
 			this.enable = false;
-			await this.parent.refreshDBContent( SignInService.FixedField );
-			return "米游社自动签到功能暂未开放";
 		}
 		if ( this.enable ) {
 			this.setScheduleJob();
@@ -73,7 +71,7 @@ export class SignInService implements Service {
 		}
 		/* 回传进行数据库更新 */
 		await this.parent.refreshDBContent( SignInService.FixedField );
-		return `米游社签到功能已${ this.enable ? "开启" : "关闭" }`;
+		return config.autoSign ? `米游社签到功能已${ this.enable ? "开启" : "关闭" }` : `米游社自动签到功能暂未开放`;
 	}
 	
 	public async gameSign( reply: boolean = false ): Promise<void> {
