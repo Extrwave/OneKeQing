@@ -95,7 +95,7 @@ export default defineComponent( {
 			activeSpread: ""
 		} );
 		
-		const authList = [ "user", "manager", "master" ];
+		const authList = [ "user", "guildManager", "guildOwner", "master" ];
 		const scopeList = [ "仅群聊", "仅私聊", "无限制" ];
 		const modeList = [ {
 			label: "单指令头",

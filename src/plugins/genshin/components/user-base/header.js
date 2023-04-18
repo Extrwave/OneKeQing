@@ -1,5 +1,5 @@
 const template = `
-<div class="header-base" :style="topBgStyle">
+<div class="header-base">
 	<div
 		class="card-avatar-box"
 		:class="{
@@ -84,15 +84,10 @@ export default defineComponent( {
 			return Math.floor( ( parseInt( level ) - 15 ) / 5 );
 		} );
 		
-		const topBgStyle = {
-			backgroundImage: `url(${ props.data.bg })`,
-		}
-		
 		return {
 			avatars,
 			defaultAvatar,
-			worldLevel,
-			topBgStyle
+			worldLevel
 		};
 	}
 } );

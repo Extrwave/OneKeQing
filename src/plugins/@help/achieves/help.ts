@@ -75,12 +75,9 @@ async function cardStyle( i: InputParameter, commands: BasicConfig[], version: s
 		cmdData[cmd.pluginName] = cmdData[cmd.pluginName] ? [ ...cmdData[cmd.pluginName], cmd ] : [ cmd ];
 	}
 	
-	const topBg = await getRandomImageUrl( "/HelpTopBG" );
-	
 	await i.redis.setString( __RedisKey.HELP_DATA, JSON.stringify( {
 		version: version,
-		commands: cmdData,
-		bg: topBg
+		commands: cmdData
 	} ) );
 	
 	const res: RenderResult = await renderer.asBase64(

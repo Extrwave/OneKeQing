@@ -51,9 +51,6 @@ const template = `<div class="table-container config">
 				@change="updateConfig('master')"
 				@open="activeSpreadItem"
 			/>
-			<form-item label="atBOT" desc="是否需要在使用指令时 @BOT 账号。(仅对私域机器人生效)">
-				<el-switch v-model="setting.atBOT" :disabled="pageLoading" @change="updateConfig('atBOT')" />
-			</form-item>
 			<form-item label="日志输出等级" desc="等级从上往下依次递减，日志输出会过滤掉比所设置等级更高的等级日志">
 				<el-select v-model="setting.logLevel" placeholder="日志等级" @change="updateConfig('logLevel')">
 					<el-option v-for="(l, lKey) of logLevel" :key="lKey" :label="l" :value="l"/>
@@ -62,16 +59,6 @@ const template = `<div class="table-container config">
 		</div>
 		<div class="config-section">
 		<section-title title="指令设置" />
-			<spread-form-item
-				v-model="setting.header"
-				:active-spread="activeSpread"
-				:disabled="pageLoading"
-				label="指令起始符"
-				placeholder="请输入指令起始符"
-				desc='例：设置为 # 时，需使用 #help 来触发帮助指令。如果不想在指令前添加特殊符号，请置空。'
-				@change="updateConfig('header')"
-				@open="activeSpreadItem"
-			/>
 			<form-item label="帮助信息样式" desc="指令help响应信息所展示的样式。（ark私域可用，公域需要申请）">
 				<el-radio-group v-model="setting.helpMessageStyle" :disabled="pageLoading" @change="updateConfig('helpMessageStyle')" >
 					<el-radio v-for="(h, hKey) of helpStyleList" :key="hKey" :label="h.value">{{ h.label }}</el-radio>
@@ -161,12 +148,6 @@ const template = `<div class="table-container config">
 					@open="activeSpreadItem"
 				/>
 			</template>
-		</div>
-		<div class="config-section">
-			<section-title title="自动聊天设置" />
-			<form-item label="启用自动聊天" desc="开启后可通过群聊 @BOT 触发智能对话（当开启 atBOT 时，群聊 @ 无效）。">
-				<el-switch v-model="setting.autoChat" :disabled="pageLoading" @change="updateConfig('autoChat')" />
-			</form-item>
 		</div>
 	</el-form>
 </div>`;

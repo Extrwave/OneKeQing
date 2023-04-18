@@ -12,7 +12,6 @@ async function loadMysData( userID: string ): Promise<any> {
 	data.avatars = JSON.parse( data.avatars );
 	data.allHomes = data.allHomes ? JSON.parse( data.allHomes ) : [];
 	data.userAvatar = await getMemberAvatar( userID );
-	data.bg = await getRandomImageUrl( "/UidTopBG" );
 	return data;
 }
 

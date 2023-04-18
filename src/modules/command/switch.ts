@@ -29,7 +29,7 @@ export class Switch extends BasicConfig {
 	private readonly mode: "single" | "divided";
 	private readonly header: string;
 	
-	constructor( config: SwitchConfig, botCfg: BotSetting, pluginName: string ) {
+	constructor( config: SwitchConfig, pluginName: string ) {
 		super( config, pluginName );
 		
 		if ( config.onKey === config.offKey ) {
@@ -39,9 +39,8 @@ export class Switch extends BasicConfig {
 			throw `指令 ${ config.cmdKey } 配置错误: onKey 和 offKey 不可为空`;
 		}
 		
-		const globalHeader: string = botCfg.header;
 		const process: ( h: string ) => string = h => escapeRegExp(
-			Switch.header( h, globalHeader )
+			Switch.header( h )
 		);
 		const addChar: ( s: string ) => string = s => Switch.addStartStopChar(
 			s, config.start !== false, config.stop !== false
@@ -147,7 +146,7 @@ export class Switch extends BasicConfig {
 			};
 		}
 		
-		return { type: "unmatch", missParam: false };
+		return { type: "unmatch" };
 	}
 	
 	public getFollow(): string {
@@ -186,7 +185,7 @@ export class Switch extends BasicConfig {
 	public getCNHeader(): string {
 		const [ onKey, offKey ] = this.keys;
 		if ( this.mode === "single" ) {
-			return bot.setting.header + this.desc[0];
+			return this.desc[0];
 		} else {
 			return `${ onKey } | ${ offKey }`;
 		}

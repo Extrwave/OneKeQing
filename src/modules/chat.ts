@@ -26,7 +26,7 @@ export async function autoReply( messageData: Message, sendMessage: msg.SendFunc
 		return await sendMessage( { image: chatConfig.get() } );
 	}
 	
-	switch ( true ) {
+	switch ( chatConfig.chatOn() ) {
 		case /渣/.test( content ):
 			return await sendMessage( await getTextResponse( __API.LOVELIVE ) );
 		case /emo/.test( content ):
@@ -37,9 +37,7 @@ export async function autoReply( messageData: Message, sendMessage: msg.SendFunc
 			return await sendMessage( await getTextResponse( __API.DOGS ) );
 		default:
 			//调用API回复
-			return chatConfig.chatOn() ? isAt ?
-				await sendMessage( await getChatResponse( content ) )
-				: undefined : undefined;
+			return isAt ? await sendMessage( await getChatResponse( content ) ) : undefined;
 	}
 	
 }

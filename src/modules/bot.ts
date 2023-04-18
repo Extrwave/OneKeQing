@@ -207,6 +207,7 @@ export class Adachi {
 		let content: string = messageData.msg.content = messageData.msg.content ?
 			messageData.msg.content.replace( /[\[\]()|]/g, "" ).trim()
 			: "";
+		content = content[0] === "/" ? content.replace( "/", "" ).trim() : content;
 		
 		/* 人工智障聊天, 匹配不到任何指令触发，对私域进行优化，@BOT才能触发自动回复 */
 		if ( !unionRegExp.test( content ) || unionRegExp.source === /()/i.source ) {
@@ -216,7 +217,7 @@ export class Adachi {
 				return await sendMessage( check );
 			}
 			/* 支持问答和表情包 */
-			if ( !isPrivate ) {
+			if ( !isPrivate && this.bot.chatConfig.chatOn() ) {
 				return await autoReply( messageData, sendMessage, this.bot.chatConfig, isAt );
 			}
 		}
@@ -229,20 +230,18 @@ export class Adachi {
 		for ( let cmd of cmdSet ) {
 			const res: MatchResult = cmd.match( content );
 			if ( res.type === "unmatch" ) {
-				if ( res.missParam && res.header ) {
-					matchList.push( { matchResult: res, cmd } );
-				}
 				continue;
 			}
 			matchList.push( { matchResult: res, cmd } )
 		}
 		
+		/* 没有任何匹配 */
 		if ( matchList.length === 0 ) return;
 		/* 选择最长的 header 作为成功匹配项 */
 		const { matchResult: res, cmd } = matchList.sort( ( prev, next ) => {
 			const getHeaderLength = ( { matchResult }: typeof prev ) => {
 				let length: number = 0;
-				if ( matchResult.type === "unmatch" || matchResult.type === "order" ) {
+				if ( matchResult.type === "order" ) {
 					length = matchResult.header ? matchResult.header.length : 0;
 				} else if ( matchResult.type === "switch" ) {
 					length = matchResult.switch.length;
@@ -254,17 +253,6 @@ export class Adachi {
 			return getHeaderLength( next ) - getHeaderLength( prev );
 		} )[0];
 		
-		if ( res.type === "unmatch" ) {
-			const embedMsg = new EmbedMsg( `指令参数缺失或者错误`,
-				undefined,
-				`指令参数缺失或者错误`,
-				messageData.msg.author.avatar,
-				`你的参数：${ res.param ? res.param : "无" }`,
-				`参数格式：${ cmd.desc[1] }`,
-				`参数说明：${ cmd.detail }`,
-				`\n[ ] 必填, ( ) 选填, | 选择` );
-			return await sendMessage( { embed: embedMsg } );
-		}
 		if ( res.type === "order" ) {
 			const text: string = cmd.ignoreCase
 				? content.toLowerCase() : content;
@@ -273,6 +261,7 @@ export class Adachi {
 					.replace( / +/g, " " )
 			);
 		}
+		
 		cmd.run( {
 			sendMessage, ...this.bot,
 			messageData, matchResult: res
@@ -280,9 +269,7 @@ export class Adachi {
 		
 		/* 指令数据统计与收集 */
 		await this.bot.redis.incHash( __RedisKey.COMMAND_STAT, cmd.cmdKey, 1 );
-		return;
 	}
-	
 	
 	/* 处理私聊事件 */
 	private parsePrivateMsg( that: Adachi ) {

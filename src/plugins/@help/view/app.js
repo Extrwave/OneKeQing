@@ -1,6 +1,6 @@
 const template = `<div class="help">
 	<header>
-		<div :style="topImageStyle" class="top-bg"/>
+		<div class="top-bg"/>
 		<div class="left-header">
 			<p>一碗牛杂</p>
 			<p>{{ model === "keys" ? "指令key值表" : "使用文档" }}</p>
@@ -51,19 +51,10 @@ export default defineComponent( {
 		
 		const getListTitle = pluginName => pluginNameMap[pluginName] || `${ pluginName } 插件指令`;
 		
-		const topImageStyle = {
-			width: "100%",
-			height: "100%",
-			backgroundSize: "cover",
-			backgroundImage: `linear-gradient(to top, #f3f4f7, transparent), url(${ data.bg })`
-		};
-		
-		
 		return {
 			data,
 			model,
-			getListTitle,
-			topImageStyle
+			getListTitle
 		};
 	}
 } )

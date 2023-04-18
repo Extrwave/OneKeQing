@@ -20,8 +20,8 @@
 	top: 0;
 	width: 100%;
 	height: 100%;
-	object-fit: cover;
-	background-image: linear-gradient(to top, #f3f4f7, transparent);
+	background-size: cover;
+	background-image: linear-gradient(to top, #f3f4f7, transparent), url("https://img.ethreal.cn/i/2023/04/643e3965dc3e5.jpg");
 }
 
 .help > header > .left-header,

@@ -9,7 +9,6 @@ export default class BotSetting {
 	public readonly sandbox: boolean;
 	public readonly area: string;
 	public readonly master: string;
-	public readonly header: string;
 	public readonly dbPort: number;
 	public readonly dbPassword: string;
 	public readonly countThreshold: number;
@@ -33,7 +32,6 @@ export default class BotSetting {
 		sandbox: false,
 		master: "masterID",
 		area: "private",
-		header: "/",
 		dbPort: 6379,
 		dbPassword: "",
 		countThreshold: 60,
@@ -66,7 +64,6 @@ export default class BotSetting {
 		this.token = config.token;
 		this.sandbox = config.sandbox;
 		this.master = config.master;
-		this.header = config.header;
 		this.dbPort = config.dbPort;
 		this.dbPassword = config.dbPassword;
 		this.countThreshold = config.countThreshold;

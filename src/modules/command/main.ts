@@ -19,7 +19,6 @@ type Required<T, K extends keyof T> = T & {
 
 export interface Unmatch {
 	type: "unmatch";
-	missParam: boolean;
 	header?: string;
 	param?: string;
 }
@@ -66,11 +65,11 @@ export abstract class BasicConfig {
 	
 	abstract getParams(): string;
 	
-	protected static header( raw: string, h: string ): string {
+	protected static header( raw: string ): string {
 		if ( raw.substr( 0, 2 ) === "__" ) {
 			return trimStart( raw, "_" );
 		} else {
-			return h + raw;
+			return raw;
 		}
 	}
 	
@@ -183,26 +182,13 @@ export default class Command {
 			cmdSet.forEach( cmd => {
 				if ( cmd.type === "order" ) {
 					cmd.regPairs.forEach( el => {
-						list.push(
-							...el.genRegExps.map( r => `(${ r.source })` )
-						);
-						/* 是否存在指令起始符 */
-						const hasHeader = bot.setting.header ? el.header.includes( bot.setting.header ) : false;
-						const rawHeader = el.header.replace( bot.setting.header, "" );
-						
-						/* 当指令头包括中文时，同时匹配是否存在起始符与指令头，否则不处理 */
-						/* 当未设置起始符时，不再添加指令头至unionReg */
-						const unMatchHeader: string = rawHeader.length !== 0 && /[\u4e00-\u9fa5]/.test( rawHeader )
-							? `${ hasHeader ? "(?=.*" + bot.setting.header + ")" : "" }(?=.*${ rawHeader })`
-							: bot.setting.header
-								? el.header
-								: "";
-						
-						if ( unMatchHeader.length === 0 ) {
-							return;
+						if ( el.header.length !== 0 && /[\u4e00-\u9fa5]/.test( el.header ) ) {
+							list.push( `(${ el.header })` );
+						} else {
+							list.push(
+								...el.genRegExps.map( r => `(${ r.source })` )
+							);
 						}
-						
-						list.push( `(${ unMatchHeader })` );
 					} );
 				} else if ( cmd.type === "switch" ) {
 					list.push( ...cmd.regexps.map( r => `(${ r.source })` ) );
@@ -254,7 +240,5 @@ export default class Command {
  * @param prefix 匹配到的指令头
  */
 export function removeHeaderInContent( string: string, prefix: string ): string {
-	if ( bot.setting.header !== "" )
-		return string.replace( new RegExp( `${ prefix.charAt( 0 ) }|${ prefix.slice( 1 ) }`, "g" ), '' );
 	return string.replace( new RegExp( prefix, "g" ), '' );
 }

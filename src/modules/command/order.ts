@@ -1,5 +1,3 @@
-import bot from "ROOT";
-import BotSetting from "../config";
 import { escapeRegExp } from "lodash";
 import { BasicConfig, CommandInfo, Unmatch } from "./main";
 
@@ -27,12 +25,12 @@ export class Order extends BasicConfig {
 	public readonly regParam: string[][];
 	
 	
-	constructor( config: OrderConfig, botCfg: BotSetting, pluginName: string ) {
+	constructor( config: OrderConfig, pluginName: string ) {
 		super( config, pluginName );
 		
-		const headers: string[] = config.headers.map( el => Order.header( el, botCfg.header ) );
+		const headers: string[] = config.headers.map( el => Order.header( el ) );
 		if ( this.desc[0].length > 0 ) {
-			headers.push( Order.header( this.desc[0], botCfg.header ) ); //添加中文指令名作为识别
+			headers.push( Order.header( this.desc[0] ) ); //添加中文指令名作为识别
 		}
 		
 		let rawRegs = <string[][]>config.regexps;
@@ -78,27 +76,10 @@ export class Order extends BasicConfig {
 	public match( content: string ): OrderMatchResult | Unmatch {
 		try {
 			this.regPairs.forEach( pair => pair.genRegExps.forEach( reg => {
-				/* 是否存在指令起始符 */
-				const hasHeader = bot.setting.header ? pair.header.includes( bot.setting.header ) : false;
-				const rawHeader = pair.header.replace( bot.setting.header, "" );
-				
-				/* 消息是否同时包含指令起始符与指令头 */
-				const headerRegStr: string = rawHeader.length !== 0 && /[\u4e00-\u9fa5]/.test( rawHeader )
-					? `${ hasHeader ? "(?=.*" + bot.setting.header + ")" : "" }(?=.*?${ rawHeader })`
-					: bot.setting.header
-						? pair.header
-						: "";
-				const headerReg: RegExp | null = headerRegStr.length !== 0 ? new RegExp( headerRegStr ) : null;
-				
-				/* 若直接匹配不成功，则匹配指令头，判断参数是否符合要求 */
 				if ( reg.test( content ) ) {
 					throw { type: "order", header: pair.header };
-				} else if ( headerReg && headerReg.test( content ) ) {
-					const header = bot.setting.header == "" ? pair.header : `${ bot.setting.header }|${ rawHeader }`;
-					
-					const fogReg = new RegExp( header, "g" );
-					/* 重组正则，判断是否参数不符合要求 */
-					content = content.replace( fogReg, "" );
+				} else if ( new RegExp( pair.header ).test( content ) ) {
+					content = content.replace( pair.header, "" );
 					for ( let params of this.regParam ) {
 						params = [ pair.header, ...params ];
 						const paramReg = new RegExp( `^${ params.join( "\\s*?" ) }$` );
@@ -107,18 +88,17 @@ export class Order extends BasicConfig {
 							throw { type: "order", header: pair.header };
 						}
 					}
-					throw { type: "unmatch", missParam: true, header: pair.header, param: content };
 				}
 			} ) );
 		} catch ( data ) {
-			return <OrderMatchResult | Unmatch>data;
+			return <OrderMatchResult>data;
 		}
-		return { type: "unmatch", missParam: false };
+		return { type: "unmatch" };
 	}
 	
 	public getFollow(): string {
 		const pairs = this.regPairs.concat();
-		if ( pairs[pairs.length - 1].header === Order.header( this.desc[0], bot.setting.header ) ) {
+		if ( pairs[pairs.length - 1].header === Order.header( this.desc[0] ) ) {
 			pairs.pop();
 		}
 		const headers: string = pairs
@@ -141,7 +121,7 @@ export class Order extends BasicConfig {
 	
 	/* 获取中文指令头 */
 	public getCNHeader(): string {
-		return bot.setting.header + this.desc[0];
+		return this.desc[0];
 	}
 	
 	public getParams(): string {
