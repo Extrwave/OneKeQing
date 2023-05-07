@@ -13,7 +13,7 @@ services:
   bot:
     build:
       context: .
-    image: alpine:latest
+    image: adachi-bot:latest
     ports:
       - "9999:9999"
     container_name: adachi-gbot
